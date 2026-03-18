@@ -1,0 +1,158 @@
+/* Chapter List Styles */
+
+.container {
+    width: 100%;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.filterGroup {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #6b7280;
+}
+
+.select {
+    padding: 4px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 10px;
+    color: #374151;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.select:hover {
+    border-color: #3b82f6;
+}
+
+.select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* View Toggle */
+.viewToggle {
+    display: flex;
+    gap: 2px;
+    background: #f3f4f6;
+    padding: 2px;
+    border-radius: 4px;
+}
+
+.viewButton {
+    padding: 4px 6px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.viewButton:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.viewButton.active {
+    background: white;
+    color: #3b82f6;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Count Info */
+.countInfo {
+    font-size: 10px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+/* Chapters Container */
+.chaptersContainer {
+    display: grid;
+    gap: 8px;
+}
+
+.chaptersContainer.grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    /* Reduced min width */
+}
+
+.chaptersContainer.list {
+    grid-template-columns: 1fr;
+}
+
+/* Empty State */
+.emptyState {
+    text-align: center;
+    padding: 24px 16px;
+    color: #6b7280;
+}
+
+.emptyState p {
+    font-size: 12px;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .chaptersContainer.grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filters {
+        flex-direction: column;
+    }
+
+    .viewToggle {
+        align-self: flex-end;
+    }
+
+    .chaptersContainer.grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .select {
+        width: 100%;
+    }
+
+    .filterGroup {
+        width: 100%;
+    }
+
+    .viewToggle {
+        width: 100%;
+        justify-content: center;
+    }
+}

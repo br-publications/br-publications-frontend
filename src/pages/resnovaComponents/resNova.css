@@ -1,0 +1,369 @@
+:root {
+  --primary-blue: #1e5292;
+  --dark-blue: rgb(22, 65, 117);
+  --orange-gold: rgb(255, 167, 38);
+  --white: #fff;
+  --light-bg: #f9f9f9;
+  --text-dark: #222;
+  --text-medium: #444;
+  --border-color: #ccc;
+}
+
+.resNova-page {
+  font-family: sans-serif;
+  background: #fff;
+  color: var(--text-dark);
+  line-height: 1.8;
+}
+
+/* ===== Very Traditional Header ===== */
+.resNova-hero {
+  background: var(--primary-blue);
+  padding: 40px 20px;
+  text-align: center;
+  color: white;
+}
+
+.resNova-hero h1 {
+  font-size: 25px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.resNova-hero p {
+  font-size: 16px;
+  font-style: italic;
+  font-weight: 300;
+}
+
+.resNova-wrapper {
+  display: flex;
+  gap: 30px;
+  max-width: 1400px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+/* Very Traditional Sidebar */
+.resNova-sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 70px;
+  height: fit-content;
+}
+
+.sidebar-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.sidebar-card h3 {
+  color: var(--primary-blue);
+  font-size: 14px;
+  margin-bottom: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--primary-blue);
+}
+
+.sidebar-card ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 15px;
+}
+
+.sidebar-card li {
+  margin-bottom: 8px;
+  border-bottom: 1px dotted #ddd;
+  padding-bottom: 8px;
+}
+
+.sidebar-card li:last-child {
+  border-bottom: none;
+}
+
+.sidebar-card li a {
+  color: var(--text-medium);
+  text-decoration: none;
+  display: block;
+  font-size: 12px;
+  transition: color 0.2s;
+}
+
+.sidebar-card li a:hover {
+  color: var(--primary-blue);
+  text-decoration: underline;
+}
+
+.sidebar-card li i {
+  color: var(--orange-gold);
+  font-size: 0.7rem;
+  margin-right: 8px;
+}
+
+.resNova-container {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Very Traditional Section Styling */
+.resNova-section {
+  background: white;
+  padding: 20px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.resNova-section-header {
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 3px double var(--primary-blue);
+}
+
+.resNova-section-icon {
+  display: none;
+}
+
+.resNova-section-title-wrapper h2 {
+  font-size: 16px;
+  color: var(--dark-blue);
+  margin-bottom: 5px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.resNova-section-subtitle {
+  color: #666;
+  font-size: 14px;
+  font-style: italic;
+  text-align: center;
+}
+
+.resNova-section-intro {
+  font-size: 12px;
+  color: var(--text-dark);
+  line-height: 2;
+  margin-bottom: 20px;
+  padding: 10px 10px;
+  background: var(--light-bg);
+  border: 1px solid var(--border-color);
+  text-align: justify;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin: 30px 0;
+}
+
+.service-card {
+  background: white;
+  padding: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.service-card:hover {
+  border-color: var(--primary-blue);
+}
+
+.service-card h3 {
+  color: var(--primary-blue);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.service-card h3::before {
+  content: '■';
+  color: var(--orange-gold);
+  margin-right: 10px;
+  font-size: 12px;
+}
+
+.service-card p {
+  color: var(--text-medium);
+  line-height: 1.8;
+  font-size: 12px;
+  text-align: justify;
+}
+
+/* Very Traditional Benefits Section */
+.benefits-section {
+  background: var(--light-bg);
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  margin: 30px 0;
+}
+
+.benefits-section h3 {
+  font-size: 16px;
+  margin-bottom: 20px;
+  text-align: center;
+  color: var(--dark-blue);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding-bottom: 10px;
+  border-bottom: 3px double var(--primary-blue);
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.benefit-item {
+  background: white;
+  padding: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.benefit-item:hover {
+  border-color: var(--primary-blue);
+}
+
+.benefit-icon {
+  display: none;
+}
+
+.benefit-text h4 {
+  font-size: 14px;
+  margin-bottom: 10px;
+  color: var(--primary-blue);
+  font-weight: 700;
+}
+
+.benefit-text p {
+  line-height: 1.7;
+  font-size: 12px;
+  color: var(--text-medium);
+  margin-bottom: 10px;
+}
+
+.benefit-text a {
+  color: var(--primary-blue);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.benefit-text a:hover {
+  text-decoration: underline;
+  color: var(--orange-gold);
+}
+
+/* Very Traditional CTA Section */
+.cta-section {
+  text-align: center;
+  padding: 50px;
+  background: var(--light-bg);
+  border: 1px solid var(--border-color);
+  margin-top: 30px;
+}
+
+.cta-section h3 {
+  font-size: 22px;
+  color: var(--dark-blue);
+  margin-bottom: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.cta-section p {
+  font-size: 14px;
+  color: var(--text-medium);
+  margin-bottom: 15px;
+  font-style: italic;
+}
+
+.cta-button {
+  background: white;
+  color: var(--primary-blue);
+  padding: 15px 40px;
+  border: 2px solid var(--primary-blue);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s;
+}
+
+.cta-button:hover {
+  background: var(--primary-blue);
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .resNova-sidebar {
+    width: 200px;
+  }
+}
+
+@media (max-width: 968px) {
+  .resNova-wrapper {
+    flex-direction: column;
+  }
+
+  .resNova-sidebar {
+    display: none;
+  }
+
+  .sidebar-card {
+    margin-bottom: 20px;
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+
+  .benefits-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .resNova-sidebar {
+    display: none;
+  }
+
+  .resNova-hero h1 {
+    font-size: 1.8rem;
+  }
+
+  .resNova-hero p {
+    font-size: 1rem;
+  }
+
+  .resNova-section {
+    padding: 25px 20px;
+  }
+
+  .resNova-section-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+
+  .benefits-grid {
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+
+  .benefits-section {
+    padding: 20px;
+  }
+}

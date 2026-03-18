@@ -1,0 +1,376 @@
+.card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.card:hover {
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  border-color: #1e5292;
+  transform: translateY(-2px);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  gap: 12px;
+}
+
+.titleSection {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  word-break: break-word;
+  flex: 1;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background-color: #f3f4f6;
+  border-left: 3px solid;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #374151;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.actionButton {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.actionButton:hover {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+/* Action Menu */
+.actionMenu {
+  position: absolute;
+  right: 16px;
+  top: 50px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  min-width: 160px;
+}
+
+.actionMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  color: #374151;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.actionMenuItem:hover {
+  background-color: #f3f4f6;
+  color: #1e5292;
+}
+
+.actionMenuItem.danger {
+  color: #ef4444;
+}
+
+.actionMenuItem.danger:hover {
+  background-color: #fee2e2;
+}
+
+/* Details Row Wrapper */
+.detailsRow {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1.2fr;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  gap: 12px;
+}
+
+.detailsRow .authorInfo {
+  padding: 0;
+  border: none;
+}
+
+.detailsRow .infoSection {
+  padding: 0;
+  border: none;
+}
+
+.detailsRow .editorAssigned,
+.detailsRow .editorUnassigned {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: none;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* Author Info */
+.authorInfo {
+  /* padding and border handled by parent when in detailsRow, 
+     but kept here for fallback/mobile if needed */
+  display: flex;
+  flex-direction: column;
+}
+
+.author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.authorAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #eff6ff;
+  color: #1e5292;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.authorName {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.2;
+}
+
+.coAuthors {
+  margin: 2px 0 0 0;
+  font-size: 10px;
+  color: #6b7280;
+}
+
+/* Info Section */
+.infoSection {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.infoItem svg {
+  color: #1e5292;
+}
+
+/* Editor Status */
+.editorAssigned,
+.editorUnassigned {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.editorAssigned {
+  background-color: #ecfdf5;
+  color: #047857;
+}
+
+.editorAssigned svg {
+  color: #10b981;
+}
+
+.editorUnassigned {
+  background-color: #fffbeb;
+  color: #b45309;
+}
+
+.editorUnassigned svg {
+  color: #f59e0b;
+}
+
+/* Footer */
+.cardFooter {
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.timestamp {
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+.viewButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background-color: #1e5292;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewButton:hover {
+  background-color: #1a4577;
+}
+
+/* Quick Actions */
+.quickActions {
+  display: none;
+  padding: 10px;
+  gap: 6px;
+  background-color: #f9fafb;
+  border-top: 1px solid #f0f0f0;
+}
+
+.card:hover .quickActions {
+  display: flex;
+}
+
+.quickActionButton {
+  flex: 1;
+  padding: 6px 10px;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  color: #1e5292;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quickActionButton:hover {
+  background-color: #1e5292;
+  color: white;
+  border-color: #1e5292;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card {
+    margin-bottom: 8px;
+  }
+
+  .cardHeader {
+    padding: 12px;
+  }
+
+  .title {
+    font-size: 14px;
+  }
+
+  .statusBadge {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .authorInfo,
+  .infoSection {
+    padding: 10px 12px;
+  }
+
+  .authorName {
+    font-size: 12px;
+  }
+
+  .cardFooter {
+    padding: 10px 12px;
+  }
+
+  .viewButton {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .quickActions {
+    display: flex;
+  }
+
+  .quickActionButton {
+    font-size: 10px;
+    padding: 5px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 13px;
+  }
+
+  .statusBadge {
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+
+  .authorName {
+    font-size: 11px;
+  }
+
+  .coAuthors {
+    font-size: 10px;
+  }
+
+  .infoItem {
+    font-size: 11px;
+  }
+
+  .editorAssigned,
+  .editorUnassigned {
+    font-size: 11px;
+  }
+
+  .timestamp {
+    font-size: 10px;
+  }
+}

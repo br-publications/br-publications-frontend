@@ -1,0 +1,526 @@
+.card {
+  background: white;
+  border-radius: 8px;
+  /* Reduced corner radius for tighter feel */
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-color: #8b5cf6;
+  transform: translateY(-1px);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* Center aligned for better compact view */
+  padding: 6px 10px;
+  /* SIGNIFICANTLY REDUCED PADDING */
+  border-bottom: 1px solid #f0f0f0;
+  gap: 8px;
+  height: 40px;
+  /* Enforce reduced height */
+}
+
+.titleSection {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  /* Enable truncation if needed */
+}
+
+.title {
+  font-size: 13px;
+  /* Reduced specific font size */
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  /* Reduced badge padding */
+  background-color: #f3f4f6;
+  border-left: 3px solid;
+  border-radius: 4px;
+  font-size: 9px;
+  /* Smaller font */
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+  flex-shrink: 0;
+  height: 20px;
+  margin-right: 6px;
+  /* Add some spacing before the dots button */
+}
+
+.actionButton {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  display: flex;
+  /* Fix alignment */
+}
+
+.actionButton:hover {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+/* Action Menu */
+.actionMenu {
+  position: absolute;
+  right: 12px;
+  top: 36px;
+  /* Adjusted for new header height */
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  min-width: 160px;
+}
+
+.actionMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  /* Reduced padding */
+  border: none;
+  background: none;
+  color: #374151;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.actionMenuItem:hover {
+  background-color: #f3f4f6;
+  color: #8b5cf6;
+}
+
+.actionMenuItem.danger {
+  color: #ef4444;
+}
+
+.actionMenuItem.danger:hover {
+  background-color: #fee2e2;
+}
+
+/* Details Row Wrapper */
+.detailsRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  /* Better proportions: author gets more space, info and time are equal */
+  align-items: center;
+  padding: 6px 10px;
+  /* REDUCED PADDING */
+  border-bottom: 1px solid #f0f0f0;
+  gap: 12px;
+  /* Increased gap for better spacing */
+  min-height: 40px;
+  /* Fixed minimal height */
+}
+
+.detailsRow .authorInfo,
+.detailsRow .chapterInfo,
+.detailsRow .deadlineBadge,
+.detailsRow .reviewStatus {
+  padding: 0;
+  border: none;
+}
+
+/* Author Info */
+.authorInfo {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  width: 100%;
+  /* Use full width of grid column */
+}
+
+.author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.authorAvatar {
+  width: 24px;
+  /* Reduced from 32px */
+  height: 24px;
+  /* Reduced from 32px */
+  border-radius: 50%;
+  background-color: #f3e8ff;
+  color: #8b5cf6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.authorName {
+  margin: 0;
+  font-size: 11px;
+  /* Reduced font size */
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.2;
+}
+
+.institution {
+  margin: 0;
+  font-size: 9px;
+  color: #6b7280;
+  line-height: 1;
+}
+
+/* Chapter Info */
+.chapterInfo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  /* Reduced font size */
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.chapterInfo svg {
+  color: #8b5cf6;
+}
+
+/* Info Section */
+.infoSection {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Time Info */
+.timeInfo {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  /* Align to the right */
+  width: 100%;
+}
+
+.timeText {
+  font-size: 10px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.timeText.urgent {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.timeText.overdue {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* Co-Authors */
+.coAuthors {
+  margin: 0;
+  font-size: 9px;
+  color: #6b7280;
+  line-height: 1;
+}
+
+/* Deadline Badge */
+.deadlineBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: #f0f9ff;
+  color: #0369a1;
+  width: fit-content;
+}
+
+.deadlineBadge svg {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+}
+
+.deadlineBadge.urgent {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.deadlineBadge.urgent svg {
+  color: #f59e0b;
+}
+
+.deadlineBadge.overdue {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.deadlineBadge.overdue svg {
+  color: #ef4444;
+}
+
+/* Review Status */
+.reviewStatus {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.statusLabel {
+  font-size: 9px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.statusBar {
+  height: 4px;
+  background-color: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.statusBar.not_started {
+  background-color: #f3f4f6;
+}
+
+.statusBar.not_started .statusProgress {
+  width: 0%;
+  background-color: #d1d5db;
+}
+
+.statusBar.in_progress {
+  background-color: #fef3c7;
+}
+
+.statusBar.in_progress .statusProgress {
+  width: 50%;
+  background-color: #f59e0b;
+}
+
+.statusBar.completed {
+  background-color: #d1fae5;
+}
+
+.statusBar.completed .statusProgress {
+  width: 100%;
+  background-color: #10b981;
+}
+
+.statusProgress {
+  height: 100%;
+  background-color: currentColor;
+  transition: width 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  color: white;
+  font-weight: 600;
+}
+
+/* Footer */
+.cardFooter {
+  padding: 4px 10px;
+  /* VERY REDUCED PADDING */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #f0f0f0;
+  height: 32px;
+  /* Forced compact height */
+}
+
+.assignedInfo {
+  font-size: 9px;
+  color: #9ca3af;
+}
+
+.viewButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background-color: #8b5cf6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 22px;
+}
+
+.viewButton:hover {
+  background-color: #7c3aed;
+}
+
+/* Quick Actions */
+.quickActions {
+  display: none;
+  padding: 0;
+  /* Remove padding */
+  gap: 1px;
+  /* Minimal gap */
+  background-color: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+}
+
+.card:hover .quickActions {
+  display: flex;
+}
+
+.quickActionButton {
+  flex: 1;
+  padding: 6px;
+  /* Sufficient hit area */
+  background-color: white;
+  border: none;
+  border-right: 1px solid #e5e7eb;
+  color: #8b5cf6;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 0;
+}
+
+.quickActionButton:last-child {
+  border-right: none;
+}
+
+.quickActionButton:hover {
+  background-color: #f3e8ff;
+  color: #7c3aed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card {
+    margin-bottom: 8px;
+  }
+
+  .cardHeader {
+    padding: 12px;
+  }
+
+  .title {
+    font-size: 14px;
+  }
+
+  .statusBadge {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .authorInfo,
+  .chapterInfo,
+  .reviewStatus {
+    padding: 10px 12px;
+  }
+
+  .authorName {
+    font-size: 12px;
+  }
+
+  .institution {
+    font-size: 10px;
+  }
+
+  .cardFooter {
+    padding: 10px 12px;
+  }
+
+  .viewButton {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .quickActions {
+    display: flex;
+  }
+
+  .quickActionButton {
+    font-size: 10px;
+    padding: 5px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 13px;
+  }
+
+  .statusBadge {
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+
+  .authorName {
+    font-size: 11px;
+  }
+
+  .institution {
+    font-size: 9px;
+  }
+
+  .chapterInfo,
+  .deadlineBadge {
+    font-size: 11px;
+  }
+
+  .assignedInfo {
+    font-size: 10px;
+  }
+
+  .statusLabel {
+    font-size: 10px;
+  }
+}

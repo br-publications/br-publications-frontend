@@ -1,0 +1,693 @@
+/* Project Dashboard & Detail Styles (based on Recruitment Dashboard) */
+
+.recruitment_dashWrapper,
+.admin_rd_wrapper,
+.rd_wrapper,
+.project_dashWrapper,
+.user_rd_wrapper {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.recruitment_dashHeader,
+.admin_rd_header,
+.rd_header,
+.project_dashHeader,
+.user_rd_header {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.recruitment_dashHeader h1,
+.admin_rd_header h1,
+.rd_header h1,
+.project_dashHeader h1,
+.user_rd_header h1 {
+    font-size: 16px;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.recruitment_dashHeader p,
+.admin_rd_header p,
+.rd_header p,
+.project_dashHeader p,
+.user_rd_header p {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.recruitment_cardContainer,
+.admin_rd_grid,
+.project_cardContainer,
+.user_rd_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+.recruitment_appCard,
+.admin_rd_card,
+.project_appCard,
+.user_rd_card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.recruitment_appCard:hover,
+.admin_rd_card:hover,
+.project_appCard:hover,
+.user_rd_card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.recruitment_cardHeader,
+.admin_rd_cardHeader,
+.project_cardHeader,
+.user_rd_cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.recruitment_cardRole,
+.project_cardRole,
+.user_rd_roleTag,
+.admin_rd_roleTag {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    text-transform: capitalize;
+}
+
+.recruitment_statusBadge,
+.admin_rd_statusBadge,
+.rd_statusBadge,
+.project_statusBadge,
+.user_rd_statusBadge {
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 10px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.recruitment_statusBadge.pending,
+.admin_rd_statusBadge.pending,
+.rd_statusBadge.pending,
+.project_statusBadge.pending,
+.user_rd_statusBadge.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.recruitment_statusBadge.accepted,
+.admin_rd_statusBadge.accepted,
+.rd_statusBadge.accepted,
+.project_statusBadge.accepted,
+.user_rd_statusBadge.accepted {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.recruitment_statusBadge.rejected,
+.admin_rd_statusBadge.rejected,
+.rd_statusBadge.rejected,
+.project_statusBadge.rejected,
+.user_rd_statusBadge.rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.recruitment_cardBody,
+.admin_rd_cardBody,
+.project_cardBody,
+.user_rd_cardBody {
+    margin-bottom: 12px;
+    /* flex-grow removed to compact vertical space */
+}
+
+.recruitment_infoRow,
+.admin_rd_infoRow,
+.project_infoRow,
+.user_rd_infoRow {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    font-size: 12px;
+}
+
+.recruitment_infoLabel,
+.admin_rd_label,
+.project_infoLabel,
+.user_rd_label {
+    color: #64748b;
+}
+
+.recruitment_infoValue,
+.admin_rd_value,
+.project_infoValue,
+.user_rd_value {
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.recruitment_adminNotes,
+.project_adminNotes {
+    background: #f8fafc;
+    border-left: 4px solid #cbd5e1;
+    padding: 8px 12px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #475569;
+}
+
+.recruitment_adminNotes strong,
+.project_adminNotes strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #1e293b;
+}
+
+.recruitment_viewDetailsBtn,
+.admin_rd_viewBtn,
+.project_viewDetailsBtn,
+.user_rd_viewBtn {
+    width: 100%;
+    padding: 6px;
+    background: white;
+    border: 1px solid #2563eb;
+    color: #2563eb;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.recruitment_viewDetailsBtn:hover,
+.admin_rd_viewBtn:hover,
+.project_viewDetailsBtn:hover,
+.user_rd_viewBtn:hover {
+    background: #2563eb;
+    color: white;
+}
+
+.recruitment_noApps,
+.admin_rd_emptyState,
+.rd_errorContainer,
+.project_noApps,
+.user_rd_emptyState {
+    text-align: center;
+    padding: 40px;
+    background: white;
+    border-radius: 8px;
+    border: 2px dashed #e2e8f0;
+}
+
+.recruitment_noApps h2,
+.admin_rd_emptyState h3,
+.rd_errorContainer h2,
+.project_noApps h2,
+.user_rd_emptyState h3 {
+    font-size: 14px;
+    color: #1e293b;
+    margin-bottom: 8px;
+}
+
+.recruitment_noApps p,
+.admin_rd_emptyState p,
+.rd_errorContainer p,
+.project_noApps p,
+.user_rd_emptyState p {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 16px;
+}
+
+.recruitment_applyNowBtn,
+.project_applyNowBtn,
+.user_rd_applyBtn {
+    background: #2563eb;
+    color: white;
+    padding: 8px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Admin Controls */
+.recruitment_adminFilters,
+.admin_rd_controls,
+.user_rd_controls {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.admin_rd_searchBox,
+.user_rd_searchBox {
+    position: relative;
+    flex: 1;
+    min-width: 250px;
+}
+
+.admin_rd_searchBox input,
+.user_rd_searchBox input {
+    width: 100%;
+    padding: 8px 10px 8px 32px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #f8fafc;
+    font-size: 12px;
+}
+
+.admin_rd_searchIcon,
+.user_rd_searchIcon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.recruitment_filterGroup,
+.admin_rd_filters,
+.admin_rd_filterGroup {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.recruitment_filterSelect,
+.admin_rd_filterGroup select {
+    padding: 6px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #f8fafc;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+/* Detail View Styles */
+.recruitment_backBtn,
+.rd_backLink,
+.rd_backBtn,
+.project_backBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    color: #64748b;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 16px;
+    padding: 0;
+    font-size: 12px;
+}
+
+.recruitment_backBtn:hover,
+.rd_backLink:hover,
+.rd_backBtn:hover,
+.project_backBtn:hover {
+    color: #2563eb;
+}
+
+.recruitment_detailHeader,
+.rd_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.recruitment_detailHero,
+.rd_header>div:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rd_roleTag {
+    color: #2563eb;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.recruitment_detailHeroInfo h1,
+.rd_title {
+    font-size: 16px;
+    color: #1e293b;
+    margin: 0;
+    font-weight: 700;
+}
+
+.rd_meta {
+    display: flex;
+    gap: 12px;
+    color: #64748b;
+    font-size: 11px;
+}
+
+.rd_meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.recruitment_adminActions,
+.rd_adminSection {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 20px;
+}
+
+.recruitment_acceptBtn,
+.rd_btnAccept {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #2563eb;
+    color: white;
+    border: none;
+}
+
+.recruitment_rejectBtn,
+.rd_btnReject {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    background: white;
+    color: #dc2626;
+    border: 1px solid #dc2626;
+}
+
+.rd_actionButtons {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.recruitment_detailGrid,
+.rd_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.recruitment_detailSection,
+.rd_section {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.recruitment_detailSection h3,
+.rd_sectionTitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: #1e293b;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.recruitment_infoBox label,
+.rd_item label {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.recruitment_infoBox p,
+.rd_item span {
+    color: #334155;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.recruitment_adminNotesForm textarea,
+.rd_notesGroup textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: white;
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.5;
+    min-height: 80px;
+}
+
+.recruitment_loadingContainer,
+.rd_loadingContainer,
+.admin_rd_loading,
+.user_rd_loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+    gap: 15px;
+    color: #64748b;
+}
+
+.recruitment_spinner,
+.rd_spinner,
+.admin_rd_spinner,
+.user_rd_spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 768px) {
+
+    .recruitment_cardContainer,
+    .admin_rd_grid,
+    .project_cardContainer,
+    .user_rd_grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin_rd_controls,
+    .user_rd_controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* Admin Applicant Info */
+.admin_rd_applicantInfo,
+.project_applicantInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.admin_rd_avatarPlaceholder,
+.project_avatarPlaceholder {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 10px;
+    flex-shrink: 0;
+}
+
+.admin_rd_applicantInfo h4,
+.project_applicantInfo h4 {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
+.admin_rd_applicantInfo span,
+.project_applicantInfo span {
+    font-size: 10px;
+    color: #64748b;
+    display: block;
+}
+
+
+
+.rd_feedbackSection {
+    background: #f8fafc !important;
+    border-left: 4px solid #2563eb !important;
+}
+
+.rd_feedbackContent {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #334155;
+    white-space: pre-wrap;
+}
+
+/* Refresh Buttons */
+.admin_rd_refreshBtn,
+.user_rd_refreshBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.admin_rd_refreshBtn:hover,
+.user_rd_refreshBtn:hover {
+    background: #f1f5f9;
+    color: #2563eb;
+    border-color: #2563eb;
+}
+
+.admin_rd_refreshBtn:disabled,
+.user_rd_refreshBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.spin-animation {
+    animation: spin-kf 1s linear infinite;
+}
+
+@keyframes spin-kf {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+@media (max-width: 480px) {
+    .recruitment_dashWrapper,
+    .admin_rd_wrapper,
+    .rd_wrapper,
+    .project_dashWrapper,
+    .user_rd_wrapper {
+        margin: 12px auto;
+        padding: 0 12px;
+    }
+    .recruitment_dashHeader,
+    .admin_rd_header,
+    .project_dashHeader,
+    .user_rd_header {
+        margin-bottom: 16px;
+    }
+    .admin_rd_searchBox,
+    .user_rd_searchBox {
+        min-width: 0;
+        width: 100%;
+    }
+    .admin_rd_controls,
+    .user_rd_controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .recruitment_adminFilters,
+    .admin_rd_filterGroup {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+    }
+    .recruitment_filterSelect,
+    .admin_rd_filterGroup select {
+        width: 100%;
+    }
+    .rd_actionButtons {
+        flex-direction: column;
+    }
+    .recruitment_acceptBtn,
+    .rd_btnAccept,
+    .recruitment_rejectBtn,
+    .rd_btnReject {
+        width: 100%;
+        justify-content: center;
+    }
+    .rd_meta {
+        flex-direction: column;
+        gap: 4px;
+    }
+    .recruitment_detailGrid,
+    .rd_grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}

@@ -1,0 +1,318 @@
+:root {
+  /* Requested Colors */
+  --primary-blue: #1e5292;
+  --accent-gold: rgb(255, 167, 38);
+  --dark-blue: rgb(22, 65, 117);
+
+  /* Traditional Neutral Tones */
+  --white: #ffffff;
+  --off-white: #fcfcfc;
+  --border-color: #d1d1d1;
+  --text-dark: #222;
+  --text-light: #444;
+}
+
+/* Hero Section - Traditional: Solid, Boxy, No Gradient */
+.books-hero {
+  background-color: var(--primary-blue);
+  padding: 15px 10px;
+  text-align: center;
+  color: var(--white);
+  border-bottom: 3px solid var(--dark-blue);
+}
+
+.books-hero h1 {
+  font-size: 16px;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: bold;
+}
+
+/* Main Wrapper - Traditional: No negative margins, clear separation */
+.books-wrapper {
+  max-width: 1200px;
+  margin: 15px auto;
+  padding: 0 10px;
+}
+
+.books-container {
+  width: 100%;
+}
+
+/* Section Styling - Boxy, Borders instead of Shadows */
+.books-section {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  padding: 15px 20px;
+  margin-bottom: 15px;
+  /* Traditional "Header" strip at top of paper */
+  border-top: 4px solid var(--primary-blue);
+}
+
+/* Section Headers */
+.books-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+.books-section-icon {
+  width: 30px;
+  height: 30px;
+  background-color: var(--primary-blue);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  border: 1px solid var(--primary-blue);
+  /* Square corners */
+  border-radius: 0;
+  flex-shrink: 0;
+}
+
+.books-section-title-wrapper h2,
+.books-section-title-wrapper h3 {
+  font-size: 16px;
+  color: var(--primary-blue);
+  padding-top: 5px;
+  padding-bottom: 5px;
+  font-weight: bold;
+}
+
+.books-section-subtitle {
+  color: var(--text-light);
+  font-size: 12px;
+  line-height: 1.4;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Intro Box - Classic "Note" style */
+.books-section-intro {
+  font-size: 12px;
+  color: var(--text-dark);
+  line-height: 1.6;
+  margin-bottom: 10px;
+  padding: 5px;
+  background-color: #fff;
+  border: 1px solid var(--dark-blue);
+  border-left-width: 5px;
+  /* Thick accent on left */
+}
+
+.books-section-intro strong {
+  color: var(--primary-blue);
+  font-weight: 700;
+}
+
+.books-section-intro ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 10px;
+}
+
+.books-section-intro ul li {
+  padding: 5px 0 5px 20px;
+  position: relative;
+  border-bottom: 1px dotted #ccc;
+}
+
+.books-section-intro ul li:last-child {
+  border-bottom: none;
+}
+
+.books-section-intro ul li::before {
+  content: '■';
+  /* Square bullet for traditional look */
+  position: absolute;
+  left: 0;
+  color: var(--accent-gold);
+  font-size: 10px;
+  top: 8px;
+}
+
+/* Services Grid */
+.books-services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+  /* Tighter gap */
+}
+
+/* Card Style - Traditional: Bordered, Boxy */
+.books-services-card {
+  background: var(--white);
+  padding: 15px;
+  border: 1px solid var(--border-color);
+  /* No radius, no shadow, no hover lift */
+  position: relative;
+}
+
+/* Simple hover effect: Color change on border */
+.books-services-card:hover {
+  border-color: var(--primary-blue);
+}
+
+.books-services-card h3 {
+  color: var(--primary-blue);
+  font-size: 14px;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid var(--accent-gold);
+  align-items: center;
+  gap: 8px;
+}
+
+/* Remove the circle behind the checkmark, make it simple text icon */
+.books-services-card h3::before {
+  content: '';
+  display: none;
+}
+
+/* Alternative icon indicator */
+.books-services-card h3::after {
+  content: '';
+  display: block;
+  width: 100%;
+}
+
+.books-services-card h4 {
+  color: var(--text-dark);
+  font-size: 12px;
+  margin: 10px 0 5px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.books-services-card p,
+.books-services-card ul,
+.books-services-card ol {
+  color: var(--text-light);
+  line-height: 1.4;
+  font-size: 12px;
+}
+
+.books-services-card ul,
+.books-services-card ol {
+  padding-left: 15px;
+}
+
+.books-services-card li {
+  margin-bottom: 4px;
+}
+
+/* Tables - Classic Academic Style */
+.books-services-card table {
+  width: 100%;
+  border-collapse: collapse;
+  /* Essential for traditional tables */
+  margin: 10px 0;
+  font-size: 12px;
+  border: 1px solid #000;
+}
+
+.books-services-card table th,
+.books-services-card table td {
+  padding: 6px;
+  border: 1px solid #999;
+  /* Visible borders */
+  text-align: left;
+}
+
+.books-services-card table th {
+  background-color: #e0e0e0;
+  /* Gray header instead of gradient */
+  color: #000;
+  font-weight: bold;
+  border-bottom: 2px solid #000;
+}
+
+.books-services-card table tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+/* CTA Section - Simple Box */
+.books-cta-section {
+  text-align: center;
+  padding: 15px 20px;
+  background-color: #fff;
+  border: 2px solid var(--primary-blue);
+  margin-top: 20px;
+}
+
+.books-cta-section h3 {
+  font-size: 16px;
+  color: var(--primary-blue);
+  margin-bottom: 5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.books-cta-section p {
+  font-size: 12px;
+  color: var(--text-light);
+  margin-bottom: 15px;
+  font-style: italic;
+}
+
+/* Button - Rectangular, Solid */
+.books-cta-button {
+  background: white;
+  color: var(--primary-blue);
+  padding: 8px 16px;
+  border: 2px solid var(--primary-blue);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s;
+}
+
+.books-cta-button:hover {
+  background: var(--primary-blue);
+  color: white;
+}
+
+/* Responsive Design - Kept intact but adjusted for boxy layout */
+@media (max-width: 1024px) {
+  .books-section {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .books-hero {
+    padding: 15px 10px;
+  }
+
+  .books-section-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+
+  .books-section-icon {
+    margin: 0 auto;
+  }
+
+  .books-services-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .books-section {
+    padding: 10px 10px;
+  }
+
+  .books-services-card table {
+    font-size: 10px;
+  }
+}

@@ -1,0 +1,22 @@
+/* CRITICAL: Global password input reset */
+input[type="password"],
+input[type="text"] {
+  background-image: none !important;
+}
+
+/* Remove browser default password reveal */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none !important;
+}
+
+/* Remove any pseudo-elements */
+input::before,
+input::after {
+  display: none !important;
+  content: none !important;
+}
+
+html {
+  zoom: 0.9;
+}
