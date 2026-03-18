@@ -1,0 +1,388 @@
+.login-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  background-color: #f5f5f5;
+  padding: 20px;
+}
+
+.login-form-box {
+  background-color: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 450px;
+  border-top: 5px solid #1e5292;
+}
+
+.login-form-box h2 {
+  text-align: center;
+  color: #1e5292;
+  margin-bottom: 30px;
+  font-size: 28px;
+}
+
+.otp-description {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: #1e5292;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.3s;
+}
+
+.btn-back:hover {
+  color: #163e70;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Regular Input Fields - CLEAN */
+.input-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 15px;
+  color: #333;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+  /* CRITICAL: No background images */
+  background: white !important;
+  background-color: white !important;
+  background-image: none !important;
+  background-repeat: no-repeat !important;
+  background-position: 0 0 !important;
+  background-size: 0 0 !important;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #1e5292;
+  box-shadow: 0 0 0 2px rgba(30, 82, 146, 0.1);
+  /* Keep clean on focus */
+  background: white !important;
+  background-image: none !important;
+}
+
+.input-group input::placeholder {
+  color: #999;
+}
+
+/* Password Input Wrapper */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Password Input - ULTRA CLEAN */
+.password-input-wrapper input,
+.password-input-with-toggle {
+  width: 100%;
+  padding: 12px 45px 12px 12px !important;
+  /* CRITICAL: Completely remove background */
+  background: white !important;
+  background-color: white !important;
+  background-image: none !important;
+  background-repeat: no-repeat !important;
+  background-position: 0 0 !important;
+  background-size: 0 0 !important;
+}
+
+.password-input-wrapper input:focus,
+.password-input-with-toggle:focus {
+  background: white !important;
+  background-image: none !important;
+}
+
+/* Password Toggle Button - ONLY MUI ICON */
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s;
+  z-index: 10;
+}
+
+.password-toggle-btn:hover {
+  color: #1e5292;
+}
+
+.password-toggle-btn:focus {
+  outline: 2px solid #1e5292;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.password-toggle-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.forgot-password-link {
+  text-align: right;
+  margin-bottom: 25px;
+}
+
+.forgot-password-link a {
+  color: #1e5292;
+  font-size: 13px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.forgot-password-link a:hover {
+  text-decoration: underline;
+}
+
+.login-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.btn-login {
+  background-color: #1e5292;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 100%;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  box-sizing: border-box;
+}
+
+.btn-login:hover:not(:disabled) {
+  background-color: #163e70;
+}
+
+.btn-login:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-register {
+  background-color: transparent;
+  color: #1e5292;
+  padding: 12px;
+  border: 2px solid #1e5292;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.3s;
+  width: 100%;
+  display: block;
+  box-sizing: border-box;
+}
+
+.btn-register:hover {
+  background-color: #f0f7ff;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 25px 0;
+  color: #999;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #ddd;
+}
+
+.divider span {
+  padding: 0 15px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.btn-google {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  color: #333;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-google:hover {
+  background-color: #f8f9fa;
+  border-color: #bbb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.google-icon {
+  flex-shrink: 0;
+}
+
+/* OTP Section Styles */
+.btn-send-otp {
+  background-color: #1e5292;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.btn-send-otp:hover:not(:disabled) {
+  background-color: #163e70;
+}
+
+.btn-send-otp:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.otp-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+.btn-verify {
+  background-color: #1e5292;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 100%;
+}
+
+.btn-verify:hover:not(:disabled) {
+  background-color: #163e70;
+}
+
+.btn-verify:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-resend {
+  background-color: transparent;
+  color: #1e5292;
+  padding: 12px;
+  border: 2px solid #1e5292;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  width: 100%;
+}
+
+.btn-resend:hover:not(:disabled) {
+  background-color: #f0f7ff;
+}
+
+.btn-resend:disabled {
+  color: #9ca3af;
+  border-color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .login-form-box {
+    padding: 30px 20px;
+  }
+
+  .login-form-box h2 {
+    font-size: 24px;
+  }
+
+  .password-toggle-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* ========================================
+   GLOBAL OVERRIDE - FORCE CLEAN INPUTS
+   ======================================== */
+
+/* Override ANY inherited styles */
+input[type="password"],
+input[type="text"],
+input[type="email"] {
+  background-image: none !important;
+}
+
+/* Remove any pseudo-elements */
+.password-input-wrapper input::before,
+.password-input-wrapper input::after,
+.input-group input::before,
+.input-group input::after {
+  display: none !important;
+  content: none !important;
+}

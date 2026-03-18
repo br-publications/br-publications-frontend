@@ -1,0 +1,113 @@
+// Backend API endpoint example (Node.js/Express)
+// File: server/routes/auth.js
+
+const express = require('express');
+const router = express.Router();
+const { OAuth2Client } = require('google-auth-library');
+const jwt = require('jsonwebtoken');
+
+// Initialize Google OAuth client
+const googleClient = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  `${process.env.FRONTEND_URL}/auth/google/callback`
+);
+
+/**
+ * POST /api/auth/google/callback
+ * Handle Google OAuth callback
+ */
+router.post('/api/auth/google/callback', async (req, res) => {
+  try {
+    const { code, redirectUri } = req.body;
+
+    if (!code) {
+      return res.status(400).json({ message: 'Authorization code is required' });
+    }
+
+    // Exchange authorization code for tokens
+    const { tokens } = await googleClient.getToken({
+      code,
+      redirect_uri: redirectUri
+    });
+
+    // Set credentials
+    googleClient.setCredentials(tokens);
+
+    // Get user info from Google
+    const ticket = await googleClient.verifyIdToken({
+      idToken: tokens.id_token,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+    
+    // Extract user information
+    const googleUser = {
+      googleId: payload.sub,
+      email: payload.email,
+      emailVerified: payload.email_verified,
+      name: payload.name,
+      picture: payload.picture,
+      givenName: payload.given_name,
+      familyName: payload.family_name
+    };
+
+    // Check if user exists in your database
+    let user = await User.findOne({ email: googleUser.email });
+
+    if (!user) {
+      // Create new user
+      user = await User.create({
+        email: googleUser.email,
+        fullName: googleUser.name,
+        username: googleUser.email.split('@')[0], // Generate username from email
+        googleId: googleUser.googleId,
+        emailVerified: googleUser.emailVerified,
+        profilePicture: googleUser.picture,
+        authProvider: 'google'
+      });
+    } else {
+      // Update existing user with Google info if not already set
+      if (!user.googleId) {
+        user.googleId = googleUser.googleId;
+        user.emailVerified = googleUser.emailVerified;
+        user.profilePicture = googleUser.picture;
+        await user.save();
+      }
+    }
+
+    // Generate JWT token for your application
+    const jwtToken = jwt.sign(
+      { 
+        userId: user._id, 
+        email: user.email,
+        username: user.username
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Return token and user data
+    res.json({
+      success: true,
+      token: jwtToken,
+      user: {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+        fullName: user.fullName,
+        profilePicture: user.profilePicture
+      }
+    });
+
+  } catch (error) {
+    console.error('Google OAuth error:', error);
+    res.status(500).json({ 
+      message: 'Authentication failed', 
+      error: error.message 
+    });
+  }
+});
+
+module.exports = router;

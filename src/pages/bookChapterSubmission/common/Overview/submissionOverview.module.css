@@ -1,0 +1,380 @@
+.overviewContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1rem;
+    padding-bottom: 2rem;
+    background-color: #f9fafb;
+}
+
+.section {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.sectionTitle {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+/* Author Cards */
+.authorCard {
+    background-color: white;
+}
+
+.authorHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.avatarPlaceholder,
+.avatarPlaceholderSmall {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #e0e7ff;
+    color: #4338ca;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.avatarPlaceholderSmall {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+}
+
+.authorName {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.coAuthorName {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.authorRole {
+    font-size: 10px;
+    color: #6b7280;
+    background-color: #f3f4f6;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    margin-top: 0.25rem;
+    display: inline-block;
+}
+
+.authorDetails {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 0.75rem;
+}
+
+.detailRow {
+    font-size: 12px;
+    color: #4b5563;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.detailRow strong {
+    color: #374151;
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+
+/* Co-Authors Grid */
+.coAuthorsGrid {
+    display: flex;
+    overflow-x: auto;
+    gap: 1.5rem;
+    padding-bottom: 1rem;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+}
+
+.coAuthorCard {
+    min-width: 350px;
+    flex: 0 0 auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    background-color: #f9fafb;
+}
+
+/* Info Grid */
+.infoGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.infoItem label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.infoValueLarge {
+    font-size: 13px;
+    font-weight: 500;
+    color: #111827;
+    margin: 0;
+}
+
+/* Delivery Address Grid */
+.deliveryGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.deliveryFullRow {
+    grid-column: 1 / -1;
+}
+
+.chaptersList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.chapterBadge {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 10px;
+    font-weight: 500;
+    border: 1px solid #dbeafe;
+}
+
+.chapterBadgeWrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.publishedTag {
+    background-color: #ecfdf5;
+    color: #059669;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border: 1px solid #10b981;
+}
+
+/* Abstract */
+.abstractContent {
+    font-size: 12px;
+    line-height: 1.6;
+    color: #374151;
+    white-space: pre-wrap;
+    background-color: #f9fafb;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+}
+
+/* Keywords */
+.keywordsList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.keyword {
+    background-color: #f3f4f6;
+    color: #374151;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 10px;
+    border: 1px solid #e5e7eb;
+}
+
+/* Timeline / Manuscript History */
+.timelineContainer {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.timelineContainer::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #e5e7eb;
+}
+
+.timelineItem {
+    position: relative;
+    padding-bottom: 2rem;
+}
+
+.timelineItem:last-child {
+    padding-bottom: 0;
+}
+
+.timelineIcon {
+    position: absolute;
+    left: -24px;
+    top: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #3b82f6;
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px #dbeafe;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    box-sizing: content-box;
+}
+
+.timelineContent {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-left: 1rem;
+}
+
+.fileHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.fileType {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+    text-transform: capitalize;
+}
+
+.fileDate {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.fileDetailsCard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f3f4f6;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+}
+
+.fileInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.fileName {
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    margin: 0;
+}
+
+.fileMeta {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.fileActions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.previewBtn,
+.downloadBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background-color: white;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 12px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.previewBtn {
+    border-color: #3b82f6;
+    color: #2563eb;
+}
+
+.previewBtn:hover {
+    background-color: #eff6ff;
+    border-color: #2563eb;
+    color: #1d4ed8;
+}
+
+.downloadBtn:hover {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+    color: #111827;
+}
+
+.emptyText,
+.emptyState {
+    color: #9ca3af;
+    font-style: italic;
+    font-size: 13px;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 2rem;
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+    border: 1px dashed #e5e7eb;
+}
+
+.notProvided {
+    color: #9ca3af;
+    font-style: italic;
+    font-size: 11px;
+}

@@ -1,0 +1,912 @@
+/* ============================================================
+   CONFERENCE PAGES — Shared Styles
+   Colors follow the existing project palette.
+   Font sizes: max 16px, 14px, 12px, 11px, 10px.
+   No global body rule — scoped to .conf-* / .article-* only.
+   ============================================================ */
+
+/* ── Tokens (uses project CSS vars if available, falls back gracefully) ── */
+.conf-root {
+    --primary-blue: #1e5292;
+    --dark-blue: #163b75;
+    --orange-gold: #ffa726;
+    --white: #fff;
+    --light-bg: #f4f6f9;
+    --text-dark: #1a1a2e;
+    --text-medium: #444;
+    --border-color: #c8d4e8;
+    --green: #198754;
+    --grey: #6c757d;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: var(--light-bg);
+    color: var(--text-dark);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* ── PAGE HEADER ── */
+.conf-page-header {
+    background: var(--primary-blue);
+    padding: 8px 15px;
+    color: white;
+}
+
+.conf-page-header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.conf-page-header h1 {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+/* ── BREADCRUMB ── */
+.conf-breadcrumb {
+    background: #e4eaf4;
+    padding: 5px 15px;
+    border-bottom: 1px solid #c8d4e8;
+    font-size: 11px;
+    color: #555;
+}
+
+.conf-breadcrumb-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.conf-breadcrumb a {
+    color: var(--primary-blue);
+    text-decoration: none;
+}
+
+.conf-breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.conf-breadcrumb .bc-sep {
+    color: #aaa;
+    margin: 0 2px;
+}
+
+/* ── CONFERENCE LIST PAGE ── */
+.conf-list-page {
+    max-width: 1100px;
+    margin: 12px auto;
+    padding: 0 14px;
+}
+
+.conf-list-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.conf-result-count {
+    font-size: 11px;
+    color: var(--text-medium);
+}
+
+.conf-search-bar {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.conf-search-bar input {
+    padding: 5px 9px;
+    border: 1px solid var(--border-color);
+    font-size: 11px;
+    font-family: inherit;
+    width: 200px;
+    outline: none;
+    background: white;
+}
+
+.conf-search-bar input:focus {
+    border-color: var(--primary-blue);
+}
+
+.conf-search-bar button {
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    padding: 5px 11px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.conf-search-bar button:hover {
+    opacity: 0.9;
+}
+
+/* ── CONFERENCE CARD LIST ── */
+.conf-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.conf-card {
+    background: white;
+    border: 1px solid #dde4ef;
+    border-left: 3px solid var(--primary-blue);
+    padding: 10px 12px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    transition: box-shadow 0.15s;
+}
+
+.conf-card:hover {
+    box-shadow: 0 2px 8px rgba(30, 82, 146, 0.13);
+}
+
+.conf-card-number {
+    font-size: 11px;
+    color: var(--grey);
+    min-width: 20px;
+    padding-top: 1px;
+    flex-shrink: 0;
+}
+
+.conf-card-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.conf-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    text-decoration: none;
+    display: block;
+    line-height: 1.3;
+    margin-bottom: 4px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 0;
+    font-family: inherit;
+}
+
+.conf-card-title:hover {
+    text-decoration: underline;
+}
+
+.conf-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 11px;
+    color: var(--text-medium);
+    margin-bottom: 3px;
+}
+
+.conf-card-meta .cm-label {
+    color: var(--dark-blue);
+    font-weight: 700;
+}
+
+.conf-card-issn {
+    font-size: 10px;
+    color: var(--grey);
+    margin-top: 2px;
+}
+
+.conf-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-end;
+    min-width: 110px;
+    flex-shrink: 0;
+}
+
+.btn-view-conf {
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.btn-view-conf:hover {
+    opacity: 0.9;
+}
+
+.conf-article-count {
+    font-size: 10px;
+    color: var(--grey);
+    text-align: right;
+}
+
+/* ── CONFERENCE DETAIL PAGE ── */
+.conf-detail-page {
+    max-width: 1100px;
+    margin: 12px auto;
+    padding: 0 14px;
+}
+
+/* Conference info banner */
+.conf-info-banner {
+    background: white;
+    border: 1px solid #dde4ef;
+    border-top: 3px solid var(--primary-blue);
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.conf-info-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--dark-blue);
+    line-height: 1.3;
+    margin-bottom: 7px;
+}
+
+.conf-info-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 11px;
+    color: var(--text-medium);
+}
+
+.conf-info-row .ci-item {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.conf-info-row .ci-item strong {
+    color: var(--dark-blue);
+}
+
+.conf-detail-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* ── ARTICLE CARD LIST ── */
+.article-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.article-card {
+    background: white;
+    border: 1px solid #dde4ef;
+    padding: 10px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    transition: box-shadow 0.15s;
+}
+
+.article-card:hover {
+    box-shadow: 0 2px 8px rgba(30, 82, 146, 0.1);
+}
+
+.article-card-num {
+    font-size: 11px;
+    color: var(--grey);
+    min-width: 20px;
+    padding-top: 1px;
+    flex-shrink: 0;
+}
+
+.article-card-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.article-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    text-decoration: none;
+    line-height: 1.3;
+    cursor: pointer;
+    display: block;
+    margin-bottom: 3px;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 0;
+    font-family: inherit;
+}
+
+.article-card-title:hover {
+    text-decoration: underline;
+}
+
+.article-card-authors {
+    font-size: 11px;
+    color: var(--green);
+    margin-bottom: 3px;
+    font-style: italic;
+}
+
+.article-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 10px;
+    color: var(--grey);
+    margin-bottom: 4px;
+}
+
+.article-card-abstract {
+    font-size: 11px;
+    color: #555;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.article-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: stretch;
+    min-width: 90px;
+    border-left: 1px solid #e5eaf4;
+    padding-left: 9px;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.btn-pdf {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: #1e3a5f;
+    color: white;
+    border: none;
+    padding: 4px 7px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.btn-preview-sm {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--grey);
+    color: white;
+    border: none;
+    padding: 4px 7px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.btn-pdf:hover,
+.btn-preview-sm:hover {
+    opacity: 0.9;
+}
+
+/* ── ARTICLE DETAIL PAGE ── */
+.article-detail-page {
+    max-width: 980px;
+    margin: 12px auto;
+    padding: 0 14px;
+}
+
+.article-nav-bar {
+    background: white;
+    border: 1px solid #dde4ef;
+    padding: 7px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 11px;
+}
+
+.article-nav-bar a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.article-nav-bar a:hover {
+    text-decoration: underline;
+}
+
+.article-nav-spacer {
+    flex: 1;
+}
+
+.article-detail-header {
+    background: white;
+    border: 1px solid #dde4ef;
+    border-top: 3px solid var(--primary-blue);
+    padding: 14px;
+    margin-bottom: 8px;
+}
+
+.article-publisher-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--dark-blue);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    margin-bottom: 8px;
+}
+
+.article-detail-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--dark-blue);
+    line-height: 1.3;
+    margin-bottom: 7px;
+}
+
+.article-detail-authors {
+    font-size: 12px;
+    color: var(--primary-blue);
+    margin-bottom: 7px;
+}
+
+.article-detail-authors a {
+    color: var(--primary-blue);
+    text-decoration: none;
+}
+
+.article-detail-authors a:hover {
+    text-decoration: underline;
+}
+
+.article-all-authors-link {
+    font-size: 10px;
+    color: var(--grey);
+    margin-left: 4px;
+}
+
+.article-action-bar {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+}
+
+.btn-cite {
+    background: white;
+    color: var(--primary-blue);
+    border: 1px solid var(--primary-blue);
+    padding: 4px 11px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.btn-full-pdf {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #cc0000;
+    color: white;
+    border: none;
+    padding: 4px 11px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.btn-cite:hover {
+    background: var(--primary-blue);
+    color: white;
+}
+
+.btn-full-pdf:hover {
+    opacity: 0.9;
+}
+
+/* ── SECTION TABS ── */
+.article-section {
+    background: white;
+    border: 1px solid #dde4ef;
+    padding: 12px;
+    margin-bottom: 7px;
+}
+
+.article-section.no-pad {
+    padding: 0;
+}
+
+.section-nav {
+    display: flex;
+    border-bottom: 2px solid var(--primary-blue);
+    overflow-x: auto;
+}
+
+.section-nav-btn {
+    background: #eef2f9;
+    color: var(--dark-blue);
+    border: 1px solid #dde4ef;
+    border-bottom: none;
+    padding: 5px 13px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.section-nav-btn.active {
+    background: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
+}
+
+.section-nav-btn:hover:not(.active) {
+    background: #d8e4f4;
+}
+
+.article-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--dark-blue);
+    border-bottom: 2px solid var(--primary-blue);
+    padding-bottom: 5px;
+    margin-bottom: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.article-abstract-text {
+    font-size: 12px;
+    color: #333;
+    line-height: 1.65;
+    text-align: justify;
+}
+
+/* ── META TABLE ── */
+.article-meta-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+.article-meta-table tr {
+    border-bottom: 1px dotted #ddd;
+}
+
+.article-meta-table tr:last-child {
+    border-bottom: none;
+}
+
+.article-meta-table td {
+    padding: 4px 7px;
+}
+
+.article-meta-table td:first-child {
+    font-weight: 700;
+    color: var(--dark-blue);
+    width: 150px;
+    white-space: nowrap;
+}
+
+.article-meta-table td:last-child {
+    color: var(--text-medium);
+}
+
+.article-meta-table a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-size: 11px;
+}
+
+/* ── AUTHOR CARDS ── */
+.author-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.author-card-item {
+    padding: 7px 9px;
+    border: 1px solid #eee;
+    background: #fafbfc;
+}
+
+.author-card-item strong {
+    display: block;
+    font-size: 12px;
+    color: var(--primary-blue);
+    margin-bottom: 2px;
+}
+
+.author-card-item span {
+    font-size: 11px;
+    color: var(--grey);
+}
+
+/* ── KEYWORD TAGS ── */
+.keyword-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.keyword-tag {
+    background: #e4eaf4;
+    color: var(--dark-blue);
+    font-size: 10px;
+    padding: 2px 7px;
+    border: 1px solid #c2d0e8;
+    text-decoration: none;
+    cursor: default;
+}
+
+/* ── ARTICLE INTRO BLUR ── */
+.article-intro-wrap {
+    position: relative;
+    max-height: 110px;
+    overflow: hidden;
+}
+
+.article-intro-wrap::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 55px;
+    background: linear-gradient(transparent, white);
+}
+
+.article-intro-text {
+    font-size: 11px;
+    color: #444;
+    line-height: 1.6;
+}
+
+.continue-reading-btn {
+    display: block;
+    width: 100%;
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    padding: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 7px;
+    text-align: center;
+}
+
+.continue-reading-btn:hover {
+    opacity: 0.9;
+}
+
+/* ── PAGINATION ── */
+.conf-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 3px;
+    margin-top: 12px;
+    padding: 8px 0;
+}
+
+.conf-pagination button {
+    background: white;
+    border: 1px solid #dde4ef;
+    color: var(--dark-blue);
+    padding: 3px 9px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.conf-pagination button.active {
+    background: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
+}
+
+.conf-pagination button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.conf-pagination button:hover:not(.active):not(:disabled) {
+    background: #eaf0f9;
+}
+
+/* ── EMPTY STATE ── */
+.conf-empty {
+    padding: 18px;
+    text-align: center;
+    color: #888;
+    background: white;
+    border: 1px solid #dde4ef;
+    font-size: 12px;
+}
+
+/* ── BACK BUTTON (in header) ── */
+.conf-back-btn {
+    background: rgba(255, 255, 255, 0.18);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.conf-back-btn:hover {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+    .conf-card {
+        flex-direction: column;
+    }
+
+    .conf-card-actions {
+        flex-direction: row;
+        align-items: center;
+        min-width: 0;
+    }
+
+    .article-card {
+        flex-direction: column;
+    }
+
+    .article-card-actions {
+        flex-direction: row;
+        border-left: none;
+        border-top: 1px solid #e5eaf4;
+        padding-left: 0;
+        padding-top: 7px;
+        min-width: 0;
+    }
+
+    .btn-pdf,
+    .btn-preview-sm {
+        flex: 1;
+    }
+
+    .conf-info-row {
+        gap: 7px;
+    }
+
+    .conf-search-bar input {
+        width: 150px;
+    }
+
+    .article-meta-table td:first-child {
+        width: 110px;
+    }
+
+    .article-detail-page {
+        padding: 0 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .conf-list-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .conf-detail-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .conf-search-bar {
+        width: 100%;
+    }
+
+    .conf-search-bar input {
+        flex: 1;
+        width: auto;
+    }
+
+    .article-action-bar {
+        gap: 4px;
+    }
+
+    .section-nav {
+        flex-wrap: nowrap;
+    }
+
+    .conf-page-header h1 {
+        font-size: 12px;
+    }
+}
+
+/* ── ADMIN — Upload Conference button ── */
+.btn-upload-conf {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #1e5292;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 11px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+
+.btn-upload-conf:hover {
+    background: #163e70;
+}
+
+/* ── slide-in animation used by conference wizard tabs ── */
+@keyframes slideInBottom {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide-in-bottom {
+    animation: slideInBottom 0.18s ease-out both;
+}
+
+/* ── pcw-error-banner (shared wizard error strip) ── */
+.pcw-error-banner {
+    background: #fff3f3;
+    border: 1px solid #fca5a5;
+    border-radius: 5px;
+    color: #b91c1c;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 7px 10px;
+    margin-bottom: 10px;
+}

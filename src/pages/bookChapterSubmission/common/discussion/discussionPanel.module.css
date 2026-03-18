@@ -1,0 +1,525 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
+  border-radius: 8px;
+}
+
+/* Header */
+.header {
+  padding: 6px 10px;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  flex-shrink: 0;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.headerContent svg {
+  color: #1e5292;
+}
+
+.title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 10px;
+  color: #6b7280;
+}
+
+/* Messages Container */
+.messagesContainer {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.messagesContainer::-webkit-scrollbar {
+  width: 8px;
+}
+
+.messagesContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messagesContainer::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.messagesContainer::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #9ca3af;
+  gap: 12px;
+}
+
+.emptyState svg {
+  color: #e5e7eb;
+  margin-bottom: 8px;
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.emptyState span {
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+/* Messages List */
+.messagesList {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  gap: 8px;
+}
+
+.messageItem {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.messageBubble {
+  position: relative;
+  padding: 6px 10px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  max-width: 85%;
+  align-self: flex-start;
+}
+
+.messageHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.authorName {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.role {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.internalBadge {
+  font-size: 9px;
+  padding: 1px 4px;
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.timestamp {
+  font-size: 10px;
+  color: #9ca3af;
+  margin-left: auto;
+}
+
+.edited {
+  font-style: italic;
+  margin-left: 4px;
+}
+
+.messageText {
+  margin: 0;
+  font-size: 12px;
+  color: #1f2937;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Attachments */
+.attachments {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  color: #1e40af;
+  font-size: 10px;
+  font-weight: 500;
+  text-decoration: none;
+  width: fit-content;
+  transition: all 0.2s ease;
+}
+
+.attachment:hover {
+  background-color: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.attachmentIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  margin-left: 46px;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: none;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover {
+  border-color: #1e5292;
+  color: #1e5292;
+  background-color: #f3f4f6;
+}
+
+.actionButton svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Input Area */
+.inputArea {
+  padding: 4px;
+  border-top: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  flex-shrink: 0;
+}
+
+.inputWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 6px;
+  transition: all 0.2s ease;
+}
+
+.inputWrapper:focus-within {
+  border-color: #1e5292;
+  box-shadow: 0 0 0 3px rgba(30, 82, 146, 0.1);
+}
+
+.textarea {
+  flex: 1;
+  min-height: 10px;
+  max-height: 50px;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 12px;
+  color: #1f2937;
+  resize: vertical;
+}
+
+.textarea::placeholder {
+  color: #9ca3af;
+}
+
+.textarea:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.inputFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #e5e7eb;
+}
+
+.charCount {
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+.sendButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background-color: #1e5292;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sendButton:hover:not(:disabled) {
+  background-color: #1a4577;
+  box-shadow: 0 4px 12px rgba(30, 82, 146, 0.3);
+}
+
+.sendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sendButton svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Info Bar */
+.infoBar {
+  padding: 8px 12px;
+  border-top: 1px solid #e5e7eb;
+  background-color: #fef3c7;
+  color: #92400e;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.infoBar svg {
+  flex-shrink: 0;
+}
+
+
+/* Visibility Controls */
+.leftControls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.visibilityToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggleLabel {
+  font-size: 10px;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.internalBadge {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  border: 1px solid #d1d5db;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .messagesList {
+    padding: 12px;
+  }
+
+  .messageItem {
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+
+  .authorName {
+    font-size: 12px;
+  }
+
+  .messageText {
+    font-size: 12px;
+  }
+
+  .timestamp {
+    font-size: 10px;
+  }
+
+  .role {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .attachment {
+    font-size: 12px;
+  }
+
+  .inputArea {
+    padding: 12px;
+  }
+
+  .inputWrapper {
+    padding: 10px;
+  }
+
+  .textarea {
+    min-height: 80px;
+    font-size: 13px;
+  }
+
+  .charCount {
+    font-size: 11px;
+  }
+
+  .sendButton {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 12px;
+  }
+
+  .title {
+    font-size: 14px;
+  }
+
+  .subtitle {
+    font-size: 11px;
+  }
+
+  .messagesList {
+    padding: 10px;
+  }
+
+  .messageItem {
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .authorName {
+    font-size: 12px;
+  }
+
+  .role {
+    font-size: 9px;
+    padding: 1px 5px;
+  }
+
+  .messageText {
+    font-size: 12px;
+  }
+
+  .timestamp {
+    font-size: 10px;
+  }
+
+  .messageBody,
+  .actions {
+    margin-left: 42px;
+  }
+
+  .connector {
+    left: 38px;
+  }
+
+  .avatar,
+  .actionButton {
+    font-size: 11px;
+  }
+
+  .infoBar {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .inputArea {
+    padding: 10px;
+  }
+
+  .inputWrapper {
+    padding: 8px;
+  }
+
+  .textarea {
+    min-height: 70px;
+    font-size: 13px;
+  }
+
+  .charCount {
+    font-size: 10px;
+  }
+
+  .sendButton {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .sendButton svg {
+    width: 14px;
+    height: 14px;
+  }
+}

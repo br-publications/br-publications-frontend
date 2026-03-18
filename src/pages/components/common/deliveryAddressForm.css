@@ -1,0 +1,645 @@
+/* deliveryAddressForm.css — Matches bookManuscript.css design system */
+/* Font scale: 16px | 14px | 12px | 10px — compact, professional */
+
+/* ── Global ──────────────────────────────────────────────────────────────── */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    background-color: #f4f4f4;
+}
+
+/* ── Hero Header ─────────────────────────────────────────────────────────── */
+.dlv_hero {
+    background-color: #1e5292;
+    padding: 22px 20px;
+    text-align: center;
+    color: white;
+    border-bottom: 5px solid rgb(22, 65, 117);
+}
+
+.dlv_hero h1 {
+    font-size: 16px;
+    margin: 0 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+}
+
+.dlv_hero p {
+    font-size: 12px;
+    opacity: 0.92;
+    margin: 0;
+    font-style: italic;
+}
+
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+.dlv_wrapper {
+    display: flex;
+    gap: 20px;
+    max-width: 1400px;
+    margin: -25px auto 10px;
+    padding: 0 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.dlv_container {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ── Tab Navigation ──────────────────────────────────────────────────────── */
+.dlv_tabNavigation {
+    display: flex;
+    background: white;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    overflow-x: auto;
+}
+
+.dlv_tabButton {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 10px;
+    background: #f5f5f5;
+    border: none;
+    border-right: 1px solid #ccc;
+    cursor: pointer;
+    transition: all 0.25s;
+    min-width: 110px;
+}
+
+.dlv_tabButton:last-child {
+    border-right: none;
+}
+
+.dlv_tabButton:hover {
+    background: #e8f0fe;
+}
+
+.dlv_tabButton.active {
+    background: white;
+    border-bottom: 3px solid #1e5292;
+}
+
+.dlv_tabNumber {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #d1d5db;
+    color: #4b5563;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.dlv_tabButton.active .dlv_tabNumber {
+    background: #1e5292;
+    color: white;
+}
+
+.dlv_tabLabel {
+    font-size: 10px;
+    font-weight: 600;
+    color: #6b7280;
+    text-align: center;
+}
+
+.dlv_tabButton.active .dlv_tabLabel {
+    color: #1e5292;
+}
+
+/* ── Tab Content Area ────────────────────────────────────────────────────── */
+.dlv_submitSection {
+    padding: 14px;
+    background: white;
+    border: 1px solid #ccc;
+    border-top: none;
+}
+
+.dlv_tabContent {
+    animation: dlvFadeIn 0.25s ease-in;
+}
+
+@keyframes dlvFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Section Title ───────────────────────────────────────────────────────── */
+.dlv_sectionTitle {
+    font-size: 14px;
+    color: #1e5292;
+    margin: 0 0 12px;
+    font-weight: 700;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 8px;
+}
+
+/* ── Form Layout ─────────────────────────────────────────────────────────── */
+.dlv_formRow {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.dlv_formGroup {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.dlv_formGroup.full {
+    width: 100%;
+}
+
+.dlv_formGroup label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1e5292;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dlv_optional {
+    font-weight: 400;
+    color: #9ca3af;
+    font-size: 10px;
+    font-style: italic;
+}
+
+.dlv_fieldHint {
+    font-size: 10px;
+    color: #9ca3af;
+    margin-top: 3px;
+    font-style: italic;
+}
+
+/* ── Inputs ──────────────────────────────────────────────────────────────── */
+.dlv_formGroup input,
+.dlv_formGroup select,
+.dlv_formGroup textarea {
+    padding: 10px 12px;
+    border-radius: 4px;
+    border: 1px solid #888;
+    background: #fff;
+    font-size: 12px;
+    font-family: inherit;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.dlv_formGroup input:focus,
+.dlv_formGroup select:focus,
+.dlv_formGroup textarea:focus {
+    outline: none;
+    border-color: rgb(22, 65, 117);
+    box-shadow: inset 0 0 5px rgba(255, 167, 38, 0.2);
+}
+
+.dlv_formGroup textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.dlv_readOnly {
+    background-color: #f0f4f8 !important;
+    color: #4b5563 !important;
+    cursor: not-allowed;
+    font-weight: 600 !important;
+}
+
+.dlv_errorMessage {
+    color: #dc2626;
+    font-size: 10px;
+    margin-top: 3px;
+    font-weight: 400;
+}
+
+/* ── Phone Input with Country Code ───────────────────────────────────────── */
+.dlv_phoneInputGroup {
+    display: flex;
+    border: 1px solid #888;
+    border-radius: 4px;
+    height: 42px;
+    overflow: visible;
+    position: relative;
+}
+
+.dlv_phoneInputGroup:focus-within {
+    outline: 2px solid #1e5292;
+    border-color: transparent;
+}
+
+.dlv_phoneInputGroup input {
+    border: none !important;
+    flex: 1;
+    height: 100% !important;
+    border-radius: 0 4px 4px 0 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.dlv_phoneInputGroup input:focus {
+    box-shadow: none !important;
+    border: none !important;
+    outline: none;
+}
+
+.dlv_countryDropdown {
+    position: relative;
+    width: 90px;
+    flex-shrink: 0;
+    border-right: 1px solid #888;
+    background: #f9f9f9;
+    border-radius: 4px 0 0 4px;
+}
+
+.dlv_countrySelect {
+    height: 100%;
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    color: #333;
+    user-select: none;
+}
+
+.dlv_dropdownArrow {
+    font-size: 7px;
+    color: #666;
+}
+
+.dlv_countryOptions {
+    position: absolute;
+    z-index: 1000;
+    left: -1px;
+    width: 130px;
+    background: white;
+    border: 1px solid #1e5292;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-height: 200px;
+    /* ~10 visible items */
+    overflow-y: auto;
+}
+
+.dlv_countryOptions.down {
+    top: 100%;
+}
+
+.dlv_countryOptions.up {
+    bottom: 100%;
+}
+
+/* Scrollbar styling for dropdown */
+.dlv_countryOptions::-webkit-scrollbar {
+    width: 8px;
+}
+
+.dlv_countryOptions::-webkit-scrollbar-track {
+    background: #f5f5f5;
+}
+
+.dlv_countryOptions::-webkit-scrollbar-thumb {
+    background: #1e5292;
+    border-radius: 4px;
+}
+
+.dlv_countryOptions::-webkit-scrollbar-thumb:hover {
+    background: #164175;
+}
+
+.dlv_countryOption {
+    padding: 7px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.dlv_countryOption:hover {
+    background-color: #e8f0fe;
+}
+
+.dlv_countryOption:last-child {
+    border-bottom: none;
+}
+
+.dlv_iso {
+    font-weight: 700;
+    font-size: 11px;
+    color: #1e5292;
+}
+
+.dlv_code {
+    color: #666;
+    font-size: 10px;
+}
+
+/* ── Info Box ─────────────────────────────────────────────────────────────── */
+.dlv_infoBox {
+    background: #eff6ff;
+    border-left: 3px solid #1e5292;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    border-radius: 0 4px 4px 0;
+}
+
+.dlv_infoBox p {
+    font-size: 10px;
+    color: #1e5292;
+    margin: 0;
+    font-style: italic;
+}
+
+/* ── Shipping Cards ───────────────────────────────────────────────────────── */
+.dlv_shippingCards {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.dlv_shippingCard {
+    flex: 1;
+    min-width: 130px;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 12px 10px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+    background: #f9fafb;
+    text-align: center;
+}
+
+.dlv_shippingCard:hover {
+    border-color: #1e5292;
+    background: #eff6ff;
+}
+
+.dlv_shippingCard.selected {
+    border-color: #1e5292;
+    background: #eff6ff;
+    box-shadow: 0 0 0 1px #1e5292;
+}
+
+.dlv_shippingIcon {
+    font-size: 20px;
+}
+
+.dlv_shippingName {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1e5292;
+}
+
+.dlv_shippingDesc {
+    font-size: 10px;
+    color: #6b7280;
+}
+
+/* ── Declaration Section ─────────────────────────────────────────────────── */
+.dlv_declarationSection {
+    background: #fffbeb;
+    border: 2px solid #fbbf24;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 12px;
+}
+
+.dlv_declarationHeading {
+    font-size: 14px;
+    color: #92400e;
+    margin: 0 0 8px;
+    font-weight: 700;
+}
+
+.dlv_declarationText {
+    font-size: 10px;
+    line-height: 1.6;
+    color: #92400e;
+    margin: 0 0 10px;
+}
+
+.dlv_declarationCheckbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.dlv_declarationCheckbox input[type="checkbox"] {
+    margin-top: 2px;
+    width: auto !important;
+    flex-shrink: 0;
+}
+
+.dlv_declarationLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: #92400e;
+    line-height: 1.5;
+}
+
+/* ── Review Section ──────────────────────────────────────────────────────── */
+.dlv_reviewSection {
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.dlv_reviewSection h4 {
+    font-size: 12px;
+    color: #1e5292;
+    margin: 0 0 12px;
+    font-weight: 700;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #1e5292;
+}
+
+.dlv_reviewGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.dlv_reviewItem {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dlv_reviewItem.full {
+    grid-column: 1 / -1;
+}
+
+.dlv_reviewItem label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dlv_reviewItem p {
+    font-size: 12px;
+    color: #111827;
+    font-weight: 500;
+    margin: 0;
+    word-break: break-word;
+}
+
+/* ── Navigation Buttons ──────────────────────────────────────────────────── */
+.dlv_formNavigation {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    background: white;
+    border: 1px solid #ccc;
+    border-top: none;
+}
+
+.dlv_navButton {
+    padding: 10px 28px;
+    border: 2px solid #1e5292;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.25s;
+}
+
+.dlv_prevButton {
+    background: white;
+    color: #1e5292;
+}
+
+.dlv_prevButton:hover {
+    background: #eff6ff;
+}
+
+.dlv_nextButton {
+    background: #1e5292;
+    color: white;
+    margin-left: auto;
+}
+
+.dlv_nextButton:hover {
+    background: #163e70;
+}
+
+.dlv_navButton:disabled {
+    background-color: #e5e7eb;
+    border-color: #d1d5db;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.dlv_navButton:disabled:hover {
+    background-color: #e5e7eb;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 968px) {
+    .dlv_wrapper {
+        flex-direction: column;
+        margin-top: 16px;
+        padding: 0 12px;
+    }
+
+    .dlv_formRow {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .dlv_shippingCards {
+        flex-direction: column;
+    }
+
+    .dlv_shippingCard {
+        flex-direction: row;
+        text-align: left;
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .dlv_tabNavigation {
+        overflow-x: auto;
+    }
+
+    .dlv_tabButton {
+        min-width: 80px;
+        padding: 10px 6px;
+    }
+
+    .dlv_tabLabel {
+        font-size: 9px;
+    }
+
+    .dlv_hero {
+        padding: 16px 14px;
+    }
+
+    .dlv_hero h1 {
+        font-size: 14px;
+    }
+
+    .dlv_reviewGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .dlv_wrapper {
+        padding: 0 8px;
+    }
+
+    .dlv_submitSection {
+        padding: 10px;
+    }
+
+    .dlv_reviewGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .dlv_navButton {
+        padding: 10px 16px;
+        font-size: 11px;
+    }
+
+    .dlv_countryOptions {
+        width: 120px;
+    }
+}
