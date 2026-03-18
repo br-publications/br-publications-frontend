@@ -1,9 +1,9 @@
 services:
-  - type: static
+  - type: web
     name: br-publications-frontend
-    env: static
+    runtime: static
     buildCommand: npx vite build
-    publishDir: dist
+    staticPublishPath: dist
     envVars:
       - key: VITE_API_BASE_URL
         value: https://br-publications-backend.onrender.com
