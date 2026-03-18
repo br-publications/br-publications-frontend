@@ -7,7 +7,7 @@ import { contactService, type ContactDetails } from '../../services/contactServi
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import PhoneIcon from '@mui/icons-material/Phone';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import './bookchapterDetail.css';
+import './bookChapterDetail.css';
 import { setPageTitle, setMetaDescription, setOpenGraph, setCanonicalUrl, setJsonLd, resetSeo } from '../../utils/seoUtils';
 import { toSlug } from '../../utils/stringUtils';
 
