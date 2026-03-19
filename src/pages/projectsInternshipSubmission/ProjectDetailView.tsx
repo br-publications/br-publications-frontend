@@ -32,6 +32,12 @@ const ProjectDetailView: React.FC = () => {
     }>({ isOpen: false, type: 'info', title: '', message: '' });
 
     useEffect(() => {
+        if (alertConfig.isOpen) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [alertConfig.isOpen]);
+
+    useEffect(() => {
         const user = authService.getUser();
         if (user) {
             setIsAdmin(['admin', 'developer', 'editor'].includes(user.role));

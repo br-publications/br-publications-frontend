@@ -94,6 +94,12 @@ const StudentInternshipForm: React.FC = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [activeTab]);
 
+    useEffect(() => {
+        if (alertConfig.isOpen) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [alertConfig.isOpen]);
+
     // Dropdown close logic
     useEffect(() => {
         const handleClose = (event: MouseEvent | Event) => {

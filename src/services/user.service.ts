@@ -44,6 +44,7 @@ export interface User {
     linkedinProfile?: string;
     twitterProfile?: string;
     website?: string;
+    scopusLink?: string;
     isActive: boolean;
     isVerified: boolean;
     createdAt: string;
@@ -103,6 +104,7 @@ export interface UpdateProfilePayload {
     linkedinProfile?: string;
     twitterProfile?: string;
     website?: string;
+    scopusLink?: string;
 }
 
 export interface UpdateRolePayload {

@@ -212,6 +212,7 @@ export default function ProfileEditPage() {
                 linkedinProfile: val(rest.linkedinProfile),
                 twitterProfile: val(rest.twitterProfile),
                 website: val(rest.website),
+                scopusLink: val(rest.scopusLink),
             };
 
             // Remove keys that are undefined to keep payload clean
@@ -529,6 +530,9 @@ export default function ProfileEditPage() {
                                     </Field>
                                     <Field label="Website / Portfolio URL" optional>
                                         <input name="website" type="url" value={formData.website || ''} onChange={handle} placeholder="https://example.com" className={inputCls} />
+                                    </Field>
+                                    <Field label="Scopus Profile Link" optional>
+                                        <input name="scopusLink" type="url" value={formData.scopusLink || ''} onChange={handle} placeholder="https://www.scopus.com/authid/detail.uri?authorId=..." className={inputCls} />
                                     </Field>
                                 </div>
                             )}

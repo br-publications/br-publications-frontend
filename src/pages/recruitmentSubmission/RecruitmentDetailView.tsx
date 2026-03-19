@@ -45,6 +45,12 @@ const RecruitmentDetailView: React.FC = () => {
     });
 
     useEffect(() => {
+        if (alertConfig.isOpen) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [alertConfig.isOpen]);
+
+    useEffect(() => {
         if (id) {
             loadData();
         }
@@ -155,7 +161,7 @@ const RecruitmentDetailView: React.FC = () => {
                     <div style={{ display: 'flex', flexDirection: 'row', gap: '20px', alignItems: 'center', flex: 1 }}>
                         {application.personalImage ? (
                             <img
-                                src={application.personalImage.startsWith('http') ? application.personalImage : `${API_BASE_URL}${application.personalImage.startsWith('/') ? '' : '/'}${application.personalImage}`}
+                                src={application.personalImage.startsWith('http') || application.personalImage.startsWith('data:') ? application.personalImage : `${API_BASE_URL}${application.personalImage.startsWith('/') ? '' : '/'}${application.personalImage}`}
                                 alt={`${application.firstName} ${application.lastName}`}
                                 className="recruitment_detailAvatar"
                                 style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }}

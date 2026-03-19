@@ -8,9 +8,10 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  z-index: 4000;
+  padding-top: 60px;
+  z-index: 5000;
   animation: fadeIn 0.2s ease-out;
 }
 
@@ -36,7 +37,7 @@
 
 @keyframes slideUp {
   from {
-    transform: translateY(20px);
+    transform: translateY(-20px);
     opacity: 0;
   }
 

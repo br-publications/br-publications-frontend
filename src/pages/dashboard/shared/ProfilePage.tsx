@@ -220,6 +220,7 @@ export default function ProfilePage() {
                                         { label: 'LinkedIn Profile URL', val: user?.linkedinProfile },
                                         { label: 'Twitter / X Profile URL', val: user?.twitterProfile },
                                         { label: 'Website / Portfolio URL', val: user?.website },
+                                        { label: 'Scopus Profile Link', val: user?.scopusLink },
                                     ].map(({ label, val }) => (
                                         <Field key={label} label={label}>
                                             <div className={valueCls}>

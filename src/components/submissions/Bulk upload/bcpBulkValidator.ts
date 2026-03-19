@@ -792,13 +792,28 @@ export function validateChapterEntry(
         });
     }
 
-    // ── Frontmatter PDFs — optional, warn if referenced but missing ──
-    const expectedPdfCount = Object.keys(entry.pdfMaps).length;
-    if (expectedPdfCount > 0 && entry.matchedPdfs.length < expectedPdfCount) {
-        warnings.push(
-            `Matched ${entry.matchedPdfs.length} of ${expectedPdfCount} referenced frontmatter PDFs.`
-        );
-    }
+    // ── Frontmatter PDFs — ALL 7 ARE NOW MANDATORY ──
+    const frontmatterKeys = [
+        'Dedication',
+        'Frontmatter',
+        'Detailed Table of Contents',
+        'Preface',
+        'Acknowledgment',
+        'About the Contributors',
+        'Index'
+    ];
+
+    frontmatterKeys.forEach(key => {
+        const filename = entry.pdfMaps[key];
+        if (!filename) {
+            errors[`pdf${key.replace(/\s+/g, '')}`] = `${key} PDF filename is required in CSV.`;
+        } else {
+            const isMatched = entry.matchedPdfs.some(f => f.name.toLowerCase() === filename.toLowerCase());
+            if (!isMatched) {
+                errors[`pdf${key.replace(/\s+/g, '')}`] = `${key} PDF file "${filename}" was not found among uploaded PDFs.`;
+            }
+        }
+    });
 
     return {
         rowNumber: entry.rowNumber,
@@ -936,7 +951,7 @@ export const CHAPTER_CSV_SAMPLE_ROW: Record<string, string> = {
     mainAuthorFirstName: 'Jane',
     mainAuthorLastName: 'Doe',
     mainAuthorEmail: 'jane.doe@example.com',
-    mainAuthorPhone: '+1-555-0192',
+    mainAuthorPhone: '+1 617-555-0123',
     mainAuthorIsCorresponding: 'true',
     mainAuthorDesignation: 'Professor',
     mainAuthorOtherDesignation: '',
@@ -948,7 +963,7 @@ export const CHAPTER_CSV_SAMPLE_ROW: Record<string, string> = {
     coAuthor1FirstName: 'John',
     coAuthor1LastName: 'Smith',
     coAuthor1Email: 'john.smith@example.com',
-    coAuthor1Phone: '+1-555-0193',
+    coAuthor1Phone: '+1 617-555-0123',
     coAuthor1IsCorresponding: 'false',
     coAuthor1Designation: 'Researcher',
     coAuthor1OtherDesignation: '',
@@ -1007,13 +1022,13 @@ export const CHAPTER_CSV_SAMPLE_ROW: Record<string, string> = {
     synopsisParagraph4: '',
     scopeIntro: 'The scope covers theoretical foundations.',
     coverImageFilename: 'advanced_ai_cover.jpg',
-    pdfDedication: '',
-    pdfFrontmatter: '',
+    pdfDedication: 'dedication_advanced_ai.pdf',
+    pdfFrontmatter: 'frontmatter_advanced_ai.pdf',
     pdfToc: 'toc_advanced_ai.pdf',
     pdfPreface: 'preface_advanced_ai.pdf',
-    pdfAcknowledgment: '',
-    pdfContributors: '',
-    pdfIndex: '',
+    pdfAcknowledgment: 'acknowledgment_advanced_ai.pdf',
+    pdfContributors: 'contributors_advanced_ai.pdf',
+    pdfIndex: 'index_advanced_ai.pdf',
     tocChapter1Title: 'Introduction to Neural Networks',
     tocChapter1Number: '1',
     tocChapter1Authors: 'Jane Doe, John Smith',

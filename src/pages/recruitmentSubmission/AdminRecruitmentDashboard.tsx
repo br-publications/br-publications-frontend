@@ -33,6 +33,12 @@ const AdminRecruitmentDashboard: React.FC = () => {
     });
 
     useEffect(() => {
+        if (alertConfig.isOpen) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [alertConfig.isOpen]);
+
+    useEffect(() => {
         fetchApplications();
     }, [roleFilter]);
 
@@ -219,7 +225,7 @@ const AdminRecruitmentDashboard: React.FC = () => {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     {app.personalImage ? (
                                         <img
-                                            src={app.personalImage.startsWith('http') ? app.personalImage : `${API_BASE_URL}${app.personalImage.startsWith('/') ? '' : '/'}${app.personalImage}`}
+                                            src={app.personalImage.startsWith('http') || app.personalImage.startsWith('data:') ? app.personalImage : `${API_BASE_URL}${app.personalImage.startsWith('/') ? '' : '/'}${app.personalImage}`}
                                             alt={app.firstName}
                                             style={{ width: '32px', height: '32px', borderRadius: '4px', objectFit: 'cover', border: '1px solid #e2e8f0' }}
                                         />

@@ -4,10 +4,6 @@ import type {
     TextBookSubmission,
     TextBookDiscussion,
     SubmitTextBookRequest,
-    AdminDecisionRequest,
-    SubmitRevisionRequest,
-    FinalDecisionRequest,
-    UpdateIsbnDoiRequest,
     SendDiscussionMessageRequest,
     TextBookFilters,
     PaginatedResponse,
@@ -377,11 +373,11 @@ export const sendBulkUploadReport = async (data: any): Promise<void> => {
 /**
  * Check if ISBNs are available
  */
-export const checkIsbnAvailability = async (isbns: string[]): Promise<string[]> => {
+export const checkIsbnAvailability = async (isbns: string[], excludeId?: number): Promise<string[]> => {
     const response = await fetch(`${TEXTBOOK_API_BASE}/check-isbn`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ isbns })
+        body: JSON.stringify({ isbns, excludeId })
     });
 
     const data = await response.json();
