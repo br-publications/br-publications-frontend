@@ -27,6 +27,12 @@ const UserProjectDashboard: React.FC = () => {
     }>({ isOpen: false, type: 'info', title: '', message: '' });
 
     useEffect(() => {
+        if (alertConfig.isOpen) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [alertConfig.isOpen]);
+
+    useEffect(() => {
         fetchApplications();
 
         const interval = setInterval(() => {

@@ -4,6 +4,10 @@ services:
     runtime: static
     buildCommand: npx vite build
     staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
         value: https://br-publications-backend.onrender.com

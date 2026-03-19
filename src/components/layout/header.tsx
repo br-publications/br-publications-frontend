@@ -51,7 +51,7 @@ export default function Header({
 
   useEffect(() => {
     const checkRecruitment = async () => {
-      if (isLoggedIn && userRole === 'user') {
+      if (isLoggedIn && ['user', 'student', 'author'].includes(userRole)) {
         try {
           const apps = await recruitmentService.getMyApplications();
           setHasRecruitmentSubmissions(apps && apps.length > 0);
@@ -293,7 +293,7 @@ export default function Header({
                           </svg>
                           My Profile
                         </a>
-                        {['user'].includes(userRole) && hasRecruitmentSubmissions && (
+                        {['user', 'student', 'author'].includes(userRole) && hasRecruitmentSubmissions && (
                           <a
                             href="/dashboard/user/recruitment"
                             className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"

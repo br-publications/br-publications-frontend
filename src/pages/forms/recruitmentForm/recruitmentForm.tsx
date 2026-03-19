@@ -90,6 +90,12 @@ const RecruitmentForm: React.FC = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [activeTab]);
 
+    useEffect(() => {
+        if (alertConfig.isOpen) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [alertConfig.isOpen]);
+
     // Dropdown close & positioning logic
     const toggleDropdown = (e: React.MouseEvent) => {
         e.preventDefault();

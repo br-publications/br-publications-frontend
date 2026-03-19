@@ -940,12 +940,22 @@ const ActionsTab: React.FC<{ submission: TextBookSubmission; onRefresh: () => vo
         setLoading(true);
         setError(null);
         try {
-            const { receiveIsbn } = await import('../../../services/textBookService');
+            const { receiveIsbn, checkIsbnAvailability } = await import('../../../services/textBookService');
+
+            // Check for duplicate ISBN
+            const existingIsbns = await checkIsbnAvailability([isbnNumber]);
+            if (existingIsbns.length > 0) {
+                // Return the error so the modal can handle it
+                return `The ISBN number "${isbnNumber}" is already in use for another book.`;
+            }
+
             await receiveIsbn(submission.id, isbnNumber, doiNumber, comments);
             setShowIsbnReceiveModal(false);
             onRefresh();
+            return null;
         } catch (err: any) {
             setError(err.message);
+            return err.message;
         } finally {
             setLoading(false);
         }
@@ -1377,12 +1387,23 @@ const IsbnApplyModal: React.FC<{
 
 const IsbnReceiveModal: React.FC<{
     onClose: () => void;
-    onSubmit: (isbnNumber: string, doiNumber?: string, comments?: string) => Promise<void> | void;
+    onSubmit: (isbnNumber: string, doiNumber?: string, comments?: string) => Promise<string | null>;
     loading: boolean;
 }> = ({ onClose, onSubmit, loading }) => {
     const [isbnNumber, setIsbnNumber] = useState('');
     const [doiNumber, setDoiNumber] = useState('');
     const [comments, setComments] = useState('');
+    const [isbnError, setIsbnError] = useState<string | null>(null);
+
+    const handleSubmit = async () => {
+        setIsbnError(null);
+        if (!isbnNumber.trim()) return;
+
+        const error = await onSubmit(isbnNumber, doiNumber, comments);
+        if (error) {
+            setIsbnError(error);
+        }
+    };
 
     return createPortal(
         <div className={styles.modalOverlay} onClick={onClose}>
@@ -1395,10 +1416,16 @@ const IsbnReceiveModal: React.FC<{
                             type="text"
                             placeholder="Enter ISBN number"
                             value={isbnNumber}
-                            onChange={e => setIsbnNumber(e.target.value)}
-                            className={styles.input}
+                            onChange={e => {
+                                setIsbnNumber(e.target.value);
+                                if (isbnError) setIsbnError(null);
+                            }}
+                            className={`${styles.input} ${isbnError ? styles.inputError : ''}`}
                             required
                         />
+                        {isbnError && (
+                            <span className={styles.fieldError}>{isbnError}</span>
+                        )}
                     </div>
                     <div className={styles.formGroup}>
                         <label>DOI Number</label>
@@ -1421,7 +1448,7 @@ const IsbnReceiveModal: React.FC<{
                 <div className={styles.modalActions}>
                     <button onClick={onClose} disabled={loading}>Cancel</button>
                     <button
-                        onClick={() => onSubmit(isbnNumber, doiNumber, comments)}
+                        onClick={handleSubmit}
                         disabled={!isbnNumber.trim() || loading}
                         className={styles.primaryButton}
                     >
