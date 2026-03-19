@@ -739,9 +739,6 @@ export function validateChapterEntry(
 
     // ── Additional Fields (All Mandatory) ────────────────
     if (!entry.synopsisParagraph1?.trim()) errors['synopsisParagraph1'] = 'Synopsis Paragraph 1 is required.';
-    if (!entry.synopsisParagraph2?.trim()) errors['synopsisParagraph2'] = 'Synopsis Paragraph 2 is required.';
-    if (!entry.synopsisParagraph3?.trim()) errors['synopsisParagraph3'] = 'Synopsis Paragraph 3 is required.';
-    if (!entry.synopsisParagraph4?.trim()) errors['synopsisParagraph4'] = 'Synopsis Paragraph 4 is required.';
     if (!entry.scopeIntro?.trim()) errors['scopeIntro'] = 'Scope Intro is required.';
 
     const mainAuthorBio = entry.authorBiographies.find(b => b.authorName === `${entry.mainAuthor.firstName} ${entry.mainAuthor.lastName}`.trim());

@@ -287,10 +287,6 @@ const ProductBooks: React.FC = () => {
                               alt={book.title}
                               loading="lazy"
                               decoding="async"
-                              onError={(e) => {
-                                // Fallback image if book cover fails to load
-                                e.currentTarget.src = '/assets/books/placeholder.png';
-                              }}
                             />
                           </div>
                           <div className="book-info">

@@ -23,10 +23,6 @@ class ProductBooksService {
     else if (coverImage.startsWith('/api')) {
       coverImage = `${API_BASE_URL}${coverImage}`;
     }
-    else if (!coverImage.startsWith('http') && !coverImage.startsWith('data:') && !coverImage.startsWith('/')) {
-      // Assume it's a legacy static asset if not http, data, or absolute path
-      coverImage = `/src/assets/products/${coverImage}`;
-    }
 
     return {
       ...data,
@@ -181,8 +177,7 @@ class ProductBooksService {
     if (imageName.startsWith('/api')) {
       return `${API_BASE_URL}${imageName}`;
     }
-    // Fallback for old local images if any remain (though we are replacing data source)
-    return `/src/assets/products/${imageName}`;
+    return imageName;
   }
 }
 

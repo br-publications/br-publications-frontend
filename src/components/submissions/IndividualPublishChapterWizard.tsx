@@ -163,7 +163,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
     const [cropPos, setCropPos] = useState<Point>({ x: 0, y: 150 });
     const [zoom, setZoom] = useState(1);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
-    const COVER_ASPECT_RATIO = 1.12 / 1.4;
+    const COVER_ASPECT_RATIO = 1.2 / 1.5; // Matches other wizards
     const pdfInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
     const extraPdfInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
