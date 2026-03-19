@@ -112,6 +112,11 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCa
                             onCropChange={onCropChange}
                             onZoomChange={onZoomChange}
                             onCropComplete={onCropCompleteCallback}
+                            onMediaLoaded={(mediaSize) => {
+                                // Automatically position crop to the far right (showing the right side of the image)
+                                // Negative x moves the image to the left.
+                                setCrop({ x: -mediaSize.width, y: 0 });
+                            }}
                             restrictPosition={true}
                         />
                     </div>

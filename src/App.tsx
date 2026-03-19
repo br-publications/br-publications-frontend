@@ -4,7 +4,9 @@ import AppRoutes from './routes/appRoutes'
 function App() {
 
   return (
-    <AppRoutes />
+    <div className="app-scale-wrapper">
+      <AppRoutes />
+    </div>
   )
 }
 

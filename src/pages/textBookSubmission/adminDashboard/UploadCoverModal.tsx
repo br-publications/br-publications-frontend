@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { X, Upload, Image as ImageIcon } from 'lucide-react';
 import type { PublishedBook } from '../../../services/publishedBookService';
 import AlertPopup from '../../../components/common/alertPopup';
+import ImageCropper from '../publishing/ImageCropper';
+import type { CropArea } from '../types/publishingTypes';
 
 interface UploadCoverModalProps {
     book: PublishedBook;
@@ -15,12 +17,17 @@ const UploadCoverModal: React.FC<UploadCoverModalProps> = ({ book, isOpen, onClo
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
+    // Cropper State
+    const [showCropper, setShowCropper] = useState(false);
+    const [tempImageUrl, setTempImageUrl] = useState<string | null>(null);
+
     // Alert State
     const [alertConfig, setAlertConfig] = useState<{
         isOpen: boolean;
         type: 'success' | 'error' | 'warning' | 'info';
         title: string;
         message: string;
+        messageDetail?: string;
     }>({
         isOpen: false,
         type: 'info',
@@ -33,8 +40,25 @@ const UploadCoverModal: React.FC<UploadCoverModalProps> = ({ book, isOpen, onClo
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            setSelectedFile(file);
-            setPreviewUrl(URL.createObjectURL(file));
+            const url = URL.createObjectURL(file);
+            setTempImageUrl(url);
+            setShowCropper(true);
+        }
+    };
+
+    const handleCropComplete = (_croppedArea: CropArea, croppedImage: Blob) => {
+        // Convert Blob to File
+        const fileName = `cropped-cover-${book.id}-${Date.now()}.jpg`;
+        const file = new File([croppedImage], fileName, { type: 'image/jpeg' });
+
+        setSelectedFile(file);
+        setPreviewUrl(URL.createObjectURL(croppedImage));
+        setShowCropper(false);
+
+        // Clean up temp image URL
+        if (tempImageUrl) {
+            URL.revokeObjectURL(tempImageUrl);
+            setTempImageUrl(null);
         }
     };
 
@@ -131,6 +155,20 @@ const UploadCoverModal: React.FC<UploadCoverModalProps> = ({ book, isOpen, onClo
                 message={alertConfig.message}
                 onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
             />
+
+            {showCropper && tempImageUrl && (
+                <ImageCropper
+                    image={tempImageUrl}
+                    onCropComplete={handleCropComplete}
+                    onCancel={() => {
+                        setShowCropper(false);
+                        if (tempImageUrl) {
+                            URL.revokeObjectURL(tempImageUrl);
+                            setTempImageUrl(null);
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 };

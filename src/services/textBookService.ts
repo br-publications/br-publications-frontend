@@ -384,12 +384,12 @@ export const checkIsbnAvailability = async (isbns: string[]): Promise<string[]> 
         body: JSON.stringify({ isbns })
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to check ISBN availability');
+        throw new Error(data.message || 'Failed to check ISBN availability');
     }
 
-    const data = await response.json();
     return data.data.existingIsbns;
 };
 
