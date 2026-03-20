@@ -30,7 +30,7 @@ const ProductBooks: React.FC = () => {
   const paginatedBooks = filteredBooks.slice(startIndex, endIndex);
 
   /**
-   * Fetch all books on component mount
+   * Fetch books on component mount or when filters change
    */
   useEffect(() => {
     const fetchData = async () => {
@@ -38,12 +38,24 @@ const ProductBooks: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const [booksData] = await Promise.all([
-          productBooksService.getAllBooks(),
-          productBooksService.getCategories()
-        ]);
+        let booksData: Book[];
+        
+        // If we have any search criteria, use searchBooks service
+        if (searchQuery || author || (selectedCategory && selectedCategory !== 'All') || publishedAfter || publishedBefore) {
+          booksData = await productBooksService.searchBooks({
+            query: searchQuery,
+            author,
+            category: selectedCategory,
+            publishedAfter,
+            publishedBefore
+          });
+        } else {
+          // Otherwise, fetch all books
+          booksData = await productBooksService.getAllBooks();
+        }
 
         setFilteredBooks(booksData);
+        setCurrentPage(1);
 
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred while loading books');
@@ -54,7 +66,7 @@ const ProductBooks: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [searchQuery, author, selectedCategory, publishedAfter, publishedBefore]);
 
   /**
    * Sync category and search query if location state changes (e.g. from header search)
@@ -76,32 +88,6 @@ const ProductBooks: React.FC = () => {
       setPublishedBefore(location.state.publishedBefore);
     }
   }, [location.state]);
-
-  /**
-   * Filter books by search query / category
-   */
-  useEffect(() => {
-    const filterBooks = async () => {
-      try {
-        setLoading(true);
-        const filtered = await productBooksService.searchBooks({
-          query: searchQuery,
-          author,
-          category: selectedCategory,
-          publishedAfter,
-          publishedBefore
-        });
-        setFilteredBooks(filtered);
-        setCurrentPage(1);
-      } catch (err) {
-        console.error('Error filtering books:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    filterBooks();
-  }, [searchQuery, author, selectedCategory, publishedAfter, publishedBefore]);
 
   /**
    * Filter books by category

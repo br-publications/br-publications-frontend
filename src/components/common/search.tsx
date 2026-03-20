@@ -87,12 +87,13 @@ const Search: React.FC<SearchProps> = ({ isOpen, onClose }) => {
     if (!hasData) return;
 
     const trimmedQuery = searchQuery.trim();
-    // Basic ISBN detection (9-13 digits, allowing hyphens)
-    const isbnRegex = /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/;
-    const isIsbn = isbnRegex.test(trimmedQuery);
+    // Basic ISBN detection (10 or 13 digits, allowing hyphens and spaces)
+    const cleanQuery = trimmedQuery.replace(/[\s-]/g, '');
+    const isIsbn = /^\d{10}(\d{3})?$/.test(cleanQuery);
 
     if (isIsbn) {
-      navigate(`/product/find/${trimmedQuery}`);
+      // Navigate with the original input but let ProductFinder handle normalization if needed
+      navigate(`/product/find/${encodeURIComponent(trimmedQuery)}`);
       onClose();
       return;
     }
