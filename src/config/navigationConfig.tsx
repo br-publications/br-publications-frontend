@@ -139,15 +139,15 @@ export const adminNavbarItems: MenuItem[] = [
       { name: 'Manage Published Books', link: '/dashboard/admin/textbooksmanager' },
     ],
   },
-  {
-    name: 'Conferences',
-    link: '#',
-    children: [
-      { name: 'Manage Conferences', link: '/dashboard/admin/conferences' },
-      { name: 'Bulk Upload', link: '/dashboard/admin/conferences/bulk-upload' },
-      { name: 'View Public Listing', link: '/conference' },
-    ],
-  },
+  // {
+  //   name: 'Conferences',
+  //   link: '#',
+  //   children: [
+  //     { name: 'Manage Conferences', link: '/dashboard/admin/conferences' },
+  //     { name: 'Bulk Upload', link: '/dashboard/admin/conferences/bulk-upload' },
+  //     { name: 'View Public Listing', link: '/conference' },
+  //   ],
+  // },
   {
     name: 'Settings',
     link: '#',
