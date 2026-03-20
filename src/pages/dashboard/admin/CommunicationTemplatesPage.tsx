@@ -653,7 +653,7 @@ export default function CommunicationTemplatesPage() {
                                 {/* Preview Panel Modal */}
                                 {viewMode === "preview" && (
                                     <div
-                                        className="w-full max-w-4xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh]"
+                                        className="w-full max-w-4xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[100vh]"
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         {/* Panel header */}
