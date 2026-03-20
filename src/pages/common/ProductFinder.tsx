@@ -23,10 +23,16 @@ const ProductFinder: React.FC = () => {
                 setLoading(true);
                 setError(null);
 
-                // Try finding in Textbooks first
+                // Normalize ISBN for robust matching
+                const cleanIsbn = isbn.replace(/[\s-]/g, '');
+
+                // Try finding in Textbooks first using the original ISBN string (to match DB formatting)
                 const textbooks = await productBooksService.searchBooks({ query: isbn });
                 if (textbooks.length > 0) {
-                    const exactMatch = textbooks.find(b => b.isbn === isbn) || textbooks[0];
+                    const exactMatch = textbooks.find(b => 
+                        b.isbn === isbn || (b.isbn && b.isbn.replace(/[\s-]/g, '') === cleanIsbn)
+                    ) || textbooks[0];
+                    
                     const slug = toSlug(exactMatch.title);
                     navigate(`/book/${exactMatch.id}/${slug}`, { replace: true, state: { book: exactMatch } });
                     return;
@@ -35,7 +41,10 @@ const ProductFinder: React.FC = () => {
                 // If not found, try Book Chapters
                 const chapters = await bookChapterService.searchBooks({ query: isbn });
                 if (chapters.length > 0) {
-                    const exactMatch = chapters.find(c => c.isbn === isbn) || chapters[0];
+                    const exactMatch = chapters.find(c => 
+                        c.isbn === isbn || (c.isbn && c.isbn.replace(/[\s-]/g, '') === cleanIsbn)
+                    ) || chapters[0];
+                    
                     const slug = toSlug(exactMatch.title);
                     navigate(`/bookchapter/${exactMatch.id}/${slug}`, { replace: true, state: { book: exactMatch } });
                     return;

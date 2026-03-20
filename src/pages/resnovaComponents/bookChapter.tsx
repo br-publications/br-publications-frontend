@@ -36,7 +36,7 @@ const ProductBookChapter: React.FC = () => {
   const paginatedBooks = filteredBooks.slice(startIndex, endIndex);
 
   /**
-   * Fetch all books and categories on component mount
+   * Fetch books and categories on component mount or when filters change
    */
   useEffect(() => {
     const fetchData = async () => {
@@ -44,12 +44,9 @@ const ProductBookChapter: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch books and categories in parallel
-        const [booksData, categoriesData] = await Promise.all([
-          bookChapterService.getAllBooks(),
-          bookChapterService.getCategories()
-        ]);
-
+        // Fetch categories and books
+        // Fetch categories only once if they haven't been loaded yet, or always for simplicity
+        const categoriesData = await bookChapterService.getCategories();
         const fetchedCategories = Array.isArray(categoriesData) ? categoriesData : [];
         const mergedCategories = Array.from(new Set([
           'All',
@@ -58,9 +55,25 @@ const ProductBookChapter: React.FC = () => {
           'Interdisciplinary Sciences',
           ...fetchedCategories
         ]));
+        setCategories(mergedCategories);
+
+        let booksData: Book[];
+        // If we have any search criteria, use searchBooks service
+        if (searchQuery || author || (selectedCategory && selectedCategory !== 'All') || publishedAfter || publishedBefore) {
+          booksData = await bookChapterService.searchBooks({
+            query: searchQuery,
+            author,
+            category: selectedCategory,
+            publishedAfter,
+            publishedBefore
+          });
+        } else {
+          // Otherwise, fetch all books
+          booksData = await bookChapterService.getAllBooks();
+        }
 
         setFilteredBooks(booksData);
-        setCategories(mergedCategories);
+        setCurrentPage(1); // Reset to first page when filtering
 
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred while loading books');
@@ -71,32 +84,6 @@ const ProductBookChapter: React.FC = () => {
     };
 
     fetchData();
-  }, []);
-
-  /**
-   * Filter books by category and search query
-   */
-  useEffect(() => {
-    const filterBooks = async () => {
-      try {
-        let filtered: Book[];
-        filtered = await bookChapterService.searchBooks({
-          query: searchQuery,
-          author,
-          category: selectedCategory,
-          publishedAfter,
-          publishedBefore
-        });
-        setFilteredBooks(filtered);
-        setCurrentPage(1); // Reset to first page when filtering
-      } catch (err) {
-        console.error('Error filtering books:', err);
-      }
-    };
-
-    if (selectedCategory !== undefined) {
-      filterBooks();
-    }
   }, [selectedCategory, searchQuery, author, publishedAfter, publishedBefore]);
 
   /**

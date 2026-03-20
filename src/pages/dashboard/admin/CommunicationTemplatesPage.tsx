@@ -144,6 +144,7 @@ export default function CommunicationTemplatesPage() {
         const isFullHtmlEmail = /<style[\s\S]*?>|<!DOCTYPE/i.test(richContent) && !tpl.htmlContent;
         setEditorMode(isFullHtmlEmail ? 'html' : 'rich');
         setViewMode("edit");
+        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     // ── Open preview ──────────────────────────────────────────────
@@ -156,6 +157,7 @@ export default function CommunicationTemplatesPage() {
         setPreviewVars(initVars);
         setPreviewResult(null);
         setViewMode("preview");
+        window.scrollTo({ top: 0, behavior: "smooth" });
         runPreview(tpl.id, initVars, tpl.contentMode);  // preview the active (sending) content by default
     };
 
@@ -444,7 +446,7 @@ export default function CommunicationTemplatesPage() {
                     {(viewMode === "edit" || viewMode === "preview") &&
                         selectedTemplate && (
                             <div
-                                className="fixed inset-0 z-999 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-2 overflow-y-auto"
+                                className="fixed inset-0 z-[999] flex items-start justify-center bg-gray-900/50 backdrop-blur-sm p-4 sm:p-20 overflow-y-auto"
                                 onMouseDown={(e) => {
                                     if (e.target === e.currentTarget) closePanel();
                                 }}
@@ -452,7 +454,7 @@ export default function CommunicationTemplatesPage() {
                                 {/* Edit Panel Modal */}
                                 {viewMode === "edit" && (
                                     <div
-                                        className="w-full max-w-4xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh]"
+                                        className="w-full max-w-4xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[150vh]"
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         {/* Panel header */}
@@ -653,7 +655,7 @@ export default function CommunicationTemplatesPage() {
                                 {/* Preview Panel Modal */}
                                 {viewMode === "preview" && (
                                     <div
-                                        className="w-full max-w-4xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh]"
+                                        className="w-full max-w-4xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[100vh]"
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         {/* Panel header */}
