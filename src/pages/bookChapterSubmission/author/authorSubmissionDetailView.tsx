@@ -22,7 +22,7 @@ import ChapterProgressBar from '../common/status/chapterProgressBar';
 import styles from './authorSubmissionDetailView.module.css';
 import { bookChapterService } from '../../../services/bookChapterSumission.service';
 import chapterService from '../../../services/chapter.service';
-import DeliveryAddressForm from '../../components/common/deliveryAddressForm';
+import OptionalDeliveryAddressForm from '../../components/common/optionalDeliveryAddressForm';
 import { DESIGNATIONS } from '../../../types/bookChapterManuscriptTypes';
 import { ChevronDown, ChevronUp, Save, Plus, Trash2 } from 'lucide-react';
 import PhoneNumberInput from '../../../components/common/PhoneNumberInput';
@@ -391,24 +391,24 @@ export const AuthorSubmissionDetailView: React.FC<AuthorSubmissionDetailViewProp
                 alignItems: 'flex-start',
                 gap: '12px',
                 padding: '20px',
-                backgroundColor: '#fffbeb',
-                border: '1px solid #f59e0b',
+                backgroundColor: '#f0f9ff',
+                border: '1px solid #0ea5e9',
                 borderRadius: '12px',
                 marginBottom: '24px',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               }}>
-                <AlertCircle size={24} style={{ color: '#d97706', flexShrink: 0, marginTop: '2px' }} />
+                <AlertCircle size={24} style={{ color: '#0ea5e9', flexShrink: 0, marginTop: '2px' }} />
                 <div style={{ flex: 1 }}>
-                  <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1rem', fontWeight: '700', color: '#92400e' }}>
-                    Action Required: Submit Your Delivery Address
+                  <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1rem', fontWeight: '700', color: '#0369a1' }}>
+                    Delivery Address
                   </h3>
-                  <p style={{ margin: '0 0 20px 0', fontSize: '0.95rem', color: '#78350f', lineHeight: '1.5' }}>
-                    Publication has been initiated for your book chapter. We need your current delivery address to proceed with the final publication and copy dispatch.
+                  <p style={{ margin: '0 0 20px 0', fontSize: '0.95rem', color: '#0c4a6e', lineHeight: '1.5' }}>
+                    Publication has been initiated! We recommend providing your delivery address so we can dispatch your complimentary copies once published.
                   </p>
                   <button
                     onClick={() => setShowDeliveryAddressForm(true)}
                     style={{
-                      backgroundColor: '#f59e0b',
+                      backgroundColor: '#0ea5e9',
                       color: 'white',
                       border: 'none',
                       padding: '12px 24px',
@@ -420,12 +420,12 @@ export const AuthorSubmissionDetailView: React.FC<AuthorSubmissionDetailViewProp
                       alignItems: 'center',
                       gap: '8px',
                       transition: 'all 0.2s ease',
-                      boxShadow: '0 2px 4px rgba(245, 158, 11, 0.3)'
+                      boxShadow: '0 2px 4px rgba(14, 165, 233, 0.3)'
                     }}
-                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#d97706'}
-                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f59e0b'}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#0284c7'}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#0ea5e9'}
                   >
-                    Submit Delivery Address Now →
+                    Submit Delivery Address →
                   </button>
                 </div>
               </div>
@@ -457,7 +457,7 @@ export const AuthorSubmissionDetailView: React.FC<AuthorSubmissionDetailViewProp
       {showDeliveryAddressForm && (
         <div className={styles.modalOverlay} onClick={() => setShowDeliveryAddressForm(false)}>
           <div className={styles.modal} style={{ maxWidth: '800px', width: '95%', maxHeight: '90vh', overflowY: 'auto', padding: 0 }} onClick={e => e.stopPropagation()}>
-            <DeliveryAddressForm
+            <OptionalDeliveryAddressForm
               submissionId={submission.id}
               type="chapter"
               onSuccess={(savedAddress) => {

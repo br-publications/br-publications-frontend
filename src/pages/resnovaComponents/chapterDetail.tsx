@@ -4,7 +4,6 @@ import { bookChapterService } from '../../services/bookChapterService';
 import { getExtraPdfUrl } from '../../services/bookChapterPublishing.service';
 import type { Book, Chapter } from '../../types/bookTypes';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import './chapterDetail.css';
 
 const ChapterDetail: React.FC = () => {
@@ -77,7 +76,7 @@ const ChapterDetail: React.FC = () => {
         <main className="content chapter-detail-page">
             <section className="resNova-page">
                 <div className="breadcrumb-wrapper">
-                    <Link to="/books">Books</Link> / <Link to={`/bookchapter/${book.id}`}>{book.title}</Link> / <span>{chapter.chapterNumber}</span>
+                    <Link to="/bookchapters">Books</Link> / <Link to={`/bookchapter/${book.id}`}>{book.title}</Link> / <span>{chapter.chapterNumber}</span>
                 </div>
 
                 <div className="chapter-layout">
@@ -105,7 +104,7 @@ const ChapterDetail: React.FC = () => {
                                         <div className="meta-info-item"><strong>Source Title:</strong> <span>{book.title}</span></div>
                                         <div className="meta-info-item"><strong>Copyright:</strong> <span>{book.copyright || 'N/A'}</span></div>
                                         <div className="meta-info-item"><strong>Pages:</strong> <span>{chapter.pages || 'N/A'}</span></div>
-                                        <div className="meta-info-item"><strong>DOI:</strong> <span>{book.doi || 'N/A'}</span></div>
+                                        <div className="meta-info-item"><strong>DOI:</strong> <span>{book.doi ? <a href={book.doi} target="_blank" rel="noopener noreferrer">{book.doi}</a> : 'N/A'}</span></div>
                                     </div>
                                 </div>
                             </div>

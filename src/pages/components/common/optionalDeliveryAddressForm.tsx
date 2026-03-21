@@ -59,7 +59,6 @@ const PhoneField: React.FC<PhoneFieldProps> = ({
     codeField,
     numField,
     label,
-    required = true,
     form,
     errors,
     dropdownId,
@@ -70,7 +69,7 @@ const PhoneField: React.FC<PhoneFieldProps> = ({
     onValidate,
 }) => (
     <div className="dlv_formGroup">
-        <label>{label}{required && '*'}</label>
+        <label>{label}</label>
         <div className="dlv_phoneInputGroup">
             <div className="dlv_countryDropdown">
                 <div
@@ -195,8 +194,7 @@ const OptionalDeliveryAddressForm: React.FC<OptionalDeliveryAddressFormProps> = 
 
     const validatePhone = (digits: string): string => {
         const cleaned = digits.replace(/\D/g, '');
-        if (!cleaned) return 'Phone number is required';
-        if (cleaned.length < 10) return 'Phone number must be at least 10 digits';
+        if (cleaned && cleaned.length < 10) return 'Phone number must be at least 10 digits';
         return '';
     };
 
@@ -204,30 +202,17 @@ const OptionalDeliveryAddressForm: React.FC<OptionalDeliveryAddressFormProps> = 
         const newErrors: Record<string, string> = {};
 
         if (tab === 'recipient') {
-            if (!form.fullName.trim()) newErrors['fullName'] = 'Full name is required';
-            if (!form.mobileNumber.trim()) newErrors['mobileNumber'] = 'Mobile number is required';
-            else {
+            if (form.mobileNumber.trim()) {
                 const err = validatePhone(form.mobileNumber);
                 if (err) newErrors['mobileNumber'] = err;
             }
             if (form.altMobileNumber.trim()) {
                 const err = validatePhone(form.altMobileNumber);
-                if (err && err !== 'Phone number is required') newErrors['altMobileNumber'] = err;
+                if (err) newErrors['altMobileNumber'] = err;
             }
-            if (!form.email.trim()) newErrors['email'] = 'Email is required';
-            else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors['email'] = 'Invalid email format';
-        }
-
-        if (tab === 'address') {
-            if (!form.addressLine1.trim()) newErrors['addressLine1'] = 'Address Line 1 is required';
-            if (!form.city.trim()) newErrors['city'] = 'City is required';
-            if (!form.state.trim()) newErrors['state'] = 'State / Province is required';
-            if (!form.postalCode.trim()) newErrors['postalCode'] = 'Postal Code is required';
-            if (!form.country.trim()) newErrors['country'] = 'Country is required';
-        }
-
-        if (tab === 'preferences') {
-            if (!form.isResidential) newErrors['isResidential'] = 'Please select address type';
+            if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+                newErrors['email'] = 'Invalid email format';
+            }
         }
 
         if (Object.keys(newErrors).length > 0) {
@@ -300,14 +285,13 @@ const OptionalDeliveryAddressForm: React.FC<OptionalDeliveryAddressFormProps> = 
         setIsSubmitting(true);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/delivery-address`, {
+            const response = await fetch(`${API_BASE_URL}/api/optional-delivery-address`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({
                     ...form,
                     submissionId,
-                    submissionType: type,
-                    isOptional: true
+                    submissionType: type
                 })
             });
 
@@ -340,8 +324,7 @@ const OptionalDeliveryAddressForm: React.FC<OptionalDeliveryAddressFormProps> = 
     };
 
     const handleValidate = (field: keyof DeliveryAddress, value: string) => {
-        const required = field === 'mobileNumber';
-        if (required || value.trim()) {
+        if (value.trim()) {
             const err = validatePhone(value);
             if (err) setErrors(prev => ({ ...prev, [field]: err }));
         }
@@ -384,13 +367,12 @@ const OptionalDeliveryAddressForm: React.FC<OptionalDeliveryAddressFormProps> = 
                                     <h3 className="dlv_sectionTitle">👤 Recipient Information</h3>
 
                                     <div className="dlv_formGroup full">
-                                        <label>Full Name (as per Government ID)*</label>
+                                        <label>Full Name (as per Government ID)</label>
                                         <input
                                             type="text"
                                             placeholder="Enter full legal name"
                                             value={form.fullName}
                                             onChange={(e) => handleChange('fullName', e.target.value)}
-                                            onBlur={() => !form.fullName && setErrors(p => ({ ...p, fullName: 'Full name is required' }))}
                                         />
                                         {errors.fullName && <span className="dlv_errorMessage">{errors.fullName}</span>}
                                     </div>
@@ -422,7 +404,7 @@ const OptionalDeliveryAddressForm: React.FC<OptionalDeliveryAddressFormProps> = 
                                             codeField="countryCode"
                                             numField="mobileNumber"
                                             label="Mobile Number"
-                                            required={true}
+                                            required={false}
                                             form={form}
                                             errors={errors}
                                             dropdownId={dropdownId}
@@ -450,15 +432,14 @@ const OptionalDeliveryAddressForm: React.FC<OptionalDeliveryAddressFormProps> = 
                                     </div>
 
                                     <div className="dlv_formGroup full">
-                                        <label>Email Address* <span className="dlv_optional">(For tracking updates)</span></label>
+                                        <label>Email Address <span className="dlv_optional">(For tracking updates)</span></label>
                                         <input
                                             type="email"
                                             placeholder="your@email.com"
                                             value={form.email}
                                             onChange={(e) => handleChange('email', e.target.value)}
                                             onBlur={() => {
-                                                if (!form.email) setErrors(p => ({ ...p, email: 'Email is required' }));
-                                                else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+                                                if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
                                                     setErrors(p => ({ ...p, email: 'Invalid email format' }));
                                             }}
                                         />
@@ -473,13 +454,12 @@ const OptionalDeliveryAddressForm: React.FC<OptionalDeliveryAddressFormProps> = 
                                     <h3 className="dlv_sectionTitle">🏠 Complete Delivery Address</h3>
 
                                     <div className="dlv_formGroup full">
-                                        <label>🏠 Address Line 1*</label>
+                                        <label>🏠 Address Line 1</label>
                                         <input
                                             type="text"
                                             placeholder="House / Flat / Apartment Number"
                                             value={form.addressLine1}
                                             onChange={(e) => handleChange('addressLine1', e.target.value)}
-                                            onBlur={() => !form.addressLine1 && setErrors(p => ({ ...p, addressLine1: 'Address Line 1 is required' }))}
                                         />
                                         {errors.addressLine1 && <span className="dlv_errorMessage">{errors.addressLine1}</span>}
                                     </div>
@@ -528,24 +508,22 @@ const OptionalDeliveryAddressForm: React.FC<OptionalDeliveryAddressFormProps> = 
 
                                     <div className="dlv_formRow">
                                         <div className="dlv_formGroup">
-                                            <label>🌍 City / Town*</label>
+                                            <label>🌍 City / Town</label>
                                             <input
                                                 type="text"
                                                 placeholder="City name"
                                                 value={form.city}
                                                 onChange={(e) => handleChange('city', e.target.value)}
-                                                onBlur={() => !form.city && setErrors(p => ({ ...p, city: 'City is required' }))}
                                             />
                                             {errors.city && <span className="dlv_errorMessage">{errors.city}</span>}
                                         </div>
                                         <div className="dlv_formGroup">
-                                            <label>🗺 State / Province / Region*</label>
+                                            <label>🗺 State / Province / Region</label>
                                             <input
                                                 type="text"
                                                 placeholder="State or Province"
                                                 value={form.state}
                                                 onChange={(e) => handleChange('state', e.target.value)}
-                                                onBlur={() => !form.state && setErrors(p => ({ ...p, state: 'State is required' }))}
                                             />
                                             {errors.state && <span className="dlv_errorMessage">{errors.state}</span>}
                                         </div>
@@ -553,22 +531,20 @@ const OptionalDeliveryAddressForm: React.FC<OptionalDeliveryAddressFormProps> = 
 
                                     <div className="dlv_formRow">
                                         <div className="dlv_formGroup">
-                                            <label>📮 Postal Code / ZIP Code*</label>
+                                            <label>📮 Postal Code / ZIP Code</label>
                                             <input
                                                 type="text"
                                                 placeholder="e.g. 600001"
                                                 value={form.postalCode}
                                                 onChange={(e) => handleChange('postalCode', e.target.value)}
-                                                onBlur={() => !form.postalCode && setErrors(p => ({ ...p, postalCode: 'Postal code is required' }))}
                                             />
                                             {errors.postalCode && <span className="dlv_errorMessage">{errors.postalCode}</span>}
                                         </div>
                                         <div className="dlv_formGroup">
-                                            <label>🌎 Country*</label>
+                                            <label>🌎 Country</label>
                                             <select
                                                 value={form.country}
                                                 onChange={(e) => handleChange('country', e.target.value)}
-                                                onBlur={() => !form.country && setErrors(p => ({ ...p, country: 'Country is required' }))}
                                             >
                                                 <option value="">Select Country</option>
                                                 {COUNTRIES.map((c) => (
@@ -602,11 +578,10 @@ const OptionalDeliveryAddressForm: React.FC<OptionalDeliveryAddressFormProps> = 
                                             <span className="dlv_fieldHint">Auto-filled from your country selection</span>
                                         </div>
                                         <div className="dlv_formGroup">
-                                            <label>Address Type*</label>
+                                            <label>Address Type</label>
                                             <select
                                                 value={form.isResidential}
                                                 onChange={(e) => handleChange('isResidential', e.target.value)}
-                                                onBlur={() => !form.isResidential && setErrors(p => ({ ...p, isResidential: 'Please select address type' }))}
                                             >
                                                 <option value="">Select type</option>
                                                 <option value="residential">🏠 Residential Address</option>

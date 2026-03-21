@@ -858,27 +858,25 @@ const ActionsTab: React.FC<{
                   alignItems: 'flex-start',
                   gap: '10px',
                   padding: '12px 16px',
-                  backgroundColor: '#fffbeb',
-                  border: '1px solid #f59e0b',
+                  backgroundColor: '#f0f9ff',
+                  border: '1px solid #0ea5e9',
                   borderRadius: '8px',
                   marginBottom: '12px',
                 }}>
-                  <AlertCircle size={18} style={{ color: '#d97706', flexShrink: 0, marginTop: '2px' }} />
+                  <AlertCircle size={18} style={{ color: '#0ea5e9', flexShrink: 0, marginTop: '2px' }} />
                   <div>
-                    <p style={{ fontWeight: '600', color: '#92400e', marginBottom: '4px' }}>Waiting for Author Delivery Address</p>
-                    <p style={{ fontSize: '0.85rem', color: '#78350f' }}>The author has been notified to submit their delivery address. You can publish the book once they provide it.</p>
+                    <p style={{ fontWeight: '600', color: '#0369a1', marginBottom: '4px' }}>Author Delivery Address Pending (Optional)</p>
+                    <p style={{ fontSize: '0.85rem', color: '#0c4a6e' }}>The author has been notified to submit their delivery address. You can still proceed with publication.</p>
                   </div>
                 </div>
               )}
               <button
                 className={`${styles.actionButton} ${submission.status === 'PUBLISHED' ? styles.secondaryButton : styles.primaryButton}`}
                 onClick={onPublish}
-                disabled={submission.status === 'PUBLICATION_IN_PROGRESS' && !(submission as any).deliveryAddress}
                 style={{
-                  backgroundColor: (submission.status === 'PUBLICATION_IN_PROGRESS' && (submission as any).deliveryAddress) ? '#10B981' : undefined,
-                  color: (submission.status === 'PUBLICATION_IN_PROGRESS' && (submission as any).deliveryAddress) ? 'white' : undefined,
-                  opacity: (submission.status === 'PUBLICATION_IN_PROGRESS' && !(submission as any).deliveryAddress) ? 0.5 : 1,
-                  cursor: (submission.status === 'PUBLICATION_IN_PROGRESS' && !(submission as any).deliveryAddress) ? 'not-allowed' : 'pointer',
+                  backgroundColor: (submission.status === 'PUBLICATION_IN_PROGRESS') ? '#10B981' : undefined,
+                  color: (submission.status === 'PUBLICATION_IN_PROGRESS') ? 'white' : undefined,
+                  cursor: 'pointer',
                 }}
               >
                 <FileText size={16} /> {submission.status === 'PUBLISHED' ? 'Edit Publication Details' : 'Publish Book'}

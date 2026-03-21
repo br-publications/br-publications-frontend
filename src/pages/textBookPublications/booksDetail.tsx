@@ -220,13 +220,9 @@ const BooksDetail: React.FC = () => {
                       <span>{book.pages}</span>
                     </div>
                     {book.doi && (
-                      <div
-                        className="meta-item clickable"
-                        onClick={() => copyToClipboard(book.doi!, 'DOI')}
-                        title="Click to copy DOI"
-                      >
+                      <div className="meta-item">
                         <strong>DOI:</strong>
-                        <span>{book.doi}</span>
+                        <a href={book.doi} target="_blank" rel="noopener noreferrer">{book.doi}</a>
                       </div>
                     )}
                     <div
