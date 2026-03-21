@@ -195,7 +195,7 @@ export default function BookChapterManager({ bookTitle, addToast, onBack }: Prop
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     {reorderSaving && <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>Saving order...</span>}
-                    <button className="btn btn-ghost btn-sm" onClick={onBack}>&#8592; Back</button>
+                    <button className="btn btn-ghost btn-sm" onClick={onBack}>← Back</button>
                 </div>
             </div>
 
@@ -234,7 +234,7 @@ export default function BookChapterManager({ bookTitle, addToast, onBack }: Prop
                                 <tr>
                                     <td colSpan={4}>
                                         <div className="bms-empty">
-                                            <div className="bms-empty-icon">&#128214;</div>
+                                            <div className="bms-empty-icon">📖</div>
                                             <p>No chapters recorded yet — add one below.</p>
                                         </div>
                                     </td>
@@ -249,7 +249,7 @@ export default function BookChapterManager({ bookTitle, addToast, onBack }: Prop
                                     onDragEnd={onDragEnd}
                                 >
                                     {/* drag handle */}
-                                    <td className="drag-col" title="Drag to reorder">&#8942;&#8942;</td>
+                                    <td className="drag-col" title="Drag to reorder">⋮⋮</td>
 
                                     {/* number */}
                                     <td>
@@ -274,7 +274,7 @@ export default function BookChapterManager({ bookTitle, addToast, onBack }: Prop
                                                 <button className="btn btn-navy btn-xs" onClick={() => saveEdit(ch)} disabled={editSaving}>
                                                     {editSaving ? '...' : '✓'}
                                                 </button>
-                                                <button className="btn btn-ghost btn-xs" onClick={cancelEdit}>&#10005;</button>
+                                                <button className="btn btn-ghost btn-xs" onClick={cancelEdit}>✕</button>
                                             </div>
                                         ) : (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -292,10 +292,10 @@ export default function BookChapterManager({ bookTitle, addToast, onBack }: Prop
                                     {/* actions */}
                                     <td className="actions">
                                         <div style={{ display: 'flex', gap: '0.3rem', justifyContent: 'flex-end' }}>
-                                            <button className="btn-icon-sq" onClick={() => moveChapter(idx, -1)} disabled={idx === 0} title="Move up">&#8593;</button>
-                                            <button className="btn-icon-sq" onClick={() => moveChapter(idx, 1)} disabled={idx === chapters.length - 1} title="Move down">&#8595;</button>
-                                            <button className="btn-icon-sq" onClick={() => startEdit(ch)} title="Edit">&#9998;</button>
-                                            <button className="btn-icon-sq danger" onClick={() => doDelete(ch)} title="Delete">&#128465;</button>
+                                            <button className="btn-icon-sq" onClick={() => moveChapter(idx, -1)} disabled={idx === 0} title="Move up">↑</button>
+                                            <button className="btn-icon-sq" onClick={() => moveChapter(idx, 1)} disabled={idx === chapters.length - 1} title="Move down">↓</button>
+                                            <button className="btn-icon-sq" onClick={() => startEdit(ch)} title="Edit">✎</button>
+                                            <button className="btn-icon-sq danger" onClick={() => doDelete(ch)} title="Delete">🗑️</button>
                                         </div>
                                     </td>
                                 </tr>

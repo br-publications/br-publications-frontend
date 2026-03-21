@@ -81,8 +81,10 @@ const BookChapterManuscript: React.FC = () => {
     id: number;
     fullName: string;
     email: string;
+    isPrimary: boolean;
   }>>([]);
   const [selectedEditor, setSelectedEditor] = useState<string>('');
+  const [isPrimaryEditorForced, setIsPrimaryEditorForced] = useState<boolean>(false);
   const [isLoadingEditors, setIsLoadingEditors] = useState<boolean>(false);
 
   // Declaration checkbox
@@ -242,9 +244,19 @@ const BookChapterManuscript: React.FC = () => {
           response.data.editors.map((assignment: any) => ({
             id: assignment.editor.id,
             fullName: assignment.editor.fullName,
-            email: assignment.editor.email
+            email: assignment.editor.email,
+            isPrimary: assignment.isPrimary
           }))
         );
+
+        // Auto-select primary editor if exists
+        const primary = response.data.editors.find((a: any) => a.isPrimary);
+        if (primary) {
+          setSelectedEditor(primary.editorId.toString());
+          setIsPrimaryEditorForced(true);
+        } else {
+          setIsPrimaryEditorForced(false);
+        }
       } else {
         setAvailableEditors([]);
       }
@@ -1783,59 +1795,77 @@ const BookChapterManuscript: React.FC = () => {
 
                   {/* Editor Selection - Only show if book title is selected */}
                   {bookTitle && (
-                    <div className="bookFormGroup" style={{ marginBottom: '20px' }}>
-                      <label>
-                        Select Editor *
-                      </label>
-                      {isLoadingEditors ? (
-                        <div className="multiselect-placeholder">Loading available editors...</div>
-                      ) : availableEditors.length === 0 ? (
-                        <div className="info-message" style={{
-                          padding: '12px',
-                          backgroundColor: '#f0f9ff',
-                          border: '1px solid #bfdbfe',
-                          borderRadius: '6px',
-                          color: '#1e40af',
-                          fontSize: '14px'
-                        }}>
-                          ℹ️ No editors are currently assigned to this book title. An admin will assign an editor after submission.
-                        </div>
-                      ) : (
-                        <>
-                          <select
-                            value={selectedEditor}
-                            onChange={(e) => {
-                              setSelectedEditor(e.target.value);
-                              // Validate if touched
-                              if (touchedFields['selectedEditor']) {
-                                const error = validateField('selectedEditor', e.target.value);
-                                if (error) {
-                                  setErrors(prev => ({ ...prev, selectedEditor: error }));
-                                } else {
-                                  setErrors(prev => {
-                                    const newErrors = { ...prev };
-                                    delete newErrors['selectedEditor'];
-                                    return newErrors;
-                                  });
+                    <div className="bookFormGroup" style={{ marginBottom: '20px', display: 'none' }}>
+                      <div className="bookFormGroup_1" style={{ display: 'none' }}>
+                        <label>
+                          Select Editor *
+                        </label>
+                        {isLoadingEditors ? (
+                          <div className="multiselect-placeholder">Loading available editors...</div>
+                        ) : availableEditors.length === 0 ? (
+                          <div className="info-message" style={{
+                            padding: '12px',
+                            backgroundColor: '#f0f9ff',
+                            border: '1px solid #bfdbfe',
+                            borderRadius: '6px',
+                            color: '#1e40af',
+                            fontSize: '14px'
+                          }}>
+                            ℹ️ No editors are currently assigned to this book title. An admin will assign an editor after submission.
+                          </div>
+                        ) : (
+                          <>
+                            <select
+                              value={selectedEditor}
+                              onChange={(e) => {
+                                setSelectedEditor(e.target.value);
+                                // Validate if touched
+                                if (touchedFields['selectedEditor']) {
+                                  const error = validateField('selectedEditor', e.target.value);
+                                  if (error) {
+                                    setErrors(prev => ({ ...prev, selectedEditor: error }));
+                                  } else {
+                                    setErrors(prev => {
+                                      const newErrors = { ...prev };
+                                      delete newErrors['selectedEditor'];
+                                      return newErrors;
+                                    });
+                                  }
                                 }
-                              }
-                            }}
-                            onBlur={(e) => handleFieldBlur('selectedEditor', e.target.value)}
-                            className={`select-input ${errors['selectedEditor'] ? 'input-error' : ''}`}
-                          >
-                            <option value="">-- Select an Editor --</option>
-                            {availableEditors.map((editor) => (
-                              <option key={editor.id} value={editor.id.toString()}>
-                                {editor.fullName} ({editor.email})
-                              </option>
-                            ))}
-                          </select>
-                          {errors['selectedEditor'] && (
-                            <span className="error-messages">{errors['selectedEditor']}</span>
-                          )}
+                              }}
+                              onBlur={(e) => handleFieldBlur('selectedEditor', e.target.value)}
+                              className={`select-input ${errors['selectedEditor'] ? 'input-error' : ''}`}
+                              disabled={isPrimaryEditorForced}
+                            >
+                              <option value="">-- Select an Editor --</option>
+                              {availableEditors.map((editor) => (
+                                <option key={editor.id} value={editor.id.toString()}>
+                                  {editor.fullName} ({editor.email})
+                                </option>
+                              ))}
+                            </select>
+                            {errors['selectedEditor'] && (
+                              <span className="error-messages">{errors['selectedEditor']}</span>
+                            )}
+                            {isPrimaryEditorForced && (
+                              <div className="info-message" style={{
+                                marginTop: '8px',
+                                padding: '6px 10px',
+                                backgroundColor: '#f0fdf4',
+                                border: '1px solid #bbf7d0',
+                                borderRadius: '4px',
+                                color: '#15803d',
+                                fontSize: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                              }}>
+                              </div>
+                            )}
 
-                        </>
-                      )}
+                          </>
+                        )}
+                      </div>
                     </div>
                   )}
 

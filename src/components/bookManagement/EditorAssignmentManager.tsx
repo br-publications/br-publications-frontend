@@ -12,6 +12,7 @@ interface Props {
 interface AssignedEditor {
     id: number;
     assignedAt: string;
+    isPrimary: boolean;
     editor?: {
         id: number;
         fullName: string;
@@ -141,6 +142,16 @@ export default function EditorAssignmentManager({ bookTitle, addToast, onBack }:
         });
     };
 
+    const handleSetPrimary = async (ae: AssignedEditor) => {
+        try {
+            await bookManagementService.bookEditor.setPrimaryEditor(bookTitle.id, ae.editor!.id);
+            addToast('success', `${ae.editor?.fullName} set as primary editor.`);
+            fetchAssigned();
+        } catch (e: any) {
+            addToast('error', e.message || 'Failed to set primary editor');
+        }
+    };
+
     const assignedEditorIds = assigned.map((ae) => ae.editor?.id);
     const unassigned = available.filter(
         (e) => !assignedEditorIds.includes(e.id) &&
@@ -191,9 +202,9 @@ export default function EditorAssignmentManager({ bookTitle, addToast, onBack }:
                         </button>
                     )}
                     <button className="btn btn-navy btn-sm" onClick={() => setShowAssign((p) => !p)}>
-                        {showAssign ? '&#10005; Cancel' : '+ Assign Editors'}
+                        {showAssign ? 'Cancel' : '+ Assign Editors'}
                     </button>
-                    <button className="btn btn-ghost btn-sm" onClick={onBack}>&#8592; Back</button>
+                    <button className="btn btn-ghost btn-sm" onClick={onBack}>← Back</button>
                 </div>
             </div>
 
@@ -214,7 +225,7 @@ export default function EditorAssignmentManager({ bookTitle, addToast, onBack }:
                 <div className="bms-form-panel" style={{ marginBottom: '1rem' }}>
                     <div className="bms-form-panel-head">
                         <h3>Assign Editors to "{bookTitle.title}"</h3>
-                        <button className="bms-form-panel-close" onClick={() => { setShowAssign(false); setSelectedIds([]); setAssignSearch(''); }}>&#10005;</button>
+                        <button className="bms-form-panel-close" onClick={() => { setShowAssign(false); setSelectedIds([]); setAssignSearch(''); }}>✕</button>
                     </div>
                     <div className="bms-form-panel-body" style={{ gap: '0.75rem' }}>
                         <div className="bms-editors-picker">
@@ -272,7 +283,7 @@ export default function EditorAssignmentManager({ bookTitle, addToast, onBack }:
             {/* ── Toolbar ── */}
             <div className="bms-toolbar">
                 <div className="bms-search">
-                    <span className="bms-search-icon">&#128269;</span>
+                    <span className="bms-search-icon">🔍</span>
                     <input
                         placeholder="Search assigned editors..."
                         value={tableSearch}
@@ -298,6 +309,7 @@ export default function EditorAssignmentManager({ bookTitle, addToast, onBack }:
                                     />
                                 </th>
                                 <th>#</th>
+                                <th>Primary</th>
                                 <th>Editor Name</th>
                                 <th>Email</th>
                                 <th>Date Assigned</th>
@@ -309,7 +321,7 @@ export default function EditorAssignmentManager({ bookTitle, addToast, onBack }:
                                 <tr>
                                     <td colSpan={6}>
                                         <div className="bms-empty">
-                                            <div className="bms-empty-icon">&#128100;</div>
+                                            <div className="bms-empty-icon">👤</div>
                                             <p>No editors assigned to this title yet.</p>
                                             <button className="btn btn-navy btn-sm" onClick={() => setShowAssign(true)}>Assign first editor</button>
                                         </div>
@@ -326,6 +338,19 @@ export default function EditorAssignmentManager({ bookTitle, addToast, onBack }:
                                         />
                                     </td>
                                     <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>{idx + 1}</td>
+                                    <td>
+                                        {ae.isPrimary ? (
+                                            <span className="badge-primary">Primary</span>
+                                        ) : (
+                                            <button 
+                                                className="btn btn-ghost btn-xs" 
+                                                onClick={() => handleSetPrimary(ae)}
+                                                style={{ fontSize: 10, padding: '0.1rem 0.4rem' }}
+                                            >
+                                                Make Primary
+                                            </button>
+                                        )}
+                                    </td>
                                     <td>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                                             <div style={{
@@ -356,7 +381,7 @@ export default function EditorAssignmentManager({ bookTitle, addToast, onBack }:
                                             onClick={() => doRemove(ae)}
                                             title="Rescind assignment"
                                         >
-                                            &#128465;
+                                            🗑️
                                         </button>
                                     </td>
                                 </tr>
