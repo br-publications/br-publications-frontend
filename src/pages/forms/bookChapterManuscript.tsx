@@ -2087,14 +2087,14 @@ const BookChapterManuscript: React.FC = () => {
                         <span className="review-label">Book Title:</span>
                         <span className="review-value">{getBookTitleName(bookTitle)}</span>
                       </div>
-                      <div className="review-item">
+                      {/* <div className="review-item">
                         <span className="review-label">Selected Editor:</span>
                         <span className="review-value">
                           {selectedEditor
                             ? availableEditors.find(e => e.id.toString() === selectedEditor)?.fullName || 'Unknown Editor'
                             : 'No editor selected (will be assigned)'}
                         </span>
-                      </div>
+                      </div> */}
                       <div className="review-item full-width">
                         <span className="review-label">Chapter Titles:</span>
                         <span className="review-value">
