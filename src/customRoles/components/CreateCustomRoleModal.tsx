@@ -176,7 +176,7 @@ const CreateCustomRoleModal: React.FC<CreateCustomRoleModalProps> = ({
                         type="button"
                         className="modal-close-btn"
                         onClick={handleClose}
-                        aria-label="Close modal"
+                        aria-label="Close"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"

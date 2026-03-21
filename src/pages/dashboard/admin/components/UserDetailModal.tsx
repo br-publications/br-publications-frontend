@@ -225,7 +225,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, isOpen, onClose
                                 onClick={onClose}
                                 className="px-5 py-2 bg-indigo-600 text-white rounded-lg text-[13px] font-semibold flex items-center gap-1.5 shadow-sm hover:bg-indigo-700 transition-all"
                             >
-                                Close Modal
+                                Close
                             </button>
                         </div>
                     </div>

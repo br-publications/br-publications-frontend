@@ -880,6 +880,12 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                                 <input className="pcw-input" placeholder="To Page" value={ch.pagesTo || ''} onChange={(e) => updateTocField(i, 'pagesTo', e.target.value)} />
                                             </div>
                                         </div>
+                                        <textarea className="pcw-textarea" rows={2} value={ch.abstract || ''} onChange={(e) => updateTocField(i, 'abstract', e.target.value)} placeholder="Abstract" style={{ marginTop: '8px' }} />
+                                        <div className="pcw-toc-flex-row" style={{ marginTop: '8px' }}>
+                                            <input className="pcw-input" type="number" value={ch.priceSoftCopy || ''} onChange={(e) => updateTocField(i, 'priceSoftCopy', e.target.value)} placeholder="₹ Soft" />
+                                            <input className="pcw-input" type="number" value={ch.priceHardCopy || ''} onChange={(e) => updateTocField(i, 'priceHardCopy', e.target.value)} placeholder="₹ Hard" />
+                                            <input className="pcw-input" type="number" value={ch.priceCombined || ''} onChange={(e) => updateTocField(i, 'priceCombined', e.target.value)} placeholder="₹ Both" />
+                                        </div>
                                         <div className="pcw-toc-flex-row" style={{ marginTop: '4px' }}>
                                             <button type="button" className={`pcw-pdf-upload-btn ${ch.pdfKey ? 'has-pdf' : ''}`} onClick={() => pdfInputRefs.current[i]?.click()}>
                                                 {pdfUploading[i] !== undefined ? `${pdfUploading[i]}%` :
