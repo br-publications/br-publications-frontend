@@ -42,6 +42,7 @@ export interface BookEditor {
     editorId: number;
     assignedBy: number;
     assignedAt: string;
+    isPrimary: boolean;
 }
 
 export interface PaginatedResponse<T> {
@@ -397,6 +398,19 @@ export const bookEditorService = {
     removeEditorAssignment: async (id: number): Promise<ApiResponse> => {
         const response = await fetch(`${API_BASE_URL}/book-editors/${id}`, {
             method: 'DELETE',
+            headers: getJsonHeaders(),
+        });
+
+        return handleResponse(response);
+    },
+
+    /**
+     * Set an editor as primary for a book title
+     * PATCH /api/book-editors/:bookTitleId/set-primary/:editorId
+     */
+    setPrimaryEditor: async (bookTitleId: number, editorId: number): Promise<ApiResponse> => {
+        const response = await fetch(`${API_BASE_URL}/book-editors/${bookTitleId}/set-primary/${editorId}`, {
+            method: 'PATCH',
             headers: getJsonHeaders(),
         });
 

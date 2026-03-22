@@ -35,18 +35,12 @@ export default function BookManagement() {
         if (book) setSelectedBook(book);
     };
 
-    const viewLabel: Record<View, string> = {
-        titles: 'Book Titles',
-        chapters: 'Chapter Management',
-        editors: 'Editor Assignments',
-    };
-
     return (
         <div className="bms-root">
             {/* ── Top bar ── */}
             <header className="bms-topbar">
                 <div className="bms-topbar-title">
-                    <div className="bms-topbar-icon">&#128218;</div>
+                    <div className="bms-topbar-icon">📚</div>
                     <div>
                         <h1>Book Chapter Management System</h1>
                         <div className="bms-topbar-sub">Editorial Administration</div>

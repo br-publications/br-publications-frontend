@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import bookManagementService, { type BookTitle } from '../../services/bookManagement.service';
 import { userService, type UserServiceUser as User } from '../../services';
 import type { ToastMsg, BookTitleNav } from './BookManagement';
@@ -36,7 +35,6 @@ function ConfirmDialog({ message, onConfirm, onCancel }: { message: string; onCo
 let tempIdSeq = 0;
 
 export default function BookTitleManager({ addToast, onManageChapters, onManageEditors }: Props) {
-    const navigate = useNavigate();
     const [bookTitles, setBookTitles] = useState<BookTitle[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -219,7 +217,7 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
                 setConfirm(null);
                 try {
                     setLoading(true);
-                    const res = await bookManagementService.bookTitle.deleteBookTitle(t.id);
+                    await bookManagementService.bookTitle.deleteBookTitle(t.id);
 
                     addToast('success', `"${t.title}" removed.`);
                     await fetchTitles();
@@ -285,7 +283,7 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
                 <div className="bms-form-panel" style={{ marginBottom: '1.25rem' }}>
                     <div className="bms-form-panel-head">
                         <h3>{editMode ? 'Edit Book Title' : 'Register New Book Title'}</h3>
-                        <button className="bms-form-panel-close" onClick={() => setShowForm(false)} title="Close">&#10005;</button>
+                        <button className="bms-form-panel-close" onClick={() => setShowForm(false)} title="Close">✕</button>
                     </div>
 
                     <div className="bms-form-panel-body">
@@ -370,10 +368,10 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
                                             onDragOver={(e) => draftDragOver(e, idx)}
                                             onDragEnd={() => setDragIdx(null)}
                                         >
-                                            <span className="chapter-drag">&#8942;&#8942;</span>
+                                            <span className="chapter-drag">⋮⋮</span>
                                             <div className="chapter-num-badge">{ch.chapterNumber}</div>
                                             <span className="chapter-entry-name">{ch.chapterTitle}</span>
-                                            <button className="btn-icon-sq danger" onClick={() => removeChapterDraft(ch.tempId)} title="Remove">&#10005;</button>
+                                            <button className="btn-icon-sq danger" onClick={() => removeChapterDraft(ch.tempId)} title="Remove">✕</button>
                                         </div>
                                     ))}
 
@@ -462,7 +460,7 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
             {/* ── Toolbar ── */}
             <div className="bms-toolbar">
                 <div className="bms-search">
-                    <span className="bms-search-icon">&#128269;</span>
+                    <span className="bms-search-icon">🔍</span>
                     <input
                         placeholder="Search titles..."
                         value={search}
@@ -476,7 +474,7 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
                 <div className="bms-spinner" />
             ) : bookTitles.length === 0 ? (
                 <div className="bms-empty">
-                    <div className="bms-empty-icon">&#128218;</div>
+                    <div className="bms-empty-icon">📚</div>
                     <p>No book titles found in the register.</p>
                     <button className="btn btn-navy btn-sm" onClick={openCreate}>Register your first title</button>
                 </div>
@@ -508,7 +506,7 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
                                             onClick={() => onManageChapters({ id: t.id, title: t.title })}
                                             title="Manage chapters"
                                         >
-                                            &#128214; {t.chapterCount || 0}
+                                            📖 {t.chapterCount || 0}
                                         </button>
                                     </td>
                                     <td>
@@ -517,7 +515,7 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
                                             onClick={() => onManageEditors({ id: t.id, title: t.title })}
                                             title="Manage editors"
                                         >
-                                            &#128100; {t.editorCount || 0}
+                                            👤 {t.editorCount || 0}
                                         </button>
                                     </td>
                                     <td>
@@ -527,9 +525,9 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
                                     </td>
                                     <td className="actions">
                                         <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'flex-end' }}>
-                                            <button className="btn-icon-sq" onClick={() => openEdit(t)} title="Edit title">&#9998;</button>
-                                            <button className="btn-icon-sq" onClick={() => onManageChapters({ id: t.id, title: t.title })} title="Manage chapters">&#128214;</button>
-                                            <button className="btn-icon-sq" onClick={() => onManageEditors({ id: t.id, title: t.title })} title="Manage editors">&#128100;</button>
+                                            <button className="btn-icon-sq" onClick={() => openEdit(t)} title="Edit title">✎</button>
+                                            <button className="btn-icon-sq" onClick={() => onManageChapters({ id: t.id, title: t.title })} title="Manage chapters">📖</button>
+                                            <button className="btn-icon-sq" onClick={() => onManageEditors({ id: t.id, title: t.title })} title="Manage editors">👤</button>
                                             <button
                                                 className="btn-icon-sq"
                                                 onClick={() => toggleActive(t)}
@@ -538,7 +536,7 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
                                             >
                                                 {t.isActive ? '●' : '●'}
                                             </button>
-                                            <button className="btn-icon-sq danger" onClick={(e) => { e.stopPropagation(); doDelete(t); }} title="Delete">&#128465;</button>
+                                            <button className="btn-icon-sq danger" onClick={(e) => { e.stopPropagation(); doDelete(t); }} title="Delete">🗑️</button>
                                         </div>
                                     </td>
                                 </tr>

@@ -1323,3 +1323,21 @@
     white-space: nowrap;
     flex-shrink: 0;
 }
+
+.badge-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+    border-radius: 4px;
+    font-family: var(--ff-body);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 1px 7px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}

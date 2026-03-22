@@ -29,6 +29,12 @@ const AlertPopup: React.FC<AlertPopupProps> = ({
   children
 }) => {
   useEffect(() => {
+    if (isOpen) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isOpen) {
         if (e.key === 'Enter') {
