@@ -87,6 +87,13 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
     onSave,
 }) => {
     const [activeTab, setActiveTab] = useState<TabType>('author');
+    const pcwBodyRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (pcwBodyRef.current) {
+            pcwBodyRef.current.scrollTop = 0;
+        }
+    }, [activeTab]);
     const [errors, setErrors] = useState<string>('');
     const [loading, setLoading] = useState(false);
     const [pdfUploading, setPdfUploading] = useState<Record<string | number, number | 'error'>>({});
@@ -576,7 +583,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                         ))}
                     </div>
 
-                    <div className="pcw-body">
+                    <div className="pcw-body" ref={pcwBodyRef}>
                         {errors && <div className="pcw-error-banner">⚠ {errors}</div>}
 
                         {activeTab === 'author' && (

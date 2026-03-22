@@ -12,7 +12,6 @@ import type { AlertType } from '../common/alertPopup';
 import PhoneNumberInput from '../common/PhoneNumberInput';
 import { isValidPhoneNumber } from '../../utils/phoneValidation';
 import { isValidUrl } from '../../utils/urlValidation';
-import { ChapterStatus } from '../../types/chapterTypes';
 import './publishChapterWizard.css';
 import '../../pages/textBookSubmission/publishing/imageCropper.css';
 
@@ -91,6 +90,13 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
     onSuccess,
 }) => {
     const [activeTab, setActiveTab] = useState<TabType>('author');
+    const pcwBodyRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (pcwBodyRef.current) {
+            pcwBodyRef.current.scrollTop = 0;
+        }
+    }, [activeTab]);
     const [touchedTabs, setTouchedTabs] = useState<Set<TabType>>(new Set(['author']));
     const [errors, setErrors] = useState<string>('');
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -106,6 +112,8 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
         type: AlertType;
         title: string;
         message: string;
+        confirmText?: string;
+        onConfirm?: () => void;
     }>({
         isOpen: false,
         type: 'info',
@@ -674,8 +682,18 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
 
             await publishBookChapter(submission.id, payload);
             toast.success('🎉 Book chapter published successfully!');
-            onSuccess();
-            onClose();
+            setAlertConfig({
+                isOpen: true,
+                type: 'success',
+                title: 'Publication Successful',
+                message: 'The book chapter has been successfully published!',
+                confirmText: 'Done',
+                onConfirm: () => {
+                    setAlertConfig(p => ({ ...p, isOpen: false }));
+                    onSuccess();
+                    onClose();
+                }
+            });
         } catch (err: any) {
             const msg = err?.message || 'Failed to publish. Please try again.';
             toast.error(msg);
@@ -749,7 +767,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                     </div>
 
                     {/* Body */}
-                    <div className="pcw-body" style={{ minHeight: '400px', overflowY: 'auto', flex: 1, paddingRight: '8px' }}>
+                    <div className="pcw-body" style={{ minHeight: '400px', overflowY: 'auto', flex: 1, paddingRight: '8px' }} ref={pcwBodyRef}>
                         {errors && <div className="pcw-error-banner" style={{ background: '#fef2f2', color: '#b91c1c', padding: '12px', borderRadius: '6px', marginBottom: '16px', border: '1px solid #f87171' }}>⚠ {errors}</div>}
 
                         {activeTab === 'author' && (

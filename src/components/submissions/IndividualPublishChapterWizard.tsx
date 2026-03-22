@@ -89,6 +89,13 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
     onSuccess,
 }) => {
     const [activeTab, setActiveTab] = useState<TabType>('author');
+    const pcwBodyRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (pcwBodyRef.current) {
+            pcwBodyRef.current.scrollTop = 0;
+        }
+    }, [activeTab]);
     const [touchedTabs, setTouchedTabs] = useState<Set<TabType>>(new Set(['author']));
     const [errors, setErrors] = useState<string>('');
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -707,7 +714,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                     </div>
 
                     {/* Body */}
-                    <div className="pcw-body">
+                    <div className="pcw-body" ref={pcwBodyRef}>
                         {errors && <div className="pcw-error-banner">⚠️ {errors}</div>}
 
                         {activeTab === 'author' && (
