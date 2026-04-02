@@ -124,7 +124,7 @@ export interface ParsedChapterEntry {
     matchedPdfs: File[]; // The actual matched file objects for this row
 
     // Author biographies — built from mainAuthorBiography + coAuthorNBiography columns
-    authorBiographies: { authorName: string; biography: string }[];
+    authorBiographies: { authorName: string; affiliation: string; email?: string; biography: string }[];
 }
 
 export interface ChapterValidationResult {
@@ -530,20 +530,60 @@ export function parseChapterCSVRow(
         pdfMaps,
         matchedPdfs: [],
         // Build author biographies from individual biography columns
-        authorBiographies: [
-            ...(str(row.mainAuthorBiography) ? [{
-                authorName: `${str(row.mainAuthorFirstName)} ${str(row.mainAuthorLastName)}`.trim(),
-                biography: str(row.mainAuthorBiography),
-            }] : []),
-            ...[1, 2, 3, 4, 5, 6].flatMap(i => {
-                const bio = str(r[`coAuthor${i}Biography`]);
-                const fname = str(r[`coAuthor${i}FirstName`]);
-                const lname = str(r[`coAuthor${i}LastName`]);
-                if (!bio || (!fname && !lname)) return [];
-                return [{ authorName: `${fname} ${lname}`.trim(), biography: bio }];
-            }),
-        ],
+        authorBiographies: buildBiographies(row, r),
     };
+}
+
+/**
+ * Helper to build author biographies from CSV row, mirroring 
+ * the IndividualPublishChapterWizard.tsx structure.
+ */
+function buildBiographies(row: ChapterCSVRow, r: Record<string, string | undefined>) {
+    const str = (v?: string) => (v ?? '').trim();
+    const wrapAffiliation = (aff: string) => {
+        const trimmed = aff.trim();
+        if (!trimmed) return '';
+        if (trimmed.startsWith('(') && trimmed.endsWith(')')) return trimmed;
+        return `(${trimmed})`;
+    };
+
+    const bios: { authorName: string; affiliation: string; email?: string; biography: string }[] = [];
+
+    // Main Author Bio
+    const mainFname = str(row.mainAuthorFirstName);
+    const mainLname = str(row.mainAuthorLastName);
+    const mainBio = str(row.mainAuthorBiography);
+    const mainInst = str(row.mainAuthorInstitute);
+    const mainEmail = str(row.mainAuthorEmail);
+
+    if (mainFname || mainLname || mainBio || mainInst) {
+        bios.push({
+            authorName: `${mainFname} ${mainLname}`.trim(),
+            affiliation: wrapAffiliation(mainInst),
+            email: mainEmail || undefined,
+            biography: mainBio,
+        });
+    }
+
+    // Co-Author Bios
+    for (let i = 1; i <= 6; i++) {
+        const fname = str(r[`coAuthor${i}FirstName`]);
+        const lname = str(r[`coAuthor${i}LastName`]);
+        const bio = str(r[`coAuthor${i}Biography`]);
+        const inst = str(r[`coAuthor${i}Institute`]);
+        const email = str(r[`coAuthor${i}Email`]);
+
+        if (fname || lname || bio || inst) {
+            bios.push({
+                authorName: `${fname} ${lname}`.trim(),
+                affiliation: wrapAffiliation(inst),
+                email: email || undefined,
+                biography: bio,
+            });
+        }
+    }
+
+    return bios;
 }
 
 // ────────────────────────────────────────────────────────────
@@ -710,57 +750,37 @@ export function validateChapterEntry(
             : 'Cover image is required — provide a coverImageFilename in the CSV and upload the matching image file.';
     }
 
-    // ── Main author (required fields) ─────────────────────
-    if (!entry.mainAuthor.firstName?.trim() || !entry.mainAuthor.lastName?.trim()) {
-        errors['mainAuthor'] = 'Main author first and last name are required.';
+    // ── Main author (now optional) ─────────────────────
+    if (entry.mainAuthor.email?.trim() && !entry.mainAuthor.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        errors['mainAuthorEmail'] = 'Main author email format is invalid.';
     }
-    if (!entry.mainAuthor.email?.trim()) {
-        errors['mainAuthorEmail'] = 'Main author email is required.';
-    }
-    if (!entry.mainAuthor.designation?.trim()) {
-        errors['mainAuthorDesignation'] = 'Main author designation is required.';
-    }
-    if (!entry.mainAuthor.departmentName?.trim()) {
-        errors['mainAuthorDepartment'] = 'Main author department is required.';
-    }
-    if (!entry.mainAuthor.instituteName?.trim()) {
-        errors['mainAuthorInstitute'] = 'Main author institute is required.';
-    }
-    if (!entry.mainAuthor.city?.trim()) {
-        errors['mainAuthorCity'] = 'Main author city is required.';
-    }
-    if (!entry.mainAuthor.state?.trim()) {
-        errors['mainAuthorState'] = 'Main author state is required.';
-    }
-    if (!entry.mainAuthor.country?.trim()) {
-        errors['mainAuthorCountry'] = 'Main author country is required.';
-    }
-    // Phone is intentionally optional — no validation here
 
     // ── Additional Fields (All Mandatory) ────────────────
     if (!entry.synopsisParagraph1?.trim()) errors['synopsisParagraph1'] = 'Synopsis Paragraph 1 is required.';
     if (!entry.scopeIntro?.trim()) errors['scopeIntro'] = 'Scope Intro is required.';
 
-    const mainAuthorBio = entry.authorBiographies.find(b => b.authorName === `${entry.mainAuthor.firstName} ${entry.mainAuthor.lastName}`.trim());
-    if (!mainAuthorBio || !mainAuthorBio.biography?.trim()) {
-        errors['mainAuthorBiography'] = 'Main author biography is required.';
+    // Biography check — only if authors are actually provided
+    const mainAuthorName = `${entry.mainAuthor.firstName} ${entry.mainAuthor.lastName}`.trim();
+    if (mainAuthorName) {
+        const mainAuthorBio = entry.authorBiographies.find(b => b.authorName === mainAuthorName);
+        if (!mainAuthorBio || !mainAuthorBio.biography?.trim()) {
+            warnings.push(`Warning: Biography for "${mainAuthorName}" is missing.`);
+        }
     }
 
-    // ── Co-Authors (All mandatory if row exists) ─────────
+    // ── Co-Authors (now optional) ─────────
     entry.coAuthorsData.forEach((ca, idx) => {
         const label = `Co-Author ${idx + 1}`;
-        if (!ca.firstName?.trim() || !ca.lastName?.trim()) errors[`coAuthor${idx + 1}Name`] = `${label} first and last name are required.`;
-        if (!ca.email?.trim()) errors[`coAuthor${idx + 1}Email`] = `${label} email is required.`;
-        if (!ca.designation?.trim()) errors[`coAuthor${idx + 1}Designation`] = `${label} designation is required.`;
-        if (!ca.departmentName?.trim()) errors[`coAuthor${idx + 1}Department`] = `${label} department is required.`;
-        if (!ca.instituteName?.trim()) errors[`coAuthor${idx + 1}Institute`] = `${label} institute is required.`;
-        if (!ca.city?.trim()) errors[`coAuthor${idx + 1}City`] = `${label} city is required.`;
-        if (!ca.state?.trim()) errors[`coAuthor${idx + 1}State`] = `${label} state is required.`;
-        if (!ca.country?.trim()) errors[`coAuthor${idx + 1}Country`] = `${label} country is required.`;
+        if (ca.email?.trim() && !ca.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+            errors[`coAuthor${idx + 1}Email`] = `${label} email format is invalid.`;
+        }
 
-        const caBio = entry.authorBiographies.find(b => b.authorName === `${ca.firstName} ${ca.lastName}`.trim());
-        if (!caBio || !caBio.biography?.trim()) {
-            errors[`coAuthor${idx + 1}Biography`] = `${label} biography is required.`;
+        const caName = `${ca.firstName} ${ca.lastName}`.trim();
+        if (caName) {
+            const caBio = entry.authorBiographies.find(b => b.authorName === caName);
+            if (!caBio || !caBio.biography?.trim()) {
+                warnings.push(`Warning: Biography for "${caName}" is missing.`);
+            }
         }
     });
 

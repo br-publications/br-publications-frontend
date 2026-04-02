@@ -66,7 +66,8 @@ export const submitTextBook = async (requestData: SubmitTextBookRequest): Promis
     });
 
     if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json().catch(() => ({ message: 'Could not parse error response' }));
+        console.error('submitTextBook Error Response:', error);
         throw new Error(error.message || 'Failed to submit text book');
     }
 

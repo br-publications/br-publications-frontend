@@ -92,6 +92,7 @@ export interface BookChapter {
   id: string;
   bookTitleId: string;
   chapterTitle: string;
+  isReadyForPublication?: boolean;
 }
 
 // ============================================================================

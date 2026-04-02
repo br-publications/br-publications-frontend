@@ -57,6 +57,7 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
     const [availableEditors, setAvailableEditors] = useState<User[]>([]);
     const [editorSearch, setEditorSearch] = useState('');
     const [selectedEditorIds, setSelectedEditorIds] = useState<number[]>([]);
+    const [primaryEditorId, setPrimaryEditorId] = useState<number | null>(null);
 
     /* drag-and-drop for chapter reorder inside form */
     const [dragIdx, setDragIdx] = useState<number | null>(null);
@@ -140,7 +141,15 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
 
     /* ── Toggle editor ── */
     const toggleEditor = (id: number) => {
-        setSelectedEditorIds((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
+        setSelectedEditorIds((p) => {
+            const isRemoving = p.includes(id);
+            if (isRemoving) {
+                if (primaryEditorId === id) setPrimaryEditorId(null);
+                return p.filter((x) => x !== id);
+            } else {
+                return [...p, id];
+            }
+        });
     };
 
     /* ── Submit form ── */
@@ -181,6 +190,11 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
                 if (selectedEditorIds.length > 0 && newId) {
                     try {
                         await bookManagementService.bookEditor.bulkAssignEditors(newId, selectedEditorIds);
+                        
+                        /* set primary editor */
+                        if (primaryEditorId) {
+                            await bookManagementService.bookEditor.setPrimaryEditor(newId, primaryEditorId);
+                        }
                     } catch { /* non-fatal */ }
                 }
 
@@ -439,6 +453,18 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
                                                     <strong>{ed.fullName}</strong>
                                                     <span>{ed.email}</span>
                                                 </div>
+                                                {selectedEditorIds.includes(ed.id) && (
+                                                    <button
+                                                        className={`btn btn-xs ${primaryEditorId === ed.id ? 'btn-navy' : 'btn-outline'}`}
+                                                        style={{ marginLeft: 'auto', fontSize: 10, padding: '2px 6px' }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setPrimaryEditorId(ed.id === primaryEditorId ? null : ed.id);
+                                                        }}
+                                                    >
+                                                        {primaryEditorId === ed.id ? '★ Primary' : 'Set Primary'}
+                                                    </button>
+                                                )}
                                             </div>
                                         ))}
                                     </div>

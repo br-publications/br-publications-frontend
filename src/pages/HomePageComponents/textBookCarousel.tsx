@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './textBookCarousel.css';
-import { toSlug } from '../../utils/stringUtils';
+import { generateUniqueSlug } from '../../utils/stringUtils';
 
 // Book type definition
 interface Book {
@@ -9,7 +9,9 @@ interface Book {
     title: string;
     author: string;
     image: string;
-    coverImage?: string; // Need coverImage for productBooksDetail compatibility
+    coverImage?: string;
+    isbn: string;
+    releaseDate?: string;
 }
 
 export default function TextBookCarousel() {
@@ -86,7 +88,7 @@ export default function TextBookCarousel() {
     }
 
     const handleBookClick = (book: Book) => {
-        const slug = toSlug(book.title);
+        const slug = generateUniqueSlug(book.isbn, book.releaseDate);
         navigate(`/book/${book.id}/${slug}`, {
             state: { book }
         });

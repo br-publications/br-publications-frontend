@@ -30,6 +30,7 @@ export const ReviewerAssignmentStatus = {
     DECLINED: 'DECLINED',
     IN_PROGRESS: 'IN_PROGRESS',
     COMPLETED: 'COMPLETED',
+    EXPIRED: 'EXPIRED',
 } as const;
 
 export type ReviewerAssignmentStatus = (typeof ReviewerAssignmentStatus)[keyof typeof ReviewerAssignmentStatus];

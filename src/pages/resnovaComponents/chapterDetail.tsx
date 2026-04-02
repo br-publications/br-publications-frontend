@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { bookChapterService } from '../../services/bookChapterService';
-import { getExtraPdfUrl } from '../../services/bookChapterPublishing.service';
-import type { Book, Chapter } from '../../types/bookTypes';
+import { getExtraPdfUrl, incrementChapterViews } from '../../services/bookChapterPublishing.service';
+import type { Book, Chapter, PublishedAuthor } from '../../types/bookTypes';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import './chapterDetail.css';
 
@@ -14,6 +15,22 @@ const ChapterDetail: React.FC = () => {
     const [chapterSearchQuery, setChapterSearchQuery] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const renderAuthors = (authors: string, details?: PublishedAuthor[]) => {
+        if (!details || details.length === 0) return authors;
+
+        return details.map((auth, idx) => (
+            <React.Fragment key={auth.id}>
+                <Link to={`/author/${auth.id}`} className="author-link">{auth.name}</Link>
+                {auth.affiliation && (
+                    <span className="author-affiliation"> 
+                        {auth.affiliation.trim().startsWith('(') ? auth.affiliation : `(${auth.affiliation})`}
+                    </span>
+                )}
+                {idx < details.length - 1 ? ', ' : ''}
+            </React.Fragment>
+        ));
+    };
 
     useEffect(() => {
         const fetchBookAndChapter = async () => {
@@ -28,7 +45,7 @@ const ChapterDetail: React.FC = () => {
                 setBook(fetchedBook);
 
                 if (fetchedBook && fetchedBook.chapters) {
-                    const foundChapter = fetchedBook.chapters.find(c => c.id === chapterId);
+                    const foundChapter = fetchedBook.chapters.find(c => String(c.id) === String(chapterId));
                     if (foundChapter) {
                         setChapter(foundChapter);
                     } else {
@@ -47,6 +64,43 @@ const ChapterDetail: React.FC = () => {
 
         fetchBookAndChapter();
     }, [id, chapterId]);
+
+    const handleViewChapter = async (chap: Chapter) => {
+        if (typeof chap.id === 'number') {
+            try {
+                await incrementChapterViews(chap.id);
+                // Update local state for immediate feedback
+                setChapter(prev => prev ? { ...prev, views: (prev.views || 0) + 1 } : null);
+            } catch (err) {
+                console.error('Failed to increment views:', err);
+            }
+        } else {
+            // Still update state locally to show the click was registered
+            setChapter(prev => prev ? { ...prev, views: (prev.views || 0) + 1 } : null);
+        }
+        navigate(`/book/${book?.id}/chapter/${chap.id}`);
+    };
+
+    const handleViewPdf = async (chap: Chapter) => {
+        if (typeof chap.id === 'number') {
+            try {
+                await incrementChapterViews(chap.id);
+                // Update local state for immediate feedback
+                setChapter(prev => prev ? { ...prev, views: (prev.views || 0) + 1 } : null);
+            } catch (err) {
+                console.error('Failed to increment views:', err);
+            }
+        } else {
+            // Still update state locally to show the click was registered
+            setChapter(prev => prev ? { ...prev, views: (prev.views || 0) + 1 } : null);
+        }
+
+        if (chap.pdfUrl) {
+            window.open(chap.pdfUrl, '_blank');
+        } else {
+            alert('PDF not available for this chapter.');
+        }
+    };
 
     if (loading) {
         return (
@@ -75,8 +129,10 @@ const ChapterDetail: React.FC = () => {
     return (
         <main className="content chapter-detail-page">
             <section className="resNova-page">
-                <div className="breadcrumb-wrapper">
-                    <Link to="/bookchapters">Books</Link> / <Link to={`/bookchapter/${book.id}`}>{book.title}</Link> / <span>{chapter.chapterNumber}</span>
+                <div className="back-btn-wrapper">
+                    <button className="chapter-back-btn" onClick={() => navigate(-1)}>
+                        <ArrowLeft size={13} /> Back
+                    </button>
                 </div>
 
                 <div className="chapter-layout">
@@ -98,13 +154,13 @@ const ChapterDetail: React.FC = () => {
                                 </div>
                                 <div className="chapter-info-text">
                                     <h1 className="main-chapter-title">{chapter.title}</h1>
-                                    <p className="main-chapter-authors">{chapter.authors}</p>
+                                    <p className="main-chapter-authors">{renderAuthors(chapter.authors, chapter.authorDetails)}</p>
 
                                     <div className="meta-details-grid">
                                         <div className="meta-info-item"><strong>Source Title:</strong> <span>{book.title}</span></div>
                                         <div className="meta-info-item"><strong>Copyright:</strong> <span>{book.copyright || 'N/A'}</span></div>
                                         <div className="meta-info-item"><strong>Pages:</strong> <span>{chapter.pages || 'N/A'}</span></div>
-                                        <div className="meta-info-item"><strong>DOI:</strong> <span>{book.doi ? <a href={book.doi} target="_blank" rel="noopener noreferrer">{book.doi}</a> : 'N/A'}</span></div>
+                                        <div className="meta-info-item"><strong>Views:</strong> <span>{chapter.views || 0}</span></div>
                                     </div>
                                 </div>
                             </div>
@@ -163,15 +219,17 @@ const ChapterDetail: React.FC = () => {
 
                                     return filteredChapters && filteredChapters.length > 0 ? (
                                         <>
-                                            {filteredChapters.map((ch) => (
-                                                <div key={ch.id} className={`toc-chapter-card ${ch.id === chapter.id ? 'active-chapter' : ''}`}>
+                                            {[...filteredChapters].sort((a, b) => 
+                                                a.chapterNumber.toString().localeCompare(b.chapterNumber.toString(), undefined, { numeric: true })
+                                            ).map((ch) => (
+                                                <div key={ch.id} className={`toc-chapter-card ${String(ch.id) === String(chapter.id) ? 'active-chapter' : ''}`}>
                                                     <div className="chapter-card-left">
                                                         <span className="chapter-badge">{ch.chapterNumber}</span>
                                                         <h4 className="chapter-title">
-                                                            <Link to={`/book/${book.id}/chapter/${ch.id}`}>{ch.title}</Link>
+                                                            <span className="chapter-link-span" onClick={() => handleViewChapter(ch)}>{ch.title}</span>
                                                             {ch.pages && <span className="chapter-pages"> (pages {ch.pages})</span>}
                                                         </h4>
-                                                        <p className="chapter-authors">{ch.authors}</p>
+                                                        <p className="chapter-authors">{renderAuthors(ch.authors, ch.authorDetails)}</p>
                                                         <p className="chapter-abstract">{ch.abstract}</p>
                                                     </div>
                                                     <div className="chapters-actions-area">
@@ -180,13 +238,13 @@ const ChapterDetail: React.FC = () => {
                                                         </div>
                                                         <button
                                                             className="btn-view-pdf-alt"
-                                                            onClick={() => ch.pdfUrl ? window.open(ch.pdfUrl, '_blank') : alert('PDF not available for this chapter.')}
+                                                            onClick={() => handleViewPdf(ch)}
                                                         >
                                                             <PictureAsPdfIcon fontSize="small" /> View PDF
                                                         </button>
                                                         <button
                                                             className="btn-preview"
-                                                            onClick={() => navigate(`/book/${book.id}/chapter/${ch.id}`)}
+                                                            onClick={() => handleViewChapter(ch)}
                                                         >
                                                             Preview Chapter
                                                         </button>

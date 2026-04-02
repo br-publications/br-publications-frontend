@@ -91,8 +91,6 @@ export function validateBookEntry(
     // Required fields check
     if (!entry.bookTitle?.trim()) errors.bookTitle = 'Book Title is required';
     if (!entry.mainAuthor.firstName?.trim()) errors.mainAuthorFirstName = 'Main Author First Name is required';
-    if (!entry.mainAuthor.lastName?.trim()) errors.mainAuthorLastName = 'Main Author Last Name is required';
-    if (!entry.mainAuthor.email?.trim()) errors.mainAuthorEmail = 'Main Author Email is required';
 
     // ISBN validation
     if (!entry.isbn?.trim()) {
@@ -135,9 +133,7 @@ export function validateBookEntry(
     }
 
     // Indexed In validation
-    if (!entry.indexedIn || entry.indexedIn.length === 0) {
-        errors.indexedIn = 'Select at least one database';
-    }
+    // Indexed In is now optional
 
     // Pricing validation
     if (!entry.pricing.softCopyPrice || entry.pricing.softCopyPrice <= 0) {
@@ -151,19 +147,8 @@ export function validateBookEntry(
     }
 
     // Main Author validation
-    if (!entry.mainAuthor.firstName?.trim()) {
-        errors.mainAuthorFirstName = 'Main Author First Name is required';
-    }
-    if (!entry.mainAuthor.lastName?.trim()) {
-        errors.mainAuthorLastName = 'Main Author Last Name is required';
-    }
-    if (!entry.mainAuthor.email?.trim()) {
-        errors.mainAuthorEmail = 'Main Author Email is required';
-    } else if (!emailRegex.test(entry.mainAuthor.email)) {
+    if (entry.mainAuthor.email?.trim() && !emailRegex.test(entry.mainAuthor.email)) {
         errors.mainAuthorEmail = 'Invalid email format';
-    }
-    if (!entry.mainAuthor.institute?.trim()) {
-        errors.mainAuthorInstitute = 'Main Author Institute is required';
     }
     if (entry.mainAuthor.phoneNumber && !isValidPhoneNumber(entry.mainAuthor.phoneNumber)) {
         errors.mainAuthorPhone = 'Main Author phone number must be at least 10 digits';
@@ -178,17 +163,11 @@ export function validateBookEntry(
             if (!author.firstName?.trim()) {
                 errors[`coAuthor${index + 1}FirstName`] = `Co-Author ${index + 1} First Name is required`;
             }
-            if (!author.lastName?.trim()) {
-                errors[`coAuthor${index + 1}LastName`] = `Co-Author ${index + 1} Last Name is required`;
-            }
-            if (!author.email?.trim()) {
-                errors[`coAuthor${index + 1}Email`] = `Co-Author ${index + 1} Email is required`;
-            } else if (!emailRegex.test(author.email)) {
+            // Last Name and Email are now optional
+            if (author.email?.trim() && !emailRegex.test(author.email)) {
                 errors[`coAuthor${index + 1}Email`] = 'Invalid email format';
             }
-            if (!author.institute?.trim()) {
-                errors[`coAuthor${index + 1}Institute`] = `Co-Author ${index + 1} Institute is required`;
-            }
+            // Institute is now optional
             if (author.phoneNumber && !isValidPhoneNumber(author.phoneNumber)) {
                 errors[`coAuthor${index + 1}Phone`] = `Co-Author ${index + 1} phone number must be at least 10 digits`;
             }

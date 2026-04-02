@@ -82,7 +82,8 @@ export const canRequestRevision = (chapter: IndividualChapter): boolean => {
  * Check if editor can make final decision
  */
 export const canMakeEditorDecision = (chapter: IndividualChapter): boolean => {
-    return chapter.status === ChapterStatus.EDITORIAL_REVIEW;
+    const completedCount = getCompletedReviewerCount(chapter);
+    return chapter.status === ChapterStatus.EDITORIAL_REVIEW && completedCount >= 2;
 };
 
 /**
@@ -155,7 +156,7 @@ export const isPublishingEligible = (chapters: IndividualChapter[]): boolean => 
 export const getActiveReviewerCount = (chapter: IndividualChapter): number => {
     if (!chapter.reviewerAssignments) return 0;
     return chapter.reviewerAssignments.filter(
-        a => a.status !== 'DECLINED' && a.status !== 'REJECTED'
+        a => a.status === 'PENDING' || a.status === 'ACCEPTED' || a.status === 'IN_PROGRESS' || a.status === 'COMPLETED'
     ).length;
 };
 
@@ -165,8 +166,16 @@ export const getActiveReviewerCount = (chapter: IndividualChapter): number => {
 export const getDeclinedReviewerCount = (chapter: IndividualChapter): number => {
     if (!chapter.reviewerAssignments) return 0;
     return chapter.reviewerAssignments.filter(
-        a => a.status === 'DECLINED' || a.status === 'REJECTED'
+        a => a.status === 'DECLINED' || a.status === 'REJECTED' || a.status === 'EXPIRED'
     ).length;
+};
+
+/**
+ * Get the count of finished/completed review results
+ */
+export const getCompletedReviewerCount = (chapter: IndividualChapter): number => {
+    if (!chapter.reviewerAssignments) return 0;
+    return chapter.reviewerAssignments.filter(a => a.status === 'COMPLETED').length;
 };
 
 export const getNextAction = (chapter: IndividualChapter, userRole: 'author' | 'editor' | 'reviewer' | 'admin'): string | null => {
@@ -180,19 +189,24 @@ export const getNextAction = (chapter: IndividualChapter, userRole: 'author' | '
     }
 
     if (userRole === 'editor') {
-        if (chapter.status === ChapterStatus.REVIEWER_ASSIGNMENT || chapter.status === ChapterStatus.UNDER_REVIEW) {
-            const activeCount = getActiveReviewerCount(chapter);
+        // Enforce 2 Completed Reviews requirement
+        const completedCount = getCompletedReviewerCount(chapter);
+        const inProgressCount = (chapter.reviewerAssignments || []).filter(
+            a => a.status === 'PENDING' || a.status === 'ACCEPTED' || a.status === 'IN_PROGRESS'
+        ).length;
 
-            // 2 active reviewers already assigned — no action needed
-            if (activeCount >= 2) return null;
+        // If we have less than 2 completed and not enough in progress, assign more
+        if ((chapter.status === ChapterStatus.REVIEWER_ASSIGNMENT ||
+            chapter.status === ChapterStatus.UNDER_REVIEW ||
+            chapter.status === ChapterStatus.EDITORIAL_REVIEW) &&
+            (completedCount + inProgressCount < 2)) {
 
-            // Some declined or missing — only need to fill the vacant slots
-            if (activeCount < 2) {
-                const needed = 2 - activeCount;
-                return needed === 1 ? 'Assign 1 Replacement Reviewer' : 'Assign Reviewers';
-            }
+            const needed = 2 - (completedCount + inProgressCount);
+            return needed === 1 ? 'Assign 1 Replacement Reviewer' : 'Assign Reviewers';
         }
-        if (chapter.status === ChapterStatus.EDITORIAL_REVIEW) {
+
+        // If we have the required results and status is Editorial Review, allow decision
+        if (chapter.status === ChapterStatus.EDITORIAL_REVIEW && completedCount >= 2) {
             return 'Make final decision';
         }
     }

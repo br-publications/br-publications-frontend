@@ -11,9 +11,11 @@ import {
     getPublishedChapterById
 } from '../../../services/bookChapterPublishing.service';
 import type { TocChapterPayload, AuthorBiographyPayload } from '../../../services/bookChapterPublishing.service';
+import AuthorMultiSelect from '../../../components/common/AuthorMultiSelect';
 import AlertPopup, { type AlertType } from '../../../components/common/alertPopup';
 import PhoneNumberInput from '../../../components/common/PhoneNumberInput';
 import { isValidPhoneNumber } from '../../../utils/phoneValidation';
+import { isValidEmail } from '../../../utils/emailValidation';
 import '../../../components/submissions/individualPublishChapterWizard.css';
 import '../../textBookSubmission/publishing/imageCropper.css';
 
@@ -28,7 +30,7 @@ interface EditPublishedChapterModalProps {
     onSave: (id: number, data: any) => Promise<void>;
 }
 
-type TabType = 'author' | 'metadata' | 'content' | 'toc' | 'review';
+type TabType = 'author' | 'metadata' | 'content' | 'toc' | 'bio' | 'review';
 
 interface TabDef {
     id: TabType;
@@ -41,7 +43,8 @@ const TABS: TabDef[] = [
     { id: 'metadata', label: 'Book Metadata', num: 2 },
     { id: 'content', label: 'Content', num: 3 },
     { id: 'toc', label: 'TOC & Assets', num: 4 },
-    { id: 'review', label: 'Cover & Review', num: 5 },
+    { id: 'bio', label: 'Biographies', num: 5 },
+    { id: 'review', label: 'Cover & Review', num: 6 },
 ];
 
 interface CoAuthorWithId extends Author {
@@ -355,8 +358,17 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                 if (form.synopses.some(s => !s.trim())) return 'All synopsis paragraphs must have content.';
                 break;
             case 'toc':
-                if (tocChapters.length > 0 && tocChapters.some((c) => !c.title.trim())) {
-                    return 'All chapters must have a title.';
+                if (tocChapters.length === 0) return 'At least one chapter must be added to the Table of Contents.';
+                if (tocChapters.some((c) => !c.title.trim() || !c.authors?.trim())) {
+                    return 'All chapters must have a title and authors.';
+                }
+                break;
+            case 'bio':
+                if (biographies.some(b => !b.authorName.trim() || !b.affiliation.trim() || !b.biography.trim())) {
+                    return 'All author biographies must have a name, affiliation, and biography text.';
+                }
+                if (biographies.some(b => b.email && !isValidEmail(b.email))) {
+                    return 'Please enter a valid email address for all biographies that have an email provided.';
                 }
                 break;
         }
@@ -364,7 +376,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
     };
 
     const handleNextTab = () => {
-        const order: TabType[] = ['author', 'metadata', 'content', 'toc', 'review'];
+        const order: TabType[] = ['author', 'metadata', 'content', 'toc', 'bio', 'review']; // Added 'bio'
         const err = validateTab(activeTab);
         if (err) {
             setErrors(err);
@@ -379,7 +391,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
     };
 
     const handlePrevTab = () => {
-        const order: TabType[] = ['author', 'metadata', 'content', 'toc', 'review'];
+        const order: TabType[] = ['author', 'metadata', 'content', 'toc', 'bio', 'review']; // Added 'bio'
         setErrors('');
         const idx = order.indexOf(activeTab);
         if (idx > 0) setActiveTab(order[idx - 1]);
@@ -435,7 +447,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
     };
 
     // ── Biographies ──────────────────────────────────────────
-    const addBio = () => setBiographies((p) => [...p, { authorName: '', biography: '' }]);
+    const addBio = () => setBiographies((p) => [...p, { authorName: '', affiliation: '', email: '', biography: '' }]);
     const removeBio = (i: number) => setBiographies((p) => p.filter((_, idx) => idx !== i));
     const updateBio = (i: number, field: keyof AuthorBiographyPayload, val: string) =>
         setBiographies((p) => p.map((b, idx) => (idx === i ? { ...b, [field]: val } : b)));
@@ -881,7 +893,12 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                             <button type="button" className="pcw-remove-btn" onClick={() => removeTocChapter(i)}>✕</button>
                                         </div>
                                         <div className="pcw-field-grid">
-                                            <input className="pcw-input" value={ch.authors || ''} placeholder="Authors" onChange={(e) => updateTocField(i, 'authors', e.target.value)} />
+                                            <AuthorMultiSelect
+                                                authorOptions={biographies.map(b => b.authorName)}
+                                                selectedNames={ch.authors || ''}
+                                                onChange={(val) => updateTocField(i, 'authors', val)}
+                                                placeholder="Author(s) *"
+                                            />
                                             <div style={{ display: 'flex', gap: '4px' }}>
                                                 <input className="pcw-input" placeholder="From Page" value={ch.pagesFrom || ''} onChange={(e) => updateTocField(i, 'pagesFrom', e.target.value)} />
                                                 <input className="pcw-input" placeholder="To Page" value={ch.pagesTo || ''} onChange={(e) => updateTocField(i, 'pagesTo', e.target.value)} />
@@ -906,21 +923,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                 ))}
                                 <button type="button" className="pcw-add-btn" onClick={addTocChapter}>+ Add Chapter</button>
 
-                                <div className="pcw-section">
-                                    <p className="pcw-step-title">Author Biographies</p>
-                                    {biographies.map((bio, i) => (
-                                        <div className="pcw-bio-card" key={i}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                <input className="pcw-input" style={{ fontWeight: 600, border: 'none', background: 'transparent' }} value={bio.authorName} onChange={(e) => updateBio(i, 'authorName', e.target.value)} placeholder="Author Name" />
-                                                <button type="button" className="pcw-remove-btn" onClick={() => removeBio(i)}>✕</button>
-                                            </div>
-                                            <textarea className="pcw-textarea" rows={2} value={bio.biography} onChange={(e) => updateBio(i, 'biography', e.target.value)} />
-                                        </div>
-                                    ))}
-                                    <button type="button" className="pcw-add-btn" onClick={addBio}>+ Add Bio</button>
-                                </div>
-
-                                <div className="pcw-section">
+                                <div className="pcw-section" style={{ marginTop: 20 }}>
                                     <p className="pcw-step-title">Additional Assets (Frontmatter, Preface, etc.)</p>
                                     <div className="pcw-field-grid">
                                         {extraPdfTypes.map(type => (
@@ -970,6 +973,26 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                         ))}
                                     </div>
                                 </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'bio' && (
+                            <div className="tab-pane active slide-in-bottom">
+                                <p className="pcw-step-title">Author Biographies</p>
+                                {biographies.map((bio, i) => (
+                                    <div className="pcw-bio-card" key={i}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: 4 }}>
+                                            <input className="pcw-input" value={bio.authorName} onChange={(e) => updateBio(i, 'authorName', e.target.value)} placeholder="Full Name *" />
+                                            <input className="pcw-input" value={bio.affiliation || ''} onChange={(e) => updateBio(i, 'affiliation', e.target.value)} placeholder="Affiliation *" />
+                                            <div style={{ display: 'flex', gap: '4px' }}>
+                                                <input className="pcw-input" value={bio.email || ''} onChange={(e) => updateBio(i, 'email', e.target.value)} placeholder="Email ID" style={{ fontSize: '11px' }} />
+                                                <button type="button" className="pcw-remove-btn" onClick={() => removeBio(i)}>✕</button>
+                                            </div>
+                                        </div>
+                                        <textarea className="pcw-textarea" rows={3} value={bio.biography} onChange={(e) => updateBio(i, 'biography', e.target.value)} placeholder="Biography text... *" />
+                                    </div>
+                                ))}
+                                <button type="button" className="pcw-add-btn" onClick={addBio}>+ Add Bio</button>
                             </div>
                         )}
 

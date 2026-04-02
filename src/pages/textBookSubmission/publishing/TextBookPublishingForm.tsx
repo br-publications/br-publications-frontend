@@ -85,7 +85,7 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
         if (!data.pages || data.pages <= 0) newErrors.pages = 'Pages must be greater than 0';
         if (!data.copyright.trim()) newErrors.copyright = 'Copyright year is required';
         if (!data.releaseDate) newErrors.releaseDate = 'Release date is required';
-        if (data.indexedIn.length === 0) newErrors.indexedIn = 'Select at least one database';
+        // Indexed In is now optional
         if (data.pricing.softCopyPrice <= 0) newErrors.softCopyPrice = 'Soft copy price must be greater than 0';
         if (data.pricing.hardCopyPrice <= 0) newErrors.hardCopyPrice = 'Hard copy price must be greater than 0';
         if (data.pricing.bundlePrice <= 0) newErrors.bundlePrice = 'Bundle price must be greater than 0';
@@ -96,13 +96,11 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
             // Validate Main Author
             if (typeof data.mainAuthor !== 'string') {
                 if (!data.mainAuthor.firstName?.trim()) newErrors.mainAuthorFirstName = 'First Name is required';
-                if (!data.mainAuthor.lastName?.trim()) newErrors.mainAuthorLastName = 'Last Name is required';
-                if (!data.mainAuthor.email?.trim()) {
-                    newErrors.mainAuthorEmail = 'Email is required';
-                } else if (!emailRegex.test(data.mainAuthor.email)) {
+                // Last Name is optional
+                if (data.mainAuthor.email?.trim() && !emailRegex.test(data.mainAuthor.email)) {
                     newErrors.mainAuthorEmail = 'Invalid email format';
                 }
-                if (!data.mainAuthor.institute?.trim()) newErrors.mainAuthorInstitute = 'Institute is required';
+                // Institute is optional
                 if (data.mainAuthor.phoneNumber && !isValidPhoneNumber(data.mainAuthor.phoneNumber)) {
                     newErrors.mainAuthorPhone = 'Phone number must be at least 10 digits';
                 }
@@ -112,10 +110,8 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
             data.coAuthors.forEach((author, index) => {
                 if (typeof author !== 'string') {
                     if (!author.firstName?.trim()) newErrors[`coAuthor${index}FirstName`] = 'First Name is required';
-                    if (!author.lastName?.trim()) newErrors[`coAuthor${index}LastName`] = 'Last Name is required';
-                    if (!author.email?.trim()) {
-                        newErrors[`coAuthor${index}Email`] = 'Email is required';
-                    } else if (!emailRegex.test(author.email)) {
+                    // Last Name is now optional
+                    if (author.email?.trim() && !emailRegex.test(author.email)) {
                         newErrors[`coAuthor${index}Email`] = 'Invalid email format';
                     }
                     if (!author.institute?.trim()) newErrors[`coAuthor${index}Institute`] = 'Institute is required';
@@ -335,7 +331,6 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
                 }
             }, 100);
         } else {
-
             onSubmit(formData);
         }
     };
@@ -394,7 +389,7 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
                                                     {errors.mainAuthorFirstName && <span className="error-text">{errors.mainAuthorFirstName}</span>}
                                                 </div>
                                                 <div className="form-group">
-                                                    <label>Last Name *</label>
+                                                    <label>Last Name</label>
                                                     <input
                                                         type="text"
                                                         placeholder="Last Name"
@@ -409,7 +404,7 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
                                                     {errors.mainAuthorLastName && <span className="error-text">{errors.mainAuthorLastName}</span>}
                                                 </div>
                                                 <div className="form-group">
-                                                    <label>Email *</label>
+                                                    <label>Email</label>
                                                     <input
                                                         type="email"
                                                         placeholder="Email"
@@ -438,7 +433,7 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
                                                 </div>
                                             </div>
                                             <div className="form-group">
-                                                <label>Institute *</label>
+                                                <label>Institute</label>
                                                 <input
                                                     type="text"
                                                     placeholder="Institute"
@@ -751,7 +746,7 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
                             <h3>Metadata</h3>
 
                             <div className="form-group full-width">
-                                <label>Indexed In *</label>
+                                <label>Indexed In</label>
                                 <div className="checkbox-group">
                                     {INDEXED_DATABASES.map((db) => (
                                         <label key={db} className="checkbox-label">

@@ -10,6 +10,7 @@
  */
 
 import { publishDirectBookChapter, uploadDirectTempPdf } from '../../../services/bookChapterPublishing.service';
+import type { PublishBookChapterPayload } from '../../../services/bookChapterPublishing.service';
 import { autoCropCoverImage } from '../../../utils/imageCropperUtils';
 import type { ParsedChapterEntry } from './bcpBulkValidator';
 
@@ -50,7 +51,7 @@ export interface BcpPublishingResult {
 // core metadata. Editors can edit these fields afterwards.
 // ────────────────────────────────────────────────────────────
 
-async function buildPayload(entry: ParsedChapterEntry) {
+async function buildPayload(entry: ParsedChapterEntry): Promise<PublishBookChapterPayload> {
     // Convert cover image File → base64 data URL if present
     // Automatically crop to the correct book-cover aspect ratio first (same as textbook bulk upload)
     let coverImageBase64: string | undefined;
@@ -135,14 +136,16 @@ async function buildPayload(entry: ParsedChapterEntry) {
     if (entry.synopsisParagraph3) synopsis['paragraph_3'] = entry.synopsisParagraph3;
     if (entry.synopsisParagraph4) synopsis['paragraph_4'] = entry.synopsisParagraph4;
 
+    const mainAuthorProvided = !!(entry.mainAuthor.firstName?.trim() || entry.mainAuthor.lastName?.trim());
+
     const payload = {
         title: entry.bookTitle,
         editors: entry.editors,
         keywords: entry.keywords,
-        author: authorName,
-        mainAuthor: entry.mainAuthor,
+        author: authorName || '',
+        mainAuthor: mainAuthorProvided ? entry.mainAuthor : undefined,
         coAuthors: entry.coAuthors || undefined,
-        coAuthorsData: entry.coAuthorsData,
+        coAuthorsData: entry.coAuthorsData.length > 0 ? (entry.coAuthorsData as any) : undefined,
         coverImage: coverImageBase64,
         category: entry.category,
         description: entry.description,

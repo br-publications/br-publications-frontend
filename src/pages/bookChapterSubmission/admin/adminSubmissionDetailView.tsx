@@ -11,14 +11,13 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import type { BookChapterSubmission } from '../../../types/submissionTypes';
-import { bookChapterEditorService } from '../../../services/bookChapterSumission.service';
+import { bookChapterService, bookChapterEditorService } from '../../../services/bookChapterSumission.service';
 import bookManagementService from '../../../services/bookManagement.service';
 
 import SubmissionOverview from '../common/Overview/submissionOverview';
 import DiscussionPanel from '../common/discussion/discussionPanel';
 import SubmissionStatusHistory from '../common/history/submissionStatusHistory';
 import AlertPopup, { type AlertType } from '../../../components/common/alertPopup';
-import IsbnReceiveModal from '../common/modals/isbnReceiveModal';
 import styles from './adminSubmissionDetailView.module.css';
 import PublishChapterModal from '../../../components/submissions/PublishChapterModal';
 import SubmissionWorkflowView from '../common/Overview/submissionWorkflowView';
@@ -43,6 +42,9 @@ export const AdminSubmissionDetailView: React.FC<AdminSubmissionDetailViewProps>
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [chapterTitles, setChapterTitles] = useState<Record<string, string>>({});
   const [resolvedBookTitle, setResolvedBookTitle] = useState<string | null>(null);
+  // Consolidated publication data
+  const [publishAllSubmissions, setPublishAllSubmissions] = useState<BookChapterSubmission[]>([]);
+  const [publishAllBookChapters, setPublishAllBookChapters] = useState<{ title: string; chapterNumber: string }[]>([]);
   const [alert, setAlert] = useState<{
     isOpen: boolean;
     type: AlertType;
@@ -122,22 +124,19 @@ export const AdminSubmissionDetailView: React.FC<AdminSubmissionDetailViewProps>
         const parsedId = parseInt(titleOrId);
         if (!isNaN(parsedId) && titleOrId.trim() === parsedId.toString()) {
           bookId = parsedId;
-          // Resolution: Fetch the title for display
-
-          const bookResponse = await bookManagementService.bookTitle.getAllBookTitles();
-          if (bookResponse.success && bookResponse.data?.bookTitles) {
-            const book = bookResponse.data.bookTitles.find((b: any) => b.id === bookId);
-            if (book) {
-
-              setResolvedBookTitle(book.title);
-            }
-          }
-        } else {
-          // It's a title name, find the ID for chapter lookup
           const response = await bookManagementService.bookTitle.getAllBookTitles();
           if (response.success && response.data?.bookTitles) {
-            const book = response.data.bookTitles.find(b => b.title === titleOrId);
-            if (book) bookId = book.id;
+            const book = response.data.bookTitles.find((b: any) => b.id === bookId);
+            if (book) setResolvedBookTitle(book.title);
+          }
+        } else {
+          const response = await bookManagementService.bookTitle.getAllBookTitles();
+          if (response.success && response.data?.bookTitles) {
+            const book = response.data.bookTitles.find((b: any) => b.title === titleOrId);
+            if (book) {
+              bookId = book.id;
+              setResolvedBookTitle(book.title);
+            }
           }
         }
 
@@ -247,7 +246,49 @@ export const AdminSubmissionDetailView: React.FC<AdminSubmissionDetailViewProps>
     });
   };
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
+    // Fetch all submissions and all chapters for the same book title before opening wizard
+    try {
+      const bookTitleValue = currentSubmission.bookTitle;
+
+      // 1. Fetch all submissions for the same book title
+      const subResp = await bookChapterService.getSubmissionsByBookTitle(bookTitleValue);
+      if (subResp.success && subResp.data?.submissions) {
+        setPublishAllSubmissions(subResp.data.submissions as BookChapterSubmission[]);
+      } else {
+        setPublishAllSubmissions([currentSubmission]);
+      }
+
+      // 2. Fetch all chapters from DB for the book title (to pre-fill TOC)
+      const parsedId = parseInt(bookTitleValue);
+      let bookId: number | null = null;
+      if (!isNaN(parsedId) && bookTitleValue.trim() === parsedId.toString()) {
+        bookId = parsedId;
+      } else {
+        const btResp = await bookManagementService.bookTitle.getAllBookTitles();
+        if (btResp.success && btResp.data?.bookTitles) {
+          const bt = btResp.data.bookTitles.find((b: any) => b.title === bookTitleValue);
+          if (bt) bookId = bt.id;
+        }
+      }
+
+      if (bookId) {
+        const chapResp = await bookManagementService.bookChapter.getChaptersByBookTitle(bookId, false);
+        if (chapResp.success && chapResp.data?.chapters) {
+          const chapters = chapResp.data.chapters
+            .sort((a: any, b: any) => (a.chapterNumber || 0) - (b.chapterNumber || 0))
+            .map((ch: any) => ({
+              title: ch.chapterTitle,
+              chapterNumber: String(ch.chapterNumber || '').padStart(2, '0'),
+            }));
+          setPublishAllBookChapters(chapters);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to aggregate submission data for publish:', err);
+      setPublishAllSubmissions([currentSubmission]);
+    }
+
     setShowPublishModal(true);
   };
 
@@ -374,6 +415,8 @@ export const AdminSubmissionDetailView: React.FC<AdminSubmissionDetailViewProps>
           isOpen={true}
           submission={currentSubmission}
           onClose={() => setShowPublishModal(false)}
+          allSubmissions={publishAllSubmissions}
+          allBookChapters={publishAllBookChapters}
           onSuccess={(updated?: BookChapterSubmission) => {
             setShowPublishModal(false);
             if (onUpdate && updated) onUpdate(updated);
@@ -410,6 +453,49 @@ const ActionsTab: React.FC<{
   const [finalNotes, setFinalNotes] = useState('');
   const [isSubmittingIsbn, setIsSubmittingIsbn] = useState(false);
   const [isStartingPublication, setIsStartingPublication] = useState(false);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [isUploadingProof, setIsUploadingProof] = useState(false);
+
+  // Readiness State
+  const [allChaptersReady, setAllChaptersReady] = useState<boolean>(false);
+  const [checkingReadiness, setCheckingReadiness] = useState<boolean>(true);
+  const [readinessDetails, setReadinessDetails] = useState<{ total: number, ready: number }>({ total: 0, ready: 0 });
+
+  useEffect(() => {
+    const checkReadiness = async () => {
+      try {
+        setCheckingReadiness(true);
+        // Find Book ID first
+        const bookResp = await bookManagementService.bookTitle.getBookTitleByTitle(resolvedBookTitle);
+        if (bookResp.success && bookResp.data?.id) {
+          const bookId = bookResp.data.id;
+          const chapterResp = await bookManagementService.bookChapter.getChaptersByBookTitle(bookId, true, true);
+          if (chapterResp.success && chapterResp.data?.chapters) {
+            const allChapters = chapterResp.data.chapters;
+            const readyOnes = allChapters.filter(ch => 
+              ch.isReadyForPublication || 
+              ch.isPublished || 
+              ch.submissionStatus === 'PUBLICATION_IN_PROGRESS'
+            );
+
+            setReadinessDetails({
+              total: allChapters.length,
+              ready: readyOnes.length
+            });
+            setAllChaptersReady(readyOnes.length === allChapters.length);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking chapter readiness:", error);
+      } finally {
+        setCheckingReadiness(false);
+      }
+    };
+
+    if (resolvedBookTitle) {
+      checkReadiness();
+    }
+  }, [resolvedBookTitle, submission.status]);
 
   const canMakeDecision = [
     'ABSTRACT_SUBMITTED',
@@ -475,6 +561,25 @@ const ActionsTab: React.FC<{
           window.location.reload();
         }, 2500);
       }
+    }
+  };
+
+  const handleUploadProof = async () => {
+    if (!proofFile) return;
+    setIsUploadingProof(true);
+    try {
+      await bookChapterEditorService.submitProof(submission.id, proofFile);
+      window.dispatchEvent(new CustomEvent('app-alert', {
+        detail: { type: 'success', title: 'Success', message: 'Proof document sent to author.' }
+      }));
+      setProofFile(null);
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (error: any) {
+      window.dispatchEvent(new CustomEvent('app-alert', {
+        detail: { type: 'error', title: 'Error', message: error?.message || 'Failed to upload proof' }
+      }));
+    } finally {
+      setIsUploadingProof(false);
     }
   };
 
@@ -670,7 +775,7 @@ const ActionsTab: React.FC<{
                 <h5 className={styles.decisionTitle}>Take Final Action</h5>
                 <textarea
                   className={styles.decisionNotes}
-                  placeholder="Add final notes for the author (required for rejection)..."
+                  placeholder="Add final notes for the author (required)..."
                   value={finalNotes}
                   onChange={(e) => setFinalNotes(e.target.value)}
                   rows={4}
@@ -722,14 +827,14 @@ const ActionsTab: React.FC<{
 
       {/* Step 3: Proof Editing */}
       {(submission.status === 'APPROVED' || submission.status === 'ISBN_APPLIED' || submission.status === 'PUBLICATION_IN_PROGRESS' || submission.status === 'PUBLISHED') && (
-        <div className={`${styles.stepContainer} ${submission.status === 'APPROVED' ? styles.active : ''} ${submission.status !== 'APPROVED' ? styles.completedPhase : ''}`}>
+        <div className={`${styles.stepContainer} ${['APPROVED', 'ISBN_APPLIED'].includes(submission.status) ? styles.active : ''} ${['APPROVED', 'ISBN_APPLIED'].includes(submission.status) ? '' : styles.completedPhase}`}>
           <div className={styles.stepHeader}>
             <h4 className={styles.stepTitle}>
               <div className={styles.stepNumber}>3</div>
               Proof Editing
             </h4>
-            <span className={`${styles.stepStatus} ${submission.status === 'APPROVED' ? styles.pending : styles.completed}`}>
-              {submission.status === 'APPROVED' ? 'Action Required' : 'Started'}
+            <span className={`${styles.stepStatus} ${['APPROVED', 'ISBN_APPLIED'].includes(submission.status) && submission.proofStatus !== 'ACCEPTED' ? styles.pending : styles.completed}`}>
+              {submission.status === 'APPROVED' ? 'Action Required' : (submission.status === 'ISBN_APPLIED' && submission.proofStatus !== 'ACCEPTED' ? 'In Progress' : 'Completed')}
             </span>
           </div>
 
@@ -763,8 +868,43 @@ const ActionsTab: React.FC<{
               </div>
             ) : (
               <div className={styles.decisionArea}>
-                <h5 className={styles.decisionTitle}>Status</h5>
-                <p>Proof editing phase has been started.</p>
+                <h5 className={styles.decisionTitle}>Proof Document Status</h5>
+
+                {submission.proofStatus === 'ACCEPTED' ? (
+                  <div style={{ padding: '10px', backgroundColor: '#ecfdf5', border: '1px solid #10b981', borderRadius: '6px', color: '#065f46', marginBottom: '10px' }}>
+                    <CheckCircle size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    Author has accepted the proof document.
+                  </div>
+                ) : submission.proofStatus === 'SENT' ? (
+                  <div style={{ padding: '10px', backgroundColor: '#fffbeb', border: '1px solid #f59e0b', borderRadius: '6px', color: '#92400e', marginBottom: '10px' }}>
+                    <Clock size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                    Proof sent to author. Waiting for confirmation.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {submission.proofStatus === 'REJECTED' && (
+                      <div style={{ padding: '10px', backgroundColor: '#fef2f2', border: '1px solid #ef4444', borderRadius: '6px', color: '#991b1b', marginBottom: '5px' }}>
+                        <X size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                        <strong>Proof Rejected:</strong> {submission.authorProofNotes || 'No notes provided'}
+                      </div>
+                    )}
+                    <p style={{ fontSize: '0.9rem', color: '#4b5563' }}>Upload the final proof document for author confirmation:</p>
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={(e) => setProofFile(e.target.files?.[0] || null)}
+                      className={styles.fileInput}
+                      style={{ padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px', width: '100%' }}
+                    />
+                    <button
+                      className={styles.acceptButton}
+                      disabled={!proofFile || isUploadingProof}
+                      onClick={handleUploadProof}
+                    >
+                      {isUploadingProof ? 'Uploading...' : 'Send Proof to Author'}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -779,8 +919,8 @@ const ActionsTab: React.FC<{
               <div className={styles.stepNumber}>4</div>
               Start Publication
             </h4>
-            <span className={`${styles.stepStatus} ${submission.status === 'ISBN_APPLIED' ? styles.pending : styles.completed}`}>
-              {submission.status === 'ISBN_APPLIED' ? 'Action Required' : 'Started'}
+            <span className={`${styles.stepStatus} ${submission.status === 'ISBN_APPLIED' ? (['ACCEPTED', 'REJECTED'].includes(submission.proofStatus || '') ? styles.pending : styles.completed) : styles.completed}`}>
+              {submission.status === 'ISBN_APPLIED' ? (['ACCEPTED', 'REJECTED'].includes(submission.proofStatus || '') ? 'Action Required' : 'Waiting for Proof') : 'Started'}
             </span>
           </div>
 
@@ -798,10 +938,10 @@ const ActionsTab: React.FC<{
                 />
                 <button
                   className={styles.acceptButton}
-                  style={{ backgroundColor: '#0ea5e9', color: 'white' }}
-                  disabled={isStartingPublication}
+                  style={{ backgroundColor: ['ACCEPTED', 'REJECTED'].includes(submission.proofStatus || '') ? '#0ea5e9' : '#9ca3af', color: 'white' }}
+                  disabled={isStartingPublication || !['ACCEPTED', 'REJECTED'].includes(submission.proofStatus || '')}
                   onClick={async () => {
-                    if (isStartingPublication) return;
+                    if (isStartingPublication || !['ACCEPTED', 'REJECTED'].includes(submission.proofStatus || '')) return;
                     setIsStartingPublication(true);
                     const notes = (document.getElementById('admin-publication-notes') as HTMLTextAreaElement)?.value || '';
                     try {
@@ -819,7 +959,7 @@ const ActionsTab: React.FC<{
                   }}
                 >
                   <FileText size={16} style={{ marginRight: '8px' }} />
-                  {isStartingPublication ? 'Starting...' : 'Start Publication'}
+                  {['ACCEPTED', 'REJECTED'].includes(submission.proofStatus || '') ? (isStartingPublication ? 'Starting...' : 'Start Publication') : 'Waiting for Proof Acceptance'}
                 </button>
               </div>
             ) : (
@@ -871,16 +1011,35 @@ const ActionsTab: React.FC<{
                 </div>
               )}
               <button
-                className={`${styles.actionButton} ${submission.status === 'PUBLISHED' ? styles.secondaryButton : styles.primaryButton}`}
-                onClick={onPublish}
+                className={`${styles.actionButton} ${submission.status === 'PUBLISHED' ? styles.secondaryButton : (allChaptersReady ? styles.primaryButton : styles.disabledButton)}`}
+                onClick={() => {
+                  if (submission.status !== 'PUBLISHED' && !allChaptersReady) {
+                    window.dispatchEvent(new CustomEvent('app-alert', {
+                      detail: {
+                        type: 'warning',
+                        title: 'Chapters Not Ready',
+                        message: `Cannot publish yet. Only ${readinessDetails.ready} out of ${readinessDetails.total} chapters are marked as "Ready for Publication".`
+                      }
+                    }));
+                    return;
+                  }
+                  onPublish();
+                }}
+                disabled={submission.status !== 'PUBLISHED' && !allChaptersReady}
                 style={{
-                  backgroundColor: (submission.status === 'PUBLICATION_IN_PROGRESS') ? '#10B981' : undefined,
+                  backgroundColor: (submission.status === 'PUBLICATION_IN_PROGRESS') ? (allChaptersReady ? '#10B981' : '#9ca3af') : undefined,
                   color: (submission.status === 'PUBLICATION_IN_PROGRESS') ? 'white' : undefined,
-                  cursor: 'pointer',
+                  cursor: (submission.status === 'PUBLICATION_IN_PROGRESS' && !allChaptersReady) ? 'not-allowed' : 'pointer',
                 }}
               >
-                <FileText size={16} /> {submission.status === 'PUBLISHED' ? 'Edit Publication Details' : 'Publish Book'}
+                <FileText size={16} /> {submission.status === 'PUBLISHED' ? 'Edit Publication Details' : 'Publish Book Chapter'}
               </button>
+              {submission.status === 'PUBLICATION_IN_PROGRESS' && !allChaptersReady && !checkingReadiness && (
+                <p style={{ color: '#6b7280', fontSize: '0.8rem', marginTop: '8px' }}>
+                  <AlertCircle size={12} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
+                  Gated: All {readinessDetails.total} chapters in "{resolvedBookTitle}" must be ready before publishing.
+                </p>
+              )}
             </div>
           </div>
         </div>

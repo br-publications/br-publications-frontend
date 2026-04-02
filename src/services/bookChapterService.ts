@@ -26,18 +26,39 @@ class BookChapterService {
             coverImage = data.coverImage;
         }
 
-        // Map Table of Contents payloads to Chapter format used in UI
-        const mappedChapters: Chapter[] = (data.tableContents || []).map((toc: any, index: number) => ({
-            id: `chapter-${index + 1}`,
-            chapterNumber: toc.chapterNumber || `Chapter ${index + 1}`,
-            title: toc.title || '',
-            authors: toc.authors || '',
-            abstract: toc.abstract || '',
-            price: toc.priceCombined || toc.priceSoftCopy || 0,
-            pages: (toc.pagesFrom && toc.pagesTo) ? `${toc.pagesFrom}-${toc.pagesTo}` : '',
-            pdfKey: toc.pdfKey,
-            pdfUrl: (toc.pdfKey || toc.pdfData) ? getChapterPdfUrl(data.id, index) : undefined
-        }));
+        // Map chapters — Prefer relational 'chapters' if available, fallback to 'tableContents' JSONB
+        let mappedChapters: Chapter[] = [];
+
+        console.log('DEBUG: mapBookData for Book ID', data.id, 'Relational Chapters count:', data.chapters?.length || 0);
+
+        if (data.chapters && data.chapters.length > 0) {
+            mappedChapters = data.chapters.map((ch: any, index: number) => ({
+                id: ch.id,
+                chapterNumber: ch.chapterNumber || '',
+                title: ch.title || '',
+                authors: ch.authors || '',
+                abstract: ch.abstract || '',
+                price: ch.priceSoftCopy || 0,
+                pages: (ch.pagesFrom && ch.pagesTo) ? `${ch.pagesFrom}-${ch.pagesTo}` : (ch.pages || ''),
+                pdfKey: ch.pdfKey,
+                pdfUrl: (ch.pdfKey) ? getChapterPdfUrl(data.id, index) : undefined,
+                views: ch.views || 0,
+                authorDetails: ch.authorDetails
+            }));
+        } else {
+            mappedChapters = (data.tableContents || []).map((toc: any, index: number) => ({
+                id: `chapter-${index + 1}`,
+                chapterNumber: toc.chapterNumber || `Chapter ${index + 1}`,
+                title: toc.title || '',
+                authors: toc.authors || '',
+                abstract: toc.abstract || '',
+                price: toc.priceCombined || toc.priceSoftCopy || 0,
+                pages: (toc.pagesFrom && toc.pagesTo) ? `${toc.pagesFrom}-${toc.pagesTo}` : '',
+                pdfKey: toc.pdfKey,
+                pdfUrl: (toc.pdfKey || toc.pdfData) ? getChapterPdfUrl(data.id, index) : undefined,
+                views: toc.views || 0
+            }));
+        }
 
         return {
             id: data.id,
@@ -45,6 +66,7 @@ class BookChapterService {
             author: data.author,
             "co-authors": data.coAuthors,
             editors: data.editors,
+            primaryEditor: data.primaryEditor,
             coverImage: coverImage,
             category: data.category,
             description: data.description || '',

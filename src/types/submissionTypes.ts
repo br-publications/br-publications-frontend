@@ -37,6 +37,7 @@ export const FileType = {
   REVISION_2: 'revision_2',
   REVISION_3: 'revision_3',
   FINAL_APPROVED: 'final_approved',
+  PROOF_DOCUMENT: 'proof_document',
 } as const;
 
 export type FileType = typeof FileType[keyof typeof FileType];
@@ -143,6 +144,8 @@ export interface Submission {
   notes: string | null;
   isbn: string | null;
   doi: string | null;
+  proofStatus?: 'PENDING' | 'SENT' | 'ACCEPTED' | 'REJECTED';
+  authorProofNotes?: string | null;
   createdAt: Date;
   updatedAt: Date;
 

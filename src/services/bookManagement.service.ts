@@ -32,8 +32,12 @@ export interface BookChapter {
     description: string | null;
     isActive: boolean;
     isPublished: boolean;
+    isReadyForPublication: boolean;
     createdAt: Date;
     updatedAt: Date;
+    // Populated by backend once supported: submission-level chapter status
+    submissionStatus?: string; // e.g. 'chapter_approved', 'chapter_rejected', 'under_review'
+    submissionId?: number;
 }
 
 export interface BookEditor {
@@ -186,6 +190,19 @@ export const bookTitleService = {
     deleteBookTitle: async (id: number): Promise<ApiResponse> => {
         const response = await fetch(`${API_BASE_URL}/book-titles/${id}`, {
             method: 'DELETE',
+            headers: getJsonHeaders(),
+        });
+
+        return handleResponse(response);
+    },
+
+    /**
+     * Get book title by exact name
+     * GET /api/book-titles/by-title
+     */
+    getBookTitleByTitle: async (title: string): Promise<ApiResponse<any>> => {
+        const response = await fetch(`${API_BASE_URL}/book-titles/by-title?title=${encodeURIComponent(title)}`, {
+            method: 'GET',
             headers: getJsonHeaders(),
         });
 

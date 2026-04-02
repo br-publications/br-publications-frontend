@@ -264,8 +264,21 @@ export const bookChapterService = {
   },
 
   /**
+   * Get all submissions for a specific book title (Admin/Editor only)
+   * GET /api/book-chapters/by-book-title?title=...
+   */
+  getSubmissionsByBookTitle: async (bookTitle: string): Promise<ApiResponse<{ submissions: BookChapterSubmission[]; bookTitle: string }>> => {
+    const response = await fetch(`${API_BASE_URL}/by-book-title?title=${encodeURIComponent(bookTitle)}`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  /**
    * Get submission status history
    * GET /api/book-chapters/:id/history
+
    */
   getSubmissionHistory: async (id: number): Promise<ApiResponse> => {
     const response = await fetch(`${API_BASE_URL}/${id}/history`, {
@@ -414,6 +427,90 @@ export const bookChapterService = {
     });
 
     return handleResponse(response);
+  },
+
+  /**
+   * Author review proof (accept/reject)
+   * POST /api/book-chapters/:id/review-proof
+   */
+  reviewProof: async (id: number, payload: { decision: 'accept' | 'reject'; notes?: string }): Promise<ApiResponse> => {
+    const response = await fetch(`${API_BASE_URL}/${id}/review-proof`, {
+      method: 'POST',
+      headers: getJsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+
+    return handleResponse(response);
+  },
+
+  /**
+   * Get submission files
+   * GET /api/book-chapters/:id/files
+   */
+  getSubmissionFiles: async (id: number): Promise<ApiResponse> => {
+    const response = await fetch(`${API_BASE_URL}/${id}/files`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    return handleResponse(response);
+  },
+
+  /**
+   * Download file
+   */
+  downloadFile: async (fileId: number, fileName: string): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/files/${fileId}/download`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // Check if the response is JSON (likely an error message or metadata, not the file blob)
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to download file (received JSON response instead of file content)');
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName; // Set the file name
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  },
+
+  /**
+   * Preview file
+   */
+  previewFile: async (fileId: number): Promise<{ url: string; type: string }> => {
+    const response = await fetch(`${API_BASE_URL}/files/${fileId}/download`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to preview file (received JSON response instead of file content)');
+    }
+
+    const blob = await response.blob();
+    return {
+      url: window.URL.createObjectURL(blob),
+      type: blob.type
+    };
   },
 };
 
@@ -657,6 +754,26 @@ export const bookChapterEditorService = {
       method: 'POST',
       headers: getJsonHeaders(),
       body: JSON.stringify({ newReviewerId, notes }),
+    });
+
+    return handleResponse(response);
+  },
+
+  /**
+   * Submit proof document for author confirmation
+   * POST /api/book-chapters/:id/submit-proof
+   */
+  submitProof: async (id: number, file: File): Promise<ApiResponse> => {
+    const formData = new FormData();
+    formData.append('proof', file);
+
+    const token = getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/${id}/submit-proof`, {
+      method: 'POST',
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+      body: formData,
     });
 
     return handleResponse(response);

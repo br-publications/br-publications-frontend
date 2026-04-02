@@ -5,6 +5,7 @@
 // ============================================================
 
 import { API_BASE_URL as BASE_URL, getAuthToken } from './api.config';
+import type { Author } from '../types/submissionTypes';
 
 const API_BASE = `${BASE_URL}/api/book-chapter-publishing`;
 
@@ -50,14 +51,19 @@ export interface TocChapterPayload {
 
 export interface AuthorBiographyPayload {
     authorName: string;
+    affiliation: string;
+    email?: string;
     biography: string;
 }
 
 export interface PublishBookChapterPayload {
     title: string;
     editors?: string[];
+    primaryEditor?: string;
     author: string;
+    mainAuthor?: Author;
     coAuthors?: string;
+    coAuthorsData?: Author[];
     coverImage?: string;           // base64 data URL
     category: string;
     description: string;
@@ -82,14 +88,37 @@ export interface PublishBookChapterPayload {
     frontmatterPdfs?: Record<string, { pdfKey?: string; mimeType?: string; name?: string; }>;
 }
 
+export interface PublishedAuthor {
+    id: number;
+    name: string;
+    email?: string;
+    affiliation?: string;
+    biography?: string;
+}
+
+export interface PublishedIndividualChapter {
+    id: number;
+    title: string;
+    chapterNumber: string | null;
+    authors: string | null;
+    pagesFrom: string | null;
+    pagesTo: string | null;
+    pdfKey: string | null;
+    pdfName: string | null;
+    abstract: string | null;
+    views: number;
+    authorDetails?: PublishedAuthor[];
+}
+
 export interface PublishedBookChapter extends PublishBookChapterPayload {
     id: number;
-    submissionId: number;
+    submissionId?: number;
     isHidden: boolean;
     isFeatured: boolean;
     createdAt: string;
     updatedAt: string;
     hasCoverImage: boolean;
+    chapters?: PublishedIndividualChapter[];
 }
 
 // ============================================================
@@ -324,6 +353,29 @@ export const getPublishedChapterById = async (id: number) => {
     return handleResponse(response);
 };
 
+/**
+ * GET /api/book-chapter-publishing/authors
+ * Find authors by name, affiliation, or email.
+ */
+export const findAuthors = async (params: {
+    name?: string;
+    affiliation?: string;
+    email?: string;
+    search?: string;
+}): Promise<PublishedAuthor[]> => {
+    const q = new URLSearchParams();
+    if (params.name) q.set('name', params.name);
+    if (params.affiliation) q.set('affiliation', params.affiliation);
+    if (params.email) q.set('email', params.email);
+    if (params.search) q.set('search', params.search);
+
+    const response = await fetch(`${API_BASE}/authors?${q}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+};
+
 /** URL helpers for serving binary content */
 export const getCoverUrl = (id: number, t?: string | number) =>
     `${API_BASE}/${id}/cover${t ? `?t=${t}` : ''}`;
@@ -356,4 +408,16 @@ export const checkBookChapterIsbnAvailability = async (isbns: string[]): Promise
     });
     const data = await handleResponse(response);
     return data.existingIsbns ?? [];
+};
+
+/**
+ * POST /api/book-chapter-publishing/chapters/:chapterId/views
+ * Increment the view count for a specific individual chapter.
+ */
+export const incrementChapterViews = async (chapterId: number): Promise<any> => {
+    const response = await fetch(`${API_BASE}/chapters/${chapterId}/views`, {
+        method: 'POST',
+        headers: getJsonHeaders(),
+    });
+    return handleResponse(response);
 };

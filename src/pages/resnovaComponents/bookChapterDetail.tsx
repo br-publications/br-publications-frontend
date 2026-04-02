@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import type { Book, SectionContent } from '../../types/bookTypes';
 import bookChapterService from '../../services/bookChapterService';
-import { getExtraPdfUrl } from '../../services/bookChapterPublishing.service';
+import { getExtraPdfUrl, incrementChapterViews } from '../../services/bookChapterPublishing.service';
 import { contactService, type ContactDetails } from '../../services/contactService';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import PhoneIcon from '@mui/icons-material/Phone';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import './bookChapterDetail.css';
 import { setPageTitle, setMetaDescription, setOpenGraph, setCanonicalUrl, setJsonLd, resetSeo } from '../../utils/seoUtils';
-import { toSlug } from '../../utils/stringUtils';
+import { generateUniqueSlug } from '../../utils/stringUtils';
 
 type TabType = 'synopsis' | 'scope' | 'toc' | 'biographies' | 'archives';
 
@@ -70,7 +70,7 @@ const BookChapterDetail: React.FC = () => {
           if (bookData) {
             setBook(bookData);
             // Apply SEO after data is loaded
-            const slug = toSlug(bookData.title);
+            const slug = generateUniqueSlug(bookData.isbn, bookData.releaseDate);
             const canonicalPath = `/bookchapter/${bookData.id}/${slug}`;
             const editorsStr = bookData.editors && bookData.editors.length > 0
               ? `Editors: ${bookData.editors.join(', ')}.`
@@ -144,6 +144,36 @@ const BookChapterDetail: React.FC = () => {
     const tabsContainer = document.querySelector('.tabs-container');
     if (tabsContainer) {
       tabsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleChapterAction = async (chap: any, action: 'view' | 'pdf') => {
+    if (typeof chap.id === 'number') {
+      try {
+        await incrementChapterViews(chap.id);
+        // Optimistically update local state
+        setBook(prev => {
+          if (!prev || !prev.chapters) return prev;
+          return {
+            ...prev,
+            chapters: prev.chapters.map(c =>
+              c.id === chap.id ? { ...c, views: (c.views || 0) + 1 } : c
+            )
+          };
+        });
+      } catch (err) {
+        console.error('Failed to increment views:', err);
+      }
+    }
+
+    if (action === 'view') {
+      navigate(`/book/${book?.id}/chapter/${chap.id}`);
+    } else {
+      if (chap.pdfUrl) {
+        window.open(chap.pdfUrl, '_blank');
+      } else {
+        alert('PDF not available for this chapter.');
+      }
     }
   };
 
@@ -235,15 +265,7 @@ const BookChapterDetail: React.FC = () => {
                 <div className="book-details">
                   <h1>{book.title}</h1>
                   <p className="author-list">
-                    {book.editors && book.editors.length > 0
-                      ? `${book.editors.join(', ')}`
-                      : (
-                        <>
-                          {book.author}
-                          {book["co-authors"] && `, ${book["co-authors"]}`}
-                        </>
-                      )
-                    }
+                    {book.editors && book.editors.length > 0 ? book.editors.join(', ') : ''}
                   </p>
 
                   <div className="meta-info">
@@ -558,27 +580,46 @@ const BookChapterDetail: React.FC = () => {
 
                           return filteredChapters && filteredChapters.length > 0 ? (
                             <>
-                              {filteredChapters.map((chapter) => (
+                              {[...filteredChapters].sort((a, b) => 
+                                a.chapterNumber.toString().localeCompare(b.chapterNumber.toString(), undefined, { numeric: true })
+                              ).map((chapter) => (
                                 <div key={chapter.id} className="toc-chapter-card">
                                   <div className="chapter-card-left">
                                     <span className="chapter-badge">{chapter.chapterNumber}</span>
                                     <h4 className="chapter-title">
-                                      <Link to={`/book/${book.id}/chapter/${chapter.id}`}>{chapter.title}</Link>
+                                      <span className="chapter-link-span" onClick={() => handleChapterAction(chapter, 'view')} style={{ cursor: 'pointer', color: '#1e5292' }}>{chapter.title}</span>
                                       {chapter.pages && <span className="chapter-pages"> (pages {chapter.pages})</span>}
                                     </h4>
-                                    <p className="chapter-authors">{chapter.authors}</p>
+                                    <div className="chapter-meta-row" style={{ display: 'flex', gap: '15px', fontSize: '12px', color: '#666', marginBottom: '8px' }}>
+                                      <span className="chapter-views"><strong>Views:</strong> {chapter.views || 0}</span>
+                                    </div>
+                                    <p className="chapter-authors">
+                                      {chapter.authorDetails && chapter.authorDetails.length > 0 ? (
+                                        chapter.authorDetails.map((author, index) => (
+                                          <React.Fragment key={author.id}>
+                                            <Link to={`/author/${author.id}`}>{author.name}</Link>
+                                            {author.affiliation && (
+                                              <span className="author-affiliation"> 
+                                                {author.affiliation.trim().startsWith('(') ? author.affiliation : `(${author.affiliation})`}
+                                              </span>
+                                            )}
+                                            {index < chapter.authorDetails!.length - 1 ? ', ' : ''}
+                                          </React.Fragment>
+                                        ))
+                                      ) : chapter.authors}
+                                    </p>
                                     <p className="chapter-abstract">{chapter.abstract}</p>
                                   </div>
                                   <div className="chapters-actions-area">
                                     <button
                                       className="btn-view-pdf-alt"
-                                      onClick={() => chapter.pdfUrl ? window.open(chapter.pdfUrl, '_blank') : alert('PDF not available for this chapter.')}
+                                      onClick={() => handleChapterAction(chapter, 'pdf')}
                                     >
                                       <PictureAsPdfIcon fontSize="small" /> View PDF
                                     </button>
                                     <button
                                       className="btn-preview"
-                                      onClick={() => navigate(`/book/${book.id}/chapter/${chapter.id}`)}
+                                      onClick={() => handleChapterAction(chapter, 'view')}
                                     >
                                       Preview Chapter
                                     </button>
@@ -641,13 +682,23 @@ const BookChapterDetail: React.FC = () => {
                     <div className="tab-content active">
                       <h3>Author Biographies</h3>
                       {book.authorBiographies ? (
-                        Object.values(book.authorBiographies).map((author, index) => (
-                          <div key={index} className="author-bio">
-                            <p>
-                              <strong>{author.authorName}</strong> {author.biography}
-                            </p>
-                          </div>
-                        ))
+                        Object.values(book.authorBiographies).map((author, index) => {
+                          // Try to find author ID from any chapter's authorDetails
+                          const linkedAuthor = book.chapters?.flatMap(c => c.authorDetails || [])
+                            .find(a => a.name === author.authorName);
+
+                          return (
+                            <div key={index} className="author-bio">
+                              <p>
+                                <strong>
+                                  {linkedAuthor ? (
+                                    <Link to={`/author/${linkedAuthor.id}`}>{author.authorName}</Link>
+                                  ) : author.authorName}
+                                </strong> {author.biography}
+                              </p>
+                            </div>
+                          );
+                        })
                       ) : (
                         <p>No author biographies available for this book.</p>
                       )}
