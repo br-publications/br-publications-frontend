@@ -1038,33 +1038,70 @@
     box-shadow: 0 4px 6px rgba(102, 126, 234, 0.2);
 }
 
-.fileInput {
-    width: 100%;
-    padding: 10px;
-    border: 2px dashed #d1d5db;
+.customFileUpload {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid #d1d5db;
     border-radius: 8px;
-    font-size: 14px;
+    overflow: hidden;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background: white;
 }
 
-.fileInput:hover {
+.customFileUpload:hover {
     border-color: #3b82f6;
-    background: #f9fafb;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.fileInput:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.fileInfo {
-    margin-top: 10px;
-    padding: 10px 12px;
+.customFileButton {
+    background: #f3f4f6;
+    border-right: 1px solid #d1d5db;
+    padding: 10px 16px;
     font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    white-space: nowrap;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    transition: background 0.2s ease;
+}
+
+.customFileUpload:hover .customFileButton {
+    background: #e5e7eb;
+}
+
+.customFilePlaceholder {
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.revisionFileInfo {
     display: flex;
     align-items: center;
     gap: 8px;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #15803d;
+    font-weight: 500;
+}
+
+.uploadHint {
+    margin: 6px 0 0;
+    font-size: 11px;
+    color: #9ca3af;
 }
 
 .emptyStateIcon {
@@ -1224,6 +1261,7 @@
     padding: 40px;
     color: #6b7280;
 }
+
 .inputError {
     border-color: #ef4444 !important;
 }

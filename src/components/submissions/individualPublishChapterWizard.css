@@ -418,6 +418,33 @@
     white-space: nowrap !important;
 }
 
+.pcw-editor-chip {
+    background: #f0f4fa !important;
+    border: 1px solid #c8d4e6 !important;
+    color: #5a6a82 !important;
+    border-radius: 4px !important;
+    padding: 2px 8px !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+.pcw-editor-chip:hover {
+    background: #e2eaf6 !important;
+    border-color: #1e5292 !important;
+    color: #1e5292 !important;
+}
+
+.pcw-editor-chip.active {
+    background: #1e5292 !important;
+    color: #fff !important;
+    border-color: #1e5292 !important;
+}
+
 /* ─────────────────────────────────────────
    TOC ROWS
  ───────────────────────────────────────── */

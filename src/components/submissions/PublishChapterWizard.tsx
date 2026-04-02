@@ -5,13 +5,18 @@ import { createPortal } from 'react-dom';
 import { toast } from 'react-hot-toast';
 import type { BookChapterSubmission, Author } from '../../types/submissionTypes';
 import { DESIGNATIONS } from '../../types/bookChapterManuscriptTypes';
-import { publishBookChapter, uploadTempPdf } from '../../services/bookChapterPublishing.service';
+import { publishBookChapter, uploadTempPdf, findAuthors, deletePublishedChapter } from '../../services/bookChapterPublishing.service';
 import type { TocChapterPayload, AuthorBiographyPayload } from '../../services/bookChapterPublishing.service';
+import { useNavigate } from 'react-router-dom';
+import { bookChapterAdminService } from '../../services/bookChapterSumission.service';
+import { bookTitleService, bookEditorService } from '../../services/bookManagement.service';
+import AuthorMultiSelect from '../common/AuthorMultiSelect';
 import AlertPopup from '../common/alertPopup';
 import type { AlertType } from '../common/alertPopup';
 import PhoneNumberInput from '../common/PhoneNumberInput';
 import { isValidPhoneNumber } from '../../utils/phoneValidation';
 import { isValidUrl } from '../../utils/urlValidation';
+import { isValidEmail } from '../../utils/emailValidation';
 import './publishChapterWizard.css';
 import '../../pages/textBookSubmission/publishing/imageCropper.css';
 
@@ -24,9 +29,13 @@ interface PublishChapterWizardProps {
     onClose: () => void;
     submission: BookChapterSubmission;
     onSuccess: (submission?: BookChapterSubmission) => void;
+    // Consolidated publication data: all submissions for the same book title
+    allSubmissions?: BookChapterSubmission[];
+    // Consolidated publication data: full ordered chapter list from the DB
+    allBookChapters?: { title: string; chapterNumber: string }[];
 }
 
-type TabType = 'author' | 'metadata' | 'content' | 'toc' | 'review';
+type TabType = 'author' | 'metadata' | 'content' | 'bio' | 'toc' | 'review';
 
 interface TabDef {
     id: TabType;
@@ -38,8 +47,9 @@ const TABS: TabDef[] = [
     { id: 'author', label: 'Authors', num: 1 },
     { id: 'metadata', label: 'Book Metadata', num: 2 },
     { id: 'content', label: 'Content', num: 3 },
-    { id: 'toc', label: 'TOC & Assets', num: 4 },
-    { id: 'review', label: 'Cover & Review', num: 5 },
+    { id: 'bio', label: 'Author Biography', num: 4 },
+    { id: 'toc', label: 'TOC & Assets', num: 5 },
+    { id: 'review', label: 'Cover & Review', num: 6 },
 ];
 
 interface CoAuthorWithId extends Author {
@@ -88,7 +98,10 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
     onClose,
     submission,
     onSuccess,
+    allSubmissions,
+    allBookChapters,
 }) => {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<TabType>('author');
     const pcwBodyRef = useRef<HTMLDivElement>(null);
 
@@ -149,9 +162,10 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
         keywords: submission.keywords || [],
         editors: (submission as any).editors
             ? (Array.isArray((submission as any).editors) ? (submission as any).editors : (submission as any).editors.split(',').map((s: string) => s.trim()))
-            : ((submission as any).designatedEditor?.fullName || submission.assignedEditor?.fullName
-                ? [(submission as any).designatedEditor?.fullName || submission.assignedEditor?.fullName]
-                : []),
+            : Array.from(new Set([
+                (submission as any).designatedEditor?.fullName,
+                submission.assignedEditor?.fullName
+            ].filter(Boolean) as string[])),
         frontmatterPdfs: {},
     });
 
@@ -168,7 +182,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
 
     // Step 6 – Author biographies
     const [biographies, setBiographies] = useState<AuthorBiographyPayload[]>([
-        { authorName: `${form.mainAuthor.firstName} ${form.mainAuthor.lastName}`.trim(), biography: '' },
+        { authorName: `${form.mainAuthor.firstName} ${form.mainAuthor.lastName}`.trim(), affiliation: '', email: '', biography: '' },
     ]);
 
     // Step 7 – Archives
@@ -227,44 +241,118 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
             keywords: submission.keywords || [],
             editors: (submission as any).editors
                 ? (Array.isArray((submission as any).editors) ? (submission as any).editors : (submission as any).editors.split(',').map((s: string) => s.trim()))
-                : ((submission as any).designatedEditor?.fullName || submission.assignedEditor?.fullName
-                    ? [(submission as any).designatedEditor?.fullName || submission.assignedEditor?.fullName]
-                    : []),
+                : Array.from(new Set([
+                    (submission as any).designatedEditor?.fullName,
+                    submission.assignedEditor?.fullName
+                ].filter(Boolean) as string[])),
             frontmatterPdfs: {},
         });
         setScopeItems(['']);
 
-        // Pre-fill TOC from submission individual chapters (if available) or chapter titles
-        const individualChapters = (submission as any).individualChapters as any[];
+        // Pre-fill TOC: prefer allBookChapters (consolidated, full list) over individual chapters in the submission
         let initialToc: TocChapterPayload[] = [];
-
-        if (individualChapters && individualChapters.length > 0) {
-            // ONLY show approved chapters, exclude rejected or pending ones
-            initialToc = individualChapters
-                .filter(ch => ch.status === 'CHAPTER_APPROVED')
-                .map((ch, i) => ({
-                    title: ch.chapterTitle, // Show Title instead of ID
-                    chapterNumber: String(ch.chapterNumber || i + 1).padStart(2, '0'),
-                }));
-        } else {
-            // Fallback for submissions without individualChapter entities (legacy or bulk)
-            const titles: string[] = (submission as any).bookChapterTitles || (submission as any).chapters || [];
-            initialToc = titles.map((t, i) => ({
-                title: t,
-                chapterNumber: String(i + 1).padStart(2, '0'),
+        if (allBookChapters && allBookChapters.length > 0) {
+            // Consolidated mode: use the full ordered chapter list from DB
+            initialToc = allBookChapters.map(ch => ({
+                title: ch.title,
+                chapterNumber: ch.chapterNumber,
             }));
+        } else {
+            const individualChapters = (submission as any).individualChapters as any[];
+            if (individualChapters && individualChapters.length > 0) {
+                initialToc = individualChapters
+                    .filter(ch => ch.status === 'CHAPTER_APPROVED')
+                    .map((ch, i) => ({
+                        title: ch.chapterTitle,
+                        chapterNumber: String(ch.chapterNumber || i + 1).padStart(2, '0'),
+                    }));
+            } else {
+                const titles: string[] = (submission as any).bookChapterTitles || (submission as any).chapters || [];
+                initialToc = titles.map((t, i) => ({
+                    title: t,
+                    chapterNumber: String(i + 1).padStart(2, '0'),
+                }));
+            }
         }
 
         setTocChapters(
             initialToc.length > 0 ? initialToc : [{ title: '', chapterNumber: '01' }]
         );
 
-        setBiographies([{ authorName: `${submission.mainAuthor.firstName} ${submission.mainAuthor.lastName}`.trim(), biography: '' }]);
+        // Pre-fill biographies:
+        // Consolidated mode: collect all unique authors from all submissions
+        if (allSubmissions && allSubmissions.length > 0) {
+            const seenEmails = new Set<string>();
+            const bios: any[] = [];
+
+            const addAuthorBio = (a: any) => {
+                if (!a) return;
+                const email = (a.email || '').toLowerCase();
+                const key = email || `${a.firstName} ${a.lastName}`.trim().toLowerCase();
+                if (key && !seenEmails.has(key)) {
+                    seenEmails.add(key);
+                    bios.push({
+                        authorName: `${a.firstName || ''} ${a.lastName || ''}`.trim(),
+                        affiliation: a.instituteName || a.departmentName || '',
+                        email: a.email || '',
+                        biography: '',
+                    });
+                }
+            };
+
+            for (const sub of allSubmissions) {
+                addAuthorBio(sub.mainAuthor);
+                (sub.coAuthors || []).forEach(addAuthorBio);
+            }
+
+            setBiographies(bios.length > 0 ? bios : [{ authorName: `${submission.mainAuthor.firstName} ${submission.mainAuthor.lastName}`.trim(), affiliation: '', email: '', biography: '' }]);
+        } else {
+            setBiographies([{ authorName: `${submission.mainAuthor.firstName} ${submission.mainAuthor.lastName}`.trim(), affiliation: '', email: '', biography: '' }]);
+        }
         setArchiveIntro('');
         setArchiveItems(['']);
         setOriginalImage('');
+
+        // Pre-fill editors from the registered book title
+        const fetchBookEditors = async () => {
+            const title = submission.bookTitle;
+            if (!title) return;
+
+            try {
+                // 1. Search for the book title by name (since we might not have ID in submission)
+                const res = await bookTitleService.getAllBookTitles({ search: title });
+                if (res.success && res.data?.bookTitles) {
+                    // Try to find an EXACT title match
+                    const exactBook = res.data.bookTitles.find(
+                        b => b.title.toLowerCase() === title.toLowerCase()
+                    );
+
+                    if (exactBook) {
+                        // 2. Fetch all assigned editors for this book
+                        const edRes = await bookEditorService.getEditorsByBookTitle(exactBook.id);
+                        if (edRes.success && edRes.data?.editors) {
+                            // Extract full names from assignment data
+                            const editorNames = edRes.data.editors
+                                .map((ae: any) => ae.editor?.fullName)
+                                .filter(Boolean);
+
+                            if (editorNames.length > 0) {
+                                setForm(prev => ({
+                                    ...prev,
+                                    editors: Array.from(new Set(editorNames)) // Avoid duplicates
+                                }));
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('[PublishChapterWizard] Failed to fetch book editors:', err);
+            }
+        };
+
+        fetchBookEditors();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isOpen, submission.id]); // ← only submission.id, NOT the whole object
+    }, [isOpen, submission.id, submission.bookTitle]); // ← added submission.bookTitle to deps just in case
 
     // ── Helpers ──────────────────────────────────────────────
 
@@ -344,6 +432,19 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
         }
     };
 
+    const handleEmailBlur = (email: string | undefined, fieldKey: string) => {
+        if (email && !isValidEmail(email)) {
+            const errorMsg = 'Please enter a valid email address.';
+            setFieldErrors(prev => ({ ...prev, [fieldKey]: errorMsg }));
+        } else {
+            setFieldErrors(prev => {
+                const next = { ...prev };
+                delete next[fieldKey];
+                return next;
+            });
+        }
+    };
+
     const validateTab = (tab: TabType): string => {
         switch (tab) {
             case 'author':
@@ -398,6 +499,14 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                 if (!archiveIntro.trim()) return 'Archive introduction is required.';
                 if (archiveItems.some(item => !item.trim())) return 'All archive repositories must have content.';
                 break;
+            case 'bio':
+                if (biographies.some(b => !b.authorName.trim() || !b.affiliation.trim() || !b.biography.trim())) {
+                    return 'All author biographies must have a name, affiliation, and biography text.';
+                }
+                if (biographies.some(b => b.email && !isValidEmail(b.email))) {
+                    return 'Please enter a valid email address for all biographies that have an email provided.';
+                }
+                break;
             case 'toc':
                 if (tocChapters.length === 0) return 'At least one chapter must be added to the Table of Contents.';
                 if (tocChapters.some((c) => !c.title.trim() || !c.chapterNumber?.trim() || !c.authors?.trim() || !c.pdfKey)) {
@@ -406,9 +515,6 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                 const missingFrontmatter = extraPdfTypes.filter(type => !form.frontmatterPdfs[type]?.pdfKey);
                 if (missingFrontmatter.length > 0) {
                     return `Please upload all 7 frontmatter PDFs. Missing: ${missingFrontmatter.join(', ')}.`;
-                }
-                if (biographies.some(b => !b.authorName.trim() || !b.biography.trim())) {
-                    return 'All author biographies must have a name and biography text.';
                 }
                 break;
             case 'review':
@@ -419,7 +525,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
     };
 
     const handleNextTab = () => {
-        const order: TabType[] = ['author', 'metadata', 'content', 'toc', 'review'];
+        const order: TabType[] = ['author', 'metadata', 'content', 'bio', 'toc', 'review'];
         const err = validateTab(activeTab);
         if (err) {
             setErrors(err);
@@ -441,7 +547,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
     };
 
     const handlePrevTab = () => {
-        const order: TabType[] = ['author', 'metadata', 'content', 'toc', 'review'];
+        const order: TabType[] = ['author', 'metadata', 'content', 'bio', 'toc', 'review'];
         setErrors('');
         setAlertConfig(p => ({ ...p, isOpen: false })); // Close any active alerts
         const idx = order.indexOf(activeTab);
@@ -523,12 +629,52 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
 
     // ── Biographies ──────────────────────────────────────────
 
-    const addBio = () => setBiographies((p) => [...p, { authorName: '', biography: '' }]);
+    const addBio = () => setBiographies((p) => [...p, { authorName: '', affiliation: '', email: '', biography: '' }]);
     const removeBio = (i: number) => {
         if (biographies.length > 1) setBiographies((p) => p.filter((_, idx) => idx !== i));
     };
     const updateBio = (i: number, field: keyof AuthorBiographyPayload, val: string) =>
         setBiographies((p) => p.map((b, idx) => (idx === i ? { ...b, [field]: val } : b)));
+
+    const handleAuthorSearch = async (i: number) => {
+        const bio = biographies[i];
+        if (!bio.authorName.trim()) return;
+
+        try {
+            // Search by Name + Affiliation OR Name + Email OR just Name
+            const results = await findAuthors({
+                name: bio.authorName,
+                affiliation: bio.affiliation || undefined,
+                email: bio.email || undefined
+            });
+
+            if (results && results.length > 0) {
+                // If we found an exact match by (Name + Affiliation) or (Name + Email), auto-fill
+                let match = results.find(a =>
+                    a.name.toLowerCase() === bio.authorName.toLowerCase() &&
+                    ((bio.affiliation && a.affiliation?.toLowerCase() === bio.affiliation.toLowerCase()) ||
+                        (bio.email && a.email?.toLowerCase() === bio.email.toLowerCase()))
+                );
+
+                // Fallback: If no exact pair match but we have a unique name match and fields are empty, use it
+                if (!match && results.length === 1 && !bio.affiliation && !bio.email && !bio.biography) {
+                    match = results[0];
+                }
+
+                if (match) {
+                    setBiographies(prev => prev.map((b, idx) => idx === i ? {
+                        ...b,
+                        authorName: match!.name,
+                        affiliation: match!.affiliation || b.affiliation,
+                        email: match!.email || b.email,
+                        biography: match!.biography || b.biography
+                    } : b));
+                }
+            }
+        } catch (err) {
+            console.error('Error searching authors:', err);
+        }
+    };
 
     // ── Scope / Archives ─────────────────────────────────────
 
@@ -612,7 +758,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
     // ── Submit ───────────────────────────────────────────────
 
     const handleSubmit = async () => {
-        const order: TabType[] = ['author', 'metadata', 'content', 'toc', 'review'];
+        const order: TabType[] = ['author', 'metadata', 'content', 'bio', 'toc', 'review'];
         for (const tab of order) {
             const err = validateTab(tab);
             if (err) {
@@ -620,9 +766,9 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                 setErrors(err);
                 setAlertConfig({
                     isOpen: true,
-                    type: 'warning', // Changed from 'error' to 'warning' for consistency
-                    title: 'Missing Information', // Changed from 'Validation Error'
-                    message: err // The message is already good
+                    type: 'warning',
+                    title: 'Missing Information',
+                    message: err
                 });
                 return;
             }
@@ -630,28 +776,26 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
 
         setLoading(true);
         try {
-            // Build scope object
+            // 1. Build common metadata components
             const scope: Record<string, string> = { paragraph_1: form.scopeIntro };
             scopeItems.forEach((v, i) => {
                 if (v.trim()) scope[`list_${i + 1}`] = v;
             });
 
-            // Build archives object
             const archives: Record<string, string> = { paragraph_1: archiveIntro };
             archiveItems.forEach((v, i) => {
                 if (v.trim()) archives[`list_${i + 1}`] = v;
             });
 
-            const payload = {
+            const basePayload = {
                 title: form.title,
-                author: `${form.mainAuthor.firstName} ${form.mainAuthor.lastName}`.trim(),
-                coAuthors: form.coAuthors.map(ca => `${ca.firstName} ${ca.lastName}`.trim()).join(', ') || undefined,
                 coverImage: form.coverImage || undefined,
                 category: form.category,
                 description: form.description,
                 isbn: form.isbn,
                 publishedDate: form.publishedDate,
                 pages: Number(form.pages),
+                keywords: form.keywords.map(k => k.trim()).filter(Boolean),
                 indexedIn: form.indexedIn || undefined,
                 releaseDate: form.releaseDate || undefined,
                 copyright: form.copyright || undefined,
@@ -672,28 +816,109 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                 tableContents: tocChapters.filter((c) => c.title.trim()),
                 authorBiographies: biographies.filter(
                     (b) => b.authorName.trim() || b.biography.trim()
-                ),
+                ).map(b => ({
+                    ...b,
+                    affiliation: b.affiliation.trim() 
+                        ? (b.affiliation.trim().startsWith('(') && b.affiliation.trim().endsWith(')') 
+                            ? b.affiliation.trim() 
+                            : `(${b.affiliation.trim()})`)
+                        : b.affiliation
+                })),
                 archives,
-                editors: form.editors,
+                editors: form.editors.map(e => e.trim()).filter(Boolean),
                 frontmatterPdfs: form.frontmatterPdfs,
-                mainAuthor: form.mainAuthor,
-                coAuthorsData: form.coAuthors.map(({ tempId, ...rest }) => rest),
             };
 
-            await publishBookChapter(submission.id, payload);
-            toast.success('🎉 Book chapter published successfully!');
+            // 2. Identify target submissions for bulk publication
+            // Filter by exact book title and status 'PUBLICATION_IN_PROGRESS'
+            // We always include the current submission regardless of status if it was opened in the wizard
+            const relatedSubmissions = (allSubmissions || []).filter(sub =>
+                sub.bookTitle === submission.bookTitle &&
+                (sub.status === 'PUBLICATION_IN_PROGRESS' || sub.id === submission.id)
+            );
+
+            // Filter out any duplicates and ensure we have a valid queue
+            const publishQueue = relatedSubmissions.length > 0 ? relatedSubmissions : [submission];
+            const uniqueQueue = Array.from(new Map(publishQueue.map(s => [s.id, s])).values());
+
+            const successfulPubIds: number[] = [];
+            const failures: { subId: number; error: string }[] = [];
+            let primaryResultId: number | null = null;
+
+            // 3. Batch Publication
+            // We only call the main 'publishBookChapter' for the primary submission to create ONE public entry.
+            // For other submissions in the same book, we call the admin status-update endpoint.
+            for (const sub of uniqueQueue) {
+                // Construct submission-specific author data
+                const finalPayload = {
+                    ...basePayload,
+                    // Use the wizard's edited authors for the primary submission
+                    // Use original submission records for all others in the batch
+                    author: sub.id === submission.id
+                        ? `${form.mainAuthor.firstName} ${form.mainAuthor.lastName}`.trim()
+                        : `${sub.mainAuthor.firstName} ${sub.mainAuthor.lastName}`.trim(),
+                    coAuthors: sub.id === submission.id
+                        ? (form.coAuthors.map(ca => `${ca.firstName} ${ca.lastName}`.trim()).join(', ') || undefined)
+                        : ((sub.coAuthors || []).map(ca => `${ca.firstName} ${ca.lastName}`.trim()).join(', ') || undefined),
+                    mainAuthor: sub.id === submission.id
+                        ? form.mainAuthor
+                        : sub.mainAuthor,
+                    coAuthorsData: sub.id === submission.id
+                        ? form.coAuthors.map(({ tempId, ...rest }) => rest)
+                        : (sub.coAuthors || [])
+                };
+
+                try {
+                    if (sub.id === submission.id) {
+                        // Primary submission: Create the actual public book record
+                        const result = await publishBookChapter(sub.id, finalPayload as any);
+                        if (result && result.id) {
+                            primaryResultId = result.id;
+                            successfulPubIds.push(result.id);
+                        }
+                    } else {
+                        // Related submissions: Just mark them as published to move them out of the pending flow
+                        await bookChapterAdminService.publishChapter(sub.id);
+                    }
+                } catch (err: any) {
+                    failures.push({
+                        subId: sub.id,
+                        error: err?.message || 'Network error or internal server failure'
+                    });
+                }
+            }
+
+            // 4. Verification and Rollback
+            if (failures.length > 0) {
+                // If any part of the bulk operation failed, roll back the successful ones
+                if (successfulPubIds.length > 0) {
+                    await Promise.allSettled(successfulPubIds.map(pubId => deletePublishedChapter(pubId)));
+                }
+
+                const failedSummary = failures.map(f => `Sub #${f.subId}: ${f.error}`).join('; ');
+                throw new Error(
+                    `Bulk publication failed. To ensure data consistency, the operation was rolled back. \nDetails: ${failedSummary}`
+                );
+            }
+
+            // 5. Final Success Alert
+            toast.success(`🎉 ${uniqueQueue.length} chapter(s) published successfully!`);
             setAlertConfig({
                 isOpen: true,
                 type: 'success',
                 title: 'Publication Successful',
-                message: 'The book chapter has been successfully published!',
+                message: `${uniqueQueue.length} chapters for "${submission.bookTitle}" have been successfully published.`,
                 confirmText: 'Done',
                 onConfirm: () => {
                     setAlertConfig(p => ({ ...p, isOpen: false }));
                     onSuccess();
                     onClose();
+                    if (primaryResultId) {
+                        navigate(`/bookchapter/${primaryResultId}`);
+                    }
                 }
             });
+
         } catch (err: any) {
             const msg = err?.message || 'Failed to publish. Please try again.';
             toast.error(msg);
@@ -829,7 +1054,19 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                     </div>
                                     <div className="pcw-field">
                                         <label className="pcw-label">Email Address <span className="req">*</span></label>
-                                        <input className="pcw-input" type="email" value={form.mainAuthor.email} onChange={(e) => handleMainAuthorChange('email', e.target.value)} placeholder="e.g. john.doe@example.com" />
+                                        <input
+                                            className="pcw-input"
+                                            type="email"
+                                            value={form.mainAuthor.email}
+                                            onChange={(e) => handleMainAuthorChange('email', e.target.value)}
+                                            onBlur={() => handleEmailBlur(form.mainAuthor.email, 'mainAuthorEmail')}
+                                            placeholder="e.g. john.doe@example.com"
+                                        />
+                                        {fieldErrors.mainAuthorEmail && (
+                                            <span style={{ color: '#dc2626', fontSize: '10px', marginTop: '4px', fontWeight: 500 }}>
+                                                {fieldErrors.mainAuthorEmail}
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="pcw-field">
                                         <label className="pcw-label">Phone Number (Optional)</label>
@@ -909,7 +1146,19 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                             </div>
                                             <div className="pcw-field">
                                                 <label className="pcw-label">Email Address <span className="req">*</span></label>
-                                                <input className="pcw-input" type="email" value={ca.email} onChange={(e) => handleCoAuthorChange(ca.tempId, 'email', e.target.value)} placeholder="e.g. jane.doe@example.com" />
+                                                <input
+                                                    className="pcw-input"
+                                                    type="email"
+                                                    value={ca.email}
+                                                    onChange={(e) => handleCoAuthorChange(ca.tempId, 'email', e.target.value)}
+                                                    onBlur={() => handleEmailBlur(ca.email, `coAuthorEmail-${ca.tempId}`)}
+                                                    placeholder="e.g. jane.doe@example.com"
+                                                />
+                                                {fieldErrors[`coAuthorEmail-${ca.tempId}`] && (
+                                                    <span style={{ color: '#dc2626', fontSize: '10px', marginTop: '4px', fontWeight: 500 }}>
+                                                        {fieldErrors[`coAuthorEmail-${ca.tempId}`]}
+                                                    </span>
+                                                )}
                                             </div>
                                             <div className="pcw-field">
                                                 <label className="pcw-label">Phone Number (Optional)</label>
@@ -945,7 +1194,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                         <input
                                             className="pcw-input"
                                             value={form.editors.join(', ')}
-                                            onChange={(e) => setForm(p => ({ ...p, editors: e.target.value.split(',').map(s => s.trim()) }))}
+                                            onChange={(e) => setForm(p => ({ ...p, editors: e.target.value.split(',').map(s => s.trimStart()) }))}
                                             placeholder="e.g. Dr. Alice Smith, Prof. Bob Johnson"
                                         />
                                     </div>
@@ -978,7 +1227,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                         <input
                                             className="pcw-input"
                                             value={form.keywords.join(', ')}
-                                            onChange={(e) => setForm(p => ({ ...p, keywords: e.target.value.split(',').map(s => s.trim()) }))}
+                                            onChange={(e) => setForm(p => ({ ...p, keywords: e.target.value.split(',').map(s => s.trimStart()) }))}
                                             placeholder="e.g. AI, Machine Learning, Robotics"
                                         />
                                     </div>
@@ -1125,6 +1374,59 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                             </div>
                         )}
 
+                        {activeTab === 'bio' && (
+                            <div className="tab-pane active slide-in-bottom">
+                                <div className="pcw-tab-section">
+                                    <p className="pcw-step-title">Author Biographies</p>
+                                    <p className="pcw-step-desc">Brief bio for each contributing author.</p>
+                                    {biographies.map((bio, i) => (
+                                        <div className="pcw-bio-card" key={i}>
+                                            <div className="pcw-bio-card-header">
+                                                <span className="pcw-bio-label">Author {i + 1} <span className="req">*</span></span>
+                                                {biographies.length > 1 && (
+                                                    <button type="button" className="pcw-remove-btn" onClick={() => removeBio(i)}>Remove</button>
+                                                )}
+                                            </div>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: 8 }}>
+                                                <div className="pcw-field">
+                                                    <label className="pcw-label">Full Name <span className="req">*</span></label>
+                                                    <input className="pcw-input" value={bio.authorName}
+                                                        onChange={(e) => updateBio(i, 'authorName', e.target.value)}
+                                                        onBlur={() => handleAuthorSearch(i)}
+                                                        placeholder="e.g. Dr. John Doe" />
+                                                </div>
+                                                <div className="pcw-field">
+                                                    <label className="pcw-label">Affiliation <span className="req">*</span></label>
+                                                    <input className="pcw-input" value={bio.affiliation || ''}
+                                                        onChange={(e) => updateBio(i, 'affiliation', e.target.value)}
+                                                        onBlur={() => handleAuthorSearch(i)}
+                                                        placeholder="e.g. Stanford University" />
+                                                </div>
+                                                <div className="pcw-field">
+                                                    <label className="pcw-label">Email ID (Optional)</label>
+                                                    <input className="pcw-input" type="email" value={bio.email || ''}
+                                                        onChange={(e) => updateBio(i, 'email', e.target.value)}
+                                                        onBlur={() => {
+                                                            handleAuthorSearch(i);
+                                                            handleEmailBlur(bio.email, `bioEmail-${i}`);
+                                                        }}
+                                                        placeholder="e.g. john.doe@example.com" />
+                                                    {fieldErrors[`bioEmail-${i}`] && <small className="pcw-field-error" style={{ color: 'red', fontSize: '10px' }}>{fieldErrors[`bioEmail-${i}`]}</small>}
+                                                </div>
+                                            </div>
+                                            <div className="pcw-field">
+                                                <label className="pcw-label">Biography <span className="req">*</span></label>
+                                                <textarea className="pcw-textarea" rows={3} value={bio.biography}
+                                                    onChange={(e) => updateBio(i, 'biography', e.target.value)}
+                                                    placeholder="Short academic/professional biography (e.g. Dr. John Doe is a Professor at...)" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <button type="button" className="pcw-add-btn" onClick={addBio}>+ Add Author Bio</button>
+                                </div>
+                            </div>
+                        )}
+
                         {activeTab === 'toc' && (
                             <div className="tab-pane active slide-in-bottom">
                                 <div className="pcw-tab-section">
@@ -1153,11 +1455,11 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                                         onChange={(e) => updateTocField(i, 'title', e.target.value)}
                                                         placeholder="Chapter title *"
                                                     />
-                                                    <input
-                                                        className="pcw-input"
-                                                        value={ch.authors || ''}
-                                                        onChange={(e) => updateTocField(i, 'authors', e.target.value)}
-                                                        placeholder="Author(s) *"
+                                                    <AuthorMultiSelect
+                                                        authorOptions={biographies.map(b => b.authorName)}
+                                                        selectedNames={ch.authors || ''}
+                                                        onChange={(val) => updateTocField(i, 'authors', val)}
+                                                        placeholder="Select Author(s) *"
                                                     />
                                                     {/* Hidden PDF file input — must be outside the flex row so it stays invisible */}
                                                     <input
@@ -1291,34 +1593,6 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                         })}
                                     </div>
                                 </div>
-                                <hr style={{ margin: '16px 0', borderColor: '#e5e7eb', borderStyle: 'solid', borderWidth: '1px 0 0 0' }} />
-                                <div className="pcw-tab-section">
-                                    <p className="pcw-step-title">Author Biographies</p>
-                                    <p className="pcw-step-desc">Brief bio for each contributing author.</p>
-                                    {biographies.map((bio, i) => (
-                                        <div className="pcw-bio-card" key={i}>
-                                            <div className="pcw-bio-card-header">
-                                                <span className="pcw-bio-label">Author {i + 1} <span className="req">*</span></span>
-                                                {biographies.length > 1 && (
-                                                    <button type="button" className="pcw-remove-btn" onClick={() => removeBio(i)}>Remove</button>
-                                                )}
-                                            </div>
-                                            <div className="pcw-field" style={{ marginBottom: 8 }}>
-                                                <label className="pcw-label">Full Name <span className="req">*</span></label>
-                                                <input className="pcw-input" value={bio.authorName}
-                                                    onChange={(e) => updateBio(i, 'authorName', e.target.value)}
-                                                    placeholder="e.g. Dr. John Doe" />
-                                            </div>
-                                            <div className="pcw-field">
-                                                <label className="pcw-label">Biography <span className="req">*</span></label>
-                                                <textarea className="pcw-textarea" rows={3} value={bio.biography}
-                                                    onChange={(e) => updateBio(i, 'biography', e.target.value)}
-                                                    placeholder="Short academic/professional biography (e.g. Dr. John Doe is a Professor at...)" />
-                                            </div>
-                                        </div>
-                                    ))}
-                                    <button type="button" className="pcw-add-btn" onClick={addBio}>+ Add Author Bio</button>
-                                </div>
                             </div>
                         )}
 
@@ -1450,6 +1724,25 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                         }
                                     </div>
 
+                                    {/* ── Step 4: Author Biographies ── */}
+                                    <div className="pcw-review-section" style={{ marginBottom: '20px' }}>
+                                        <div className="pcw-review-section-title">Step 4 — Author Biographies</div>
+                                        {biographies.filter(b => b.authorName).length > 0
+                                            ? biographies.filter(b => b.authorName).map((b, i) => (
+                                                <div key={i} style={{ marginBottom: '10px' }}>
+                                                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#374151', marginBottom: '3px' }}>
+                                                        {b.authorName} {b.affiliation ? <span style={{ fontWeight: 400, color: '#6b7280' }}>({b.affiliation})</span> : ''}
+                                                    </div>
+                                                    {b.biography
+                                                        ? <div style={{ fontSize: '14px', color: '#4b5563', lineHeight: 1.6, background: '#f9fafb', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e5e7eb' }}>{b.biography}</div>
+                                                        : <span className="pcw-review-tag warn" style={{ fontSize: '14px' }}>⚠ No biography text</span>
+                                                    }
+                                                </div>
+                                            ))
+                                            : <span className="pcw-review-tag warn">⚠ No biographies added</span>
+                                        }
+                                    </div>
+
                                     {/* ── Step 5: Table of Contents ── */}
                                     <div className="pcw-review-section" style={{ marginBottom: '20px' }}>
                                         <div className="pcw-review-section-title">Step 5 — Table of Contents ({tocChapters.filter(c => c.title).length} chapters)</div>
@@ -1477,26 +1770,9 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                         }
                                     </div>
 
-                                    {/* ── Step 6: Biographies ── */}
+                                    {/* ── Step 6: Archives ── */}
                                     <div className="pcw-review-section" style={{ marginBottom: '20px' }}>
-                                        <div className="pcw-review-section-title">Step 6 — Author Biographies</div>
-                                        {biographies.filter(b => b.authorName).length > 0
-                                            ? biographies.filter(b => b.authorName).map((b, i) => (
-                                                <div key={i} style={{ marginBottom: '10px' }}>
-                                                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#374151', marginBottom: '3px' }}>{b.authorName}</div>
-                                                    {b.biography
-                                                        ? <div style={{ fontSize: '14px', color: '#4b5563', lineHeight: 1.6, background: '#f9fafb', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e5e7eb' }}>{b.biography}</div>
-                                                        : <span className="pcw-review-tag warn" style={{ fontSize: '14px' }}>⚠ No biography text</span>
-                                                    }
-                                                </div>
-                                            ))
-                                            : <span className="pcw-review-tag warn">⚠ No biographies added</span>
-                                        }
-                                    </div>
-
-                                    {/* ── Step 7: Archives ── */}
-                                    <div className="pcw-review-section" style={{ marginBottom: '20px' }}>
-                                        <div className="pcw-review-section-title">Step 7 — Archives</div>
+                                        <div className="pcw-review-section-title">Step 6 — Archives</div>
                                         {archiveIntro && (
                                             <div style={{ marginBottom: '10px' }}>
                                                 <div style={{ fontSize: '14px', fontWeight: 600, color: '#6b7280', marginBottom: '2px' }}>Introduction</div>
@@ -1527,9 +1803,9 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                         </div>
                                     </div>
 
-                                    {/* ── Step 8: Cover Image ── */}
+                                    {/* ── Step 7: Cover Image ── */}
                                     <div className="pcw-review-section" style={{ marginBottom: '20px' }}>
-                                        <div className="pcw-review-section-title">Step 8 — Cover Image</div>
+                                        <div className="pcw-review-section-title">Step 7 — Cover Image</div>
                                         {form.coverImage
                                             ? <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginTop: '8px' }}>
                                                 <img src={form.coverImage} alt="Book Cover" style={{ width: '90px', height: '112px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #d1d5db', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }} />

@@ -1341,3 +1341,63 @@
     white-space: nowrap;
     flex-shrink: 0;
 }
+
+/* ============================================================================
+   CHAPTER STATUS PILLS — used in the Chapter Management status column
+   ============================================================================ */
+.ch-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-family: var(--ff-body);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    flex-shrink: 0;
+    border: 1px solid transparent;
+}
+
+/* ✓ Published — green */
+.ch-status-pill.published {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #6ee7b7;
+}
+
+/* 🔵 Ready for Publication — sky blue */
+.ch-status-pill.ready {
+    background: #e0f2fe;
+    color: #0369a1;
+    border-color: #7dd3fc;
+}
+
+/* ✅ Approved (submission-level, pre-publication) — light emerald */
+.ch-status-pill.approved {
+    background: #ecfdf5;
+    color: #059669;
+    border-color: #a7f3d0;
+}
+
+/* ✗ Rejected (submission-level) — red */
+.ch-status-pill.rejected {
+    background: #fef2f2;
+    color: #b91c1c;
+    border-color: #fca5a5;
+}
+
+/* 🔄 Under Review — amber */
+.ch-status-pill.under-review {
+    background: #fffbeb;
+    color: #92400e;
+    border-color: #fcd34d;
+}
+
+/* — Draft / Not started — gray */
+.ch-status-pill.draft {
+    background: #f8fafc;
+    color: #64748b;
+    border-color: #cbd5e1;
+}

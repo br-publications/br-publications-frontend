@@ -1,0 +1,515 @@
+/* =========================================
+   AUTHOR DETAIL — TRADITIONAL ACADEMIC STYLE
+   Matches bookChapterDetail / AuthorPage.html
+========================================= */
+
+:root {
+    --primary-blue: #1e5292;
+    --dark-blue: rgb(22, 65, 117);
+    --orange-gold: rgb(255, 167, 38);
+    --white: #fff;
+    --light-bg: #f9f9f9;
+    --text-dark: #222;
+    --text-medium: #444;
+    --border-color: #ccc;
+}
+
+/* ── Base ── */
+.author-detail-page {
+    font-family: sans-serif, serif;
+    background: #fff;
+    color: var(--text-dark);
+    line-height: 1.5;
+    font-size: 12px;
+    min-height: 100vh;
+}
+
+/* ── Loading / Error States ── */
+.author-detail-page.loading,
+.author-detail-page.error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 16px;
+    font-size: 14px;
+    color: var(--text-medium);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e0e0e0;
+    border-top-color: var(--primary-blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ── Hero Bar ── */
+.product-hero {
+    background: var(--primary-blue);
+    padding: 14px 15px;
+    color: white;
+}
+
+.hero-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.product-hero h1 {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 0;
+    flex: 1;
+    text-align: center;
+    font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+/* ── Back Button ── */
+.back-btn {
+    background: white;
+    color: var(--primary-blue);
+    border: 2px solid white;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.back-btn:hover {
+    background: transparent;
+    color: white;
+}
+
+/* ── Page Wrapper ── */
+.product-wrapper-details {
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 0 15px 40px;
+}
+
+/* ── Author Profile Card ── */
+.author-profile-section {
+    background: white;
+    border: 1px solid var(--border-color);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* WITH image: two-column grid */
+.profile-grid {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 20px;
+    padding-bottom: 18px;
+    border-bottom: 3px double var(--primary-blue);
+    margin-bottom: 15px;
+}
+
+/* WITHOUT image: single column */
+.profile-grid.no-image {
+    grid-template-columns: 1fr;
+}
+
+/* ── Author Image ── */
+.author-image-wrap {
+    position: relative;
+    width: 180px;
+}
+
+.author-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 1px solid var(--border-color);
+}
+
+.verified-badge {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    background: #2e7d32;
+    color: white;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    border: 2px solid white;
+}
+
+/* ── Author Details (right column) ── */
+.author-details-main {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.author-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--dark-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+    font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+/* Inline verified badge next to name (no-image layout) */
+.author-name .name-verified {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: #2e7d32;
+    border-radius: 50%;
+    margin-left: 10px;
+    vertical-align: middle;
+    color: white;
+    font-size: 11px;
+}
+
+.author-designation {
+    font-size: 12px;
+    color: var(--text-medium);
+    font-style: italic;
+    margin: 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* ── Stats Table ── */
+.author-stats-table {
+    background: var(--light-bg);
+    border: 1px solid var(--border-color);
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px;
+    border-bottom: 1px dotted var(--border-color);
+    font-size: 12px;
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.stat-row strong {
+    color: var(--dark-blue);
+    font-weight: 700;
+    min-width: 130px;
+}
+
+.stat-row span {
+    color: var(--text-medium);
+    text-align: right;
+}
+
+/* ── Social Links Row ── */
+.social-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding-top: 4px;
+}
+
+.social-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--dark-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Georgia', serif;
+}
+
+.social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: var(--primary-blue);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid var(--primary-blue);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.social-link:hover {
+    background: transparent;
+    color: var(--primary-blue);
+}
+
+/* ── Section Blocks ── */
+.section-block {
+    background: white;
+    border: 1px solid var(--border-color);
+    margin-bottom: 20px;
+}
+
+.section-heading {
+    background: var(--primary-blue);
+    color: white;
+    padding: 8px 15px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-heading svg {
+    color: var(--orange-gold);
+    flex-shrink: 0;
+}
+
+.section-body {
+    padding: 15px;
+}
+
+/* ── Biography ── */
+.biography-text {
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+    text-align: justify;
+}
+
+.biography-text:last-of-type {
+    margin-bottom: 0;
+}
+
+.expertise-subheading {
+    color: var(--dark-blue);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Georgia', serif;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--primary-blue);
+    margin: 15px 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.expertise-subheading svg {
+    color: var(--orange-gold);
+}
+
+.expertise-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.tag {
+    background: var(--light-bg);
+    color: var(--primary-blue);
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid var(--primary-blue);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Georgia', serif;
+}
+
+.tag:hover {
+    background: var(--primary-blue);
+    color: white;
+}
+
+/* ── Chapter / Publication Cards ── */
+.chapter-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.chapter-card {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    background: white;
+    border-bottom: 1px solid var(--border-color);
+    padding: 14px 15px;
+    gap: 0;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.chapter-card:first-child {
+    border-top: 1px solid var(--border-color);
+}
+
+.chapter-card:hover {
+    background: #fafcff;
+}
+
+.chapter-cover {
+    flex-shrink: 0;
+    width: 64px;
+    margin-right: 14px;
+}
+
+.chapter-cover img {
+    width: 64px;
+    height: auto;
+    display: block;
+    border: 1px solid var(--border-color);
+    box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.chapter-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.chapter-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    line-height: 1.4;
+    margin: 0;
+    font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+.chapter-card-title:hover {
+    text-decoration: underline;
+}
+
+.chapter-card-meta {
+    font-size: 12px;
+    color: #1a7a5e;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.chapter-card-abstract {
+    font-size: 12px;
+    color: var(--text-dark);
+    line-height: 1.6;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Empty state */
+.no-publications {
+    font-size: 12px;
+    color: var(--text-medium);
+    padding: 15px;
+    font-style: italic;
+}
+
+/* ── Scroll to Top ── */
+.scroll-top-btn {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 40px;
+    height: 40px;
+    background: var(--primary-blue);
+    color: white;
+    border: 2px solid white;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 3px 10px rgba(30, 60, 114, 0.4);
+    z-index: 1000;
+    transition: all 0.2s;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.scroll-top-btn.visible {
+    display: flex;
+}
+
+.scroll-top-btn:hover {
+    background: var(--dark-blue);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .author-image-wrap {
+        width: 140px;
+        margin: 0 auto;
+    }
+
+    .author-details-main {
+        text-align: center;
+    }
+
+    .stat-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+
+    .social-row {
+        justify-content: center;
+    }
+
+    .chapter-cover {
+        width: 52px;
+    }
+
+    .chapter-cover img {
+        width: 52px;
+    }
+}
+
+@media (max-width: 480px) {
+    .section-body {
+        padding: 12px;
+    }
+
+    .expertise-tags {
+        gap: 4px;
+    }
+}

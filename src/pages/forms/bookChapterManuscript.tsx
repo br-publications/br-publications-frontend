@@ -220,7 +220,15 @@ const BookChapterManuscript: React.FC = () => {
     try {
       const response = await bookManagementService.bookChapter.getChaptersByBookTitle(parseInt(bookTitleId), true, false);
       if (response.success && response.data && response.data.chapters) {
-        setAvailableChapters(response.data.chapters.map((chapter: any) => ({
+        // Filter out chapters that are already published or in the publication workflow
+        const filteredChapters = (response.data.chapters as any[]).filter((ch: any) => {
+          const subStatus = (ch.submissionStatus || '').toUpperCase();
+          const shouldHide = ch.isPublished || subStatus === 'PUBLICATION_IN_PROGRESS';
+
+          return !shouldHide;
+        });
+
+        setAvailableChapters(filteredChapters.map((chapter: any) => ({
           id: chapter.id.toString(),
           chapterTitle: chapter.chapterTitle
         })));

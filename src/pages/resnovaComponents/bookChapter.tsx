@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { Book } from '../../types/bookTypes';
 import bookChapterService from '../../services/bookChapterService';
-import { toSlug } from '../../utils/stringUtils';
+import { generateUniqueSlug } from '../../utils/stringUtils';
 import './bookChapter.css';
 
 const ProductBookChapter: React.FC = () => {
@@ -118,7 +118,7 @@ const ProductBookChapter: React.FC = () => {
    * Handle book preview/details navigation
    */
   const handleBookClick = (book: Book) => {
-    const slug = toSlug(book.title);
+    const slug = generateUniqueSlug(book.isbn, book.releaseDate);
     navigate(`/bookchapter/${book.id}/${slug}`, {
       state: { book }
     });

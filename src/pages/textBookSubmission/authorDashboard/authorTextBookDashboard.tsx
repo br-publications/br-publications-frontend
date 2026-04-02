@@ -19,10 +19,10 @@ const TAB_STATUS_MAP: Record<TabType, TextBookStatus[] | undefined> = {
     underReview: [
         TextBookStatus.PROPOSAL_UNDER_REVIEW,
         TextBookStatus.REVISION_REQUESTED,
-        TextBookStatus.REVISION_SUBMITTED
+        TextBookStatus.REVISION_SUBMITTED,
+        TextBookStatus.PROPOSAL_ACCEPTED
     ],
     approved: [
-        TextBookStatus.PROPOSAL_ACCEPTED,
         TextBookStatus.SUBMISSION_ACCEPTED,
         TextBookStatus.ISBN_APPLIED,
         TextBookStatus.ISBN_RECEIVED,
@@ -129,7 +129,18 @@ export default function AuthorTextBookDashboard() {
     // Get tab counts
     const getTabCount = (tab: TabType): number => {
         if (!stats) return 0;
-        return stats.aggregated[tab] || 0;
+
+        // For 'all' tab, use the overall total from backend
+        if (tab === 'all') return stats.aggregated.all || 0;
+
+        // For other tabs, calculate count by summing up relevant statuses
+        const statuses = TAB_STATUS_MAP[tab];
+        if (!statuses) return 0;
+
+        return statuses.reduce((sum, status) => {
+            const count = stats.byStatus[status] || 0;
+            return sum + count;
+        }, 0);
     };
 
     const handleViewDetails = (submission: TextBookSubmission) => {

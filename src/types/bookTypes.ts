@@ -6,6 +6,7 @@ export interface Book {
   author: string;
   "co-authors"?: string;
   editors?: string[];
+  primaryEditor?: string;
   coverImage: string;
   category: string;
   description: string;
@@ -34,7 +35,7 @@ export interface Book {
 }
 
 export interface Chapter {
-  id: string; // e.g., "chapter-1"
+  id: string | number; // normalized chapters use numeric IDs
   chapterNumber: string; // e.g., "Chapter 1"
   title: string;
   authors: string;
@@ -42,6 +43,16 @@ export interface Chapter {
   price: number;
   pages: string;
   pdfUrl?: string;
+  views?: number;
+  authorDetails?: PublishedAuthor[];
+}
+
+export interface PublishedAuthor {
+  id: number;
+  name: string;
+  email?: string;
+  affiliation?: string;
+  biography?: string;
 }
 
 export interface SynopsisSection {

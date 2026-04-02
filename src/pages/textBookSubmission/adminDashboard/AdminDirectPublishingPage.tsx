@@ -39,10 +39,10 @@ const AdminDirectPublishingPage: React.FC = () => {
                     // Ensure required fields for creation are present
                     title: mainAuthor.title || 'Mr/Ms.',
                     firstName: mainAuthor.firstName,
-                    lastName: mainAuthor.lastName,
-                    email: mainAuthor.email,
+                    lastName: mainAuthor.lastName || '',
+                    email: mainAuthor.email || 'N/A',
                     phoneNumber: mainAuthor.phoneNumber || 'N/A',
-                    instituteName: mainAuthor.institute,
+                    instituteName: mainAuthor.institute || 'N/A',
                     designation: 'Author',
                     departmentName: 'N/A',
                     city: mainAuthor.city || 'N/A',
@@ -54,10 +54,10 @@ const AdminDirectPublishingPage: React.FC = () => {
                     ...ca,
                     title: ca.title || 'Mr/Ms.',
                     firstName: ca.firstName,
-                    lastName: ca.lastName,
-                    email: ca.email,
+                    lastName: ca.lastName || '',
+                    email: ca.email || 'N/A',
                     phoneNumber: ca.phoneNumber || 'N/A',
-                    instituteName: ca.institute,
+                    instituteName: ca.institute || 'N/A',
                     designation: 'Co-Author',
                     departmentName: 'N/A',
                     city: ca.city || 'N/A',
@@ -116,7 +116,10 @@ const AdminDirectPublishingPage: React.FC = () => {
             }, 2000);
 
         } catch (error: any) {
-            console.error("Direct publishing failed:", error);
+            console.error("Direct publishing failed full error details:", error);
+            if (error.response) {
+                console.error("Server error response data:", error.response.data || error.response);
+            }
             setAlertConfig({
                 isOpen: true,
                 type: 'error',

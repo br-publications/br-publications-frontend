@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     X,
     ChevronLeft,
@@ -13,7 +13,7 @@ import {
     AlertCircle,
 } from 'lucide-react';
 import type { BookChapterSubmission } from '../../../types/submissionTypes';
-import { bookChapterEditorService } from '../../../services/bookChapterSumission.service';
+import { bookChapterService, bookChapterEditorService } from '../../../services/bookChapterSumission.service';
 import { userService, type User as UserServiceUser } from '../../../services/user.service';
 import bookManagementService from '../../../services/bookManagement.service';
 import SubmissionOverview from '../common/Overview/submissionOverview';
@@ -203,6 +203,8 @@ export const EditorSubmissionDetailView: React.FC<EditorSubmissionDetailViewProp
 
     // Determine if reviewers tab should be visible
     const hasReviewers = reviewerAssignments.length > 0;
+    const isReviewerAssignmentStatus = ['REVIEWER_ASSIGNMENT', 'UNDER_REVIEW', 'EDITORIAL_REVIEW'].includes(currentSubmission.status);
+    const showReviewersTab = hasReviewers || isReviewerAssignmentStatus;
 
     return (
         <div className={styles.container}>
@@ -235,7 +237,7 @@ export const EditorSubmissionDetailView: React.FC<EditorSubmissionDetailViewProp
                 <button className={`${styles.tab} ${activeTab === 'discussions' ? styles.activeTab : ''}`} onClick={() => setActiveTab('discussions')}>
                     <MessageSquare size={14} /> Discussions
                 </button>
-                {hasReviewers && (
+                {showReviewersTab && (
                     <button className={`${styles.tab} ${activeTab === 'reviewers' ? styles.activeTab : ''}`} onClick={() => setActiveTab('reviewers')}>
                         <Users size={14} /> Reviewers
                     </button>
@@ -347,10 +349,12 @@ const ReviewersTab: React.FC<{
     // Ensure assignments is an array
     const validAssignments = Array.isArray(assignments) ? assignments : [];
 
-    // Check if any reviewer has declined
+    // Check if any reviewer has declined or if we need more reviewers
     const hasDeclinedReviewer = validAssignments.some(
         (a) => a.status === 'DECLINED' || a.status === 'REJECTED' || a.status === 'EXPIRED'
     );
+    const needsMoreReviewers = validAssignments.length < 2;
+    const canManageReviewers = hasDeclinedReviewer || needsMoreReviewers;
 
     return (
         <div className={styles.reviewersTab}>
@@ -360,8 +364,8 @@ const ReviewersTab: React.FC<{
                     <button
                         className={styles.assignButton}
                         onClick={onAssignReviewer}
-                        disabled={!hasDeclinedReviewer}
-                        title={hasDeclinedReviewer ? 'Manage reviewers' : 'Manage Reviewers is only available when a reviewer declines'}
+                        disabled={!canManageReviewers}
+                        title={canManageReviewers ? 'Manage reviewers' : 'Reviewer slots are full'}
                     >
                         <UserCheck size={14} /> Manage Reviewers
                     </button>
@@ -393,10 +397,57 @@ const EditorActionsTab: React.FC<{
     isSubmittingIsbn: boolean;
     setIsSubmittingIsbn: (submitting: boolean) => void;
     setAlertConfig: React.Dispatch<React.SetStateAction<AlertConfig>>;
-}> = ({ submission, assignments, onMakeDecision, onMakeFinalDecision, onUpdate, chapterTitles, resolvedBookTitle, isStartingPublication, setIsStartingPublication, isSubmittingIsbn, setIsSubmittingIsbn, setAlertConfig }) => {
+}> = ({ submission, assignments, onAssignReviewer, onMakeDecision, onMakeFinalDecision, onUpdate, chapterTitles, resolvedBookTitle, isStartingPublication, setIsStartingPublication, isSubmittingIsbn, setIsSubmittingIsbn, setAlertConfig }) => {
     const [showPublishModal, setShowPublishModal] = useState(false);
     const [notes, setNotes] = useState('');
     const [finalNotes, setFinalNotes] = useState('');
+    const [reassignTarget, setReassignTarget] = useState<{ id: number; name: string } | null>(null);
+    const [proofFile, setProofFile] = useState<File | null>(null);
+    const [isUploadingProof, setIsUploadingProof] = useState(false);
+    // Consolidated publication data
+    const [publishAllSubmissions, setPublishAllSubmissions] = useState<BookChapterSubmission[]>([]);
+    const [publishAllBookChapters, setPublishAllBookChapters] = useState<{ title: string; chapterNumber: string }[]>([]);
+
+    // Readiness State
+    const [allChaptersReady, setAllChaptersReady] = useState<boolean>(false);
+    const [checkingReadiness, setCheckingReadiness] = useState<boolean>(true);
+    const [readinessDetails, setReadinessDetails] = useState<{ total: number, ready: number }>({ total: 0, ready: 0 });
+
+    useEffect(() => {
+        const checkReadiness = async () => {
+            try {
+                setCheckingReadiness(true);
+                // Find Book ID first
+                const bookResp = await bookManagementService.bookTitle.getBookTitleByTitle(resolvedBookTitle);
+                if (bookResp.success && bookResp.data?.id) {
+                    const bookId = bookResp.data.id;
+                    const chapterResp = await bookManagementService.bookChapter.getChaptersByBookTitle(bookId, true, true);
+                    if (chapterResp.success && chapterResp.data?.chapters) {
+                        const allChapters = chapterResp.data.chapters;
+                        const readyOnes = allChapters.filter(ch => 
+                            ch.isReadyForPublication || 
+                            ch.isPublished || 
+                            ch.submissionStatus === 'PUBLICATION_IN_PROGRESS'
+                        );
+
+                        setReadinessDetails({
+                            total: allChapters.length,
+                            ready: readyOnes.length
+                        });
+                        setAllChaptersReady(readyOnes.length === allChapters.length);
+                    }
+                }
+            } catch (error) {
+                console.error("Error checking chapter readiness:", error);
+            } finally {
+                setCheckingReadiness(false);
+            }
+        };
+
+        if (resolvedBookTitle) {
+            checkReadiness();
+        }
+    }, [resolvedBookTitle, submission.status]);
 
 
     const isAbstractPending = submission.status === 'ABSTRACT_SUBMITTED';
@@ -406,6 +457,35 @@ const EditorActionsTab: React.FC<{
     const reviewersCompleted = assignments.length >= 2 && assignments.every(a => a.status === 'COMPLETED');
     const statusReady = ['EDITORIAL_REVIEW'].includes(submission.status);
     const readyForFinalDecision = (reviewersCompleted || allChaptersDecided || statusReady) && !['APPROVED', 'PUBLISHED', 'REJECTED', 'ISBN_APPLIED', 'PUBLICATION_IN_PROGRESS'].includes(submission.status);
+
+    const handleUploadProof = async () => {
+        if (!proofFile) return;
+        setIsUploadingProof(true);
+        try {
+            await bookChapterEditorService.submitProof(submission.id, proofFile as File);
+            setAlertConfig({
+                isOpen: true,
+                type: 'success',
+                title: 'Success',
+                message: 'Proof document sent to author.',
+            });
+            setProofFile(null);
+            setTimeout(() => window.location.reload(), 1000);
+        } catch (error: any) {
+            setAlertConfig({
+                isOpen: true,
+                type: 'error',
+                title: 'Error',
+                message: error?.message || 'Failed to upload proof',
+            });
+        } finally {
+            setIsUploadingProof(false);
+        }
+    };
+
+    const showReviewerStep = !isAbstractPending && !['APPROVED', 'PUBLISHED', 'REJECTED', 'ISBN_APPLIED', 'PUBLICATION_IN_PROGRESS'].includes(submission.status);
+    const hasDeclined = assignments.some(a => a.status === 'DECLINED' || a.status === 'REJECTED' || a.status === 'EXPIRED');
+    const needsReviewers = assignments.length < 2 || hasDeclined;
 
     return (
         <div className={styles.actionsTab}>
@@ -579,7 +659,101 @@ const EditorActionsTab: React.FC<{
                 )}
             </div>
 
-            {/* Step 2: Final Decision Section */}
+            {/* Step 2: Reviewer Assignment 
+            {showReviewerStep && (
+                <div className={`${styles.stepContainer} ${needsReviewers || !reviewersCompleted ? styles.active : styles.completedPhase}`}>
+                    <div className={styles.stepHeader}>
+                        <h4 className={styles.stepTitle}>
+                            <div className={styles.stepNumber}>2</div>
+                            Reviewer Assignment
+                        </h4>
+                        <span className={`${styles.stepStatus} ${needsReviewers ? styles.pending : (reviewersCompleted ? styles.completed : styles.active)}`}>
+                            {needsReviewers ? 'Action Required' : (reviewersCompleted ? 'Completed' : 'In Progress')}
+                        </span>
+                    </div>
+
+                    <div className={styles.stepContent}>
+                        <div className={styles.reviewerStatusSummary}>
+                            <p style={{ marginBottom: '12px', fontSize: '0.95rem' }}>
+                                {assignments.length === 0
+                                    ? 'No reviewers have been assigned yet. Minimum 2 reviewers are required.'
+                                    : `Currently assigned: ${assignments.length} review${assignments.length !== 1 ? 'ers' : ''}.`}
+                            </p>
+
+                            {assignments.length > 0 && (
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '15px' }}>
+                                    {assignments.map((a, i) => (
+                                        <div key={i} style={{
+                                            padding: '8px 12px',
+                                            backgroundColor: '#f9fafb',
+                                            border: '1px solid #e5e7eb',
+                                            borderRadius: '6px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px'
+                                        }}>
+                                            <User size={14} />
+                                            <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>{a.reviewer?.fullName || 'Unknown'}</span>
+                                            <span style={{
+                                                fontSize: '0.75rem',
+                                                padding: '2px 6px',
+                                                borderRadius: '10px',
+                                                backgroundColor: a.status === 'COMPLETED' ? '#dcfce7' : (a.status === 'DECLINED' || a.status === 'REJECTED' || a.status === 'EXPIRED' ? '#fee2e2' : '#fef9c3'),
+                                                color: a.status === 'COMPLETED' ? '#166534' : (a.status === 'DECLINED' || a.status === 'REJECTED' || a.status === 'EXPIRED' ? '#991b1b' : '#854d0e')
+                                            }}>
+                                                {a.status}
+                                            </span>
+                                            {(a.status === 'DECLINED' || a.status === 'REJECTED' || a.status === 'EXPIRED') && (
+                                                <button
+                                                    onClick={() => setReassignTarget({ id: a.id, name: a.reviewer?.fullName })}
+                                                    style={{
+                                                        marginLeft: 'auto',
+                                                        fontSize: '0.75rem',
+                                                        padding: '4px 8px',
+                                                        backgroundColor: '#f3f4f6',
+                                                        border: '1px solid #d1d5db',
+                                                        borderRadius: '4px',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    Reassign
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            <button
+                                className={styles.assignButton}
+                                onClick={onAssignReviewer}
+                                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', backgroundColor: '#4f46e5', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                            >
+                                <Users size={14} /> {assignments.length === 0 ? 'Assign Reviewers' : 'Manage Reviewers'}
+                            </button>
+                        </div>
+                    </div>
+
+                    {reassignTarget && (
+                        <ReassignReviewerModal
+                            assignmentId={reassignTarget.id}
+                            reviewerName={reassignTarget.name}
+                            onClose={() => setReassignTarget(null)}
+                            onSuccess={() => {
+                                setReassignTarget(null);
+                                if (onUpdate) {
+                                    // Fetch full details will trigger update
+                                    // But we can also call onUpdate if provided
+                                    // fetchReviewers is not accessible here, window reload or prop update is better
+                                    window.location.reload();
+                                }
+                            }}
+                        />
+                    )}
+                </div>
+            )} */}
+
+            {/* Step 3: Final Decision Section */}
             {(readyForFinalDecision || ['APPROVED', 'REJECTED', 'PUBLISHED', 'ISBN_APPLIED', 'PUBLICATION_IN_PROGRESS'].includes(submission.status)) && (
                 <div className={`${styles.stepContainer} ${readyForFinalDecision ? styles.active : ''} ${!readyForFinalDecision ? styles.completedPhase : ''}`}>
                     <div className={styles.stepHeader}>
@@ -642,7 +816,7 @@ const EditorActionsTab: React.FC<{
                                 <h5 className={styles.decisionTitle}>Take Final Action</h5>
                                 <textarea
                                     className={styles.decisionNotes}
-                                    placeholder="Add final notes for the author (required for rejection)..."
+                                    placeholder="Add final notes for the author (required)..."
                                     value={finalNotes}
                                     onChange={(e) => setFinalNotes(e.target.value)}
                                     rows={4}
@@ -712,16 +886,16 @@ const EditorActionsTab: React.FC<{
                 </div>
             )}
 
-            {/* Step 3: Proof Editing */}
+            {/* Step 4: Proof Editing */}
             {(submission.status === 'APPROVED' || submission.status === 'ISBN_APPLIED' || submission.status === 'PUBLICATION_IN_PROGRESS' || submission.status === 'PUBLISHED') && (
-                <div className={`${styles.stepContainer} ${submission.status === 'APPROVED' ? styles.active : ''} ${submission.status !== 'APPROVED' ? styles.completedPhase : ''}`}>
+                <div className={`${styles.stepContainer} ${['APPROVED', 'ISBN_APPLIED'].includes(submission.status) ? styles.active : ''} ${['PUBLICATION_IN_PROGRESS', 'PUBLISHED'].includes(submission.status) ? styles.completedPhase : ''}`}>
                     <div className={styles.stepHeader}>
                         <h4 className={styles.stepTitle}>
                             <div className={styles.stepNumber}>3</div>
                             Proof Editing
                         </h4>
-                        <span className={`${styles.stepStatus} ${submission.status === 'APPROVED' ? styles.pending : styles.completed}`}>
-                            {submission.status === 'APPROVED' ? 'Action Required' : 'Started'}
+                        <span className={`${styles.stepStatus} ${['APPROVED', 'ISBN_APPLIED'].includes(submission.status) && submission.proofStatus !== 'ACCEPTED' ? styles.pending : styles.completed}`}>
+                            {submission.status === 'APPROVED' ? 'Action Required' : (submission.status === 'ISBN_APPLIED' && submission.proofStatus !== 'ACCEPTED' ? 'In Progress' : 'Completed')}
                         </span>
                     </div>
 
@@ -761,15 +935,80 @@ const EditorActionsTab: React.FC<{
                             </div>
                         ) : (
                             <div className={styles.decisionArea}>
-                                <h5 className={styles.decisionTitle}>Status</h5>
-                                <p>Proof editing phase has been started.</p>
+                                <h5 className={styles.decisionTitle}>Proof Document Status</h5>
+
+                                {submission.proofStatus === 'ACCEPTED' ? (
+                                    <div style={{ padding: '10px', backgroundColor: '#ecfdf5', border: '1px solid #10b981', borderRadius: '6px', color: '#065f46', marginBottom: '10px' }}>
+                                        <CheckCircle size={14} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                                        Author has accepted the proof document.
+                                    </div>
+                                ) : submission.proofStatus === 'SENT' ? (
+                                    <div style={{ padding: '10px', backgroundColor: '#fffbeb', border: '1px solid #f59e0b', borderRadius: '6px', color: '#92400e', marginBottom: '10px' }}>
+                                        <Clock size={14} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                                        Proof sent to author. Waiting for confirmation.
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                        {submission.proofStatus === 'REJECTED' && (
+                                            <div style={{ padding: '10px', backgroundColor: '#fef2f2', border: '1px solid #ef4444', borderRadius: '6px', color: '#991b1b', marginBottom: '5px' }}>
+                                                <X size={14} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                                                <strong>Proof Rejected:</strong> {submission.authorProofNotes || 'No notes provided'}
+                                            </div>
+                                        )}
+                                        <p style={{ fontSize: '0.85rem', color: '#4b5563', marginBottom: '4px' }}>Upload the final proof document for author confirmation:</p>
+                                        {/* Custom file input */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '8px', backgroundColor: '#f9fafb' }}>
+                                            <input
+                                                type="file"
+                                                accept=".pdf,.doc,.docx"
+                                                id="proof-file-input"
+                                                style={{ display: 'none' }}
+                                                onChange={(e) => setProofFile(e.target.files?.[0] || null)}
+                                            />
+                                            <label
+                                                htmlFor="proof-file-input"
+                                                style={{
+                                                    padding: '6px 14px',
+                                                    backgroundColor: '#1e5292',
+                                                    color: 'white',
+                                                    borderRadius: '6px',
+                                                    fontSize: '0.8rem',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer',
+                                                    whiteSpace: 'nowrap',
+                                                    flexShrink: 0,
+                                                    transition: 'background-color 0.2s',
+                                                }}
+                                            >
+                                                Choose File
+                                            </label>
+                                            <span style={{
+                                                fontSize: '0.82rem',
+                                                color: proofFile ? '#1f2937' : '#9ca3af',
+                                                fontStyle: proofFile ? 'normal' : 'italic',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                            }}>
+                                                {proofFile ? proofFile.name : 'No file chosen'}
+                                            </span>
+                                        </div>
+                                        <button
+                                            className={styles.acceptButton}
+                                            disabled={!proofFile || isUploadingProof}
+                                            onClick={handleUploadProof}
+                                        >
+                                            {isUploadingProof ? 'Uploading...' : 'Send Proof to Author'}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
                 </div>
             )}
 
-            {/* Step 4: Start Publication */}
+            {/* Step 5: Start Publication */}
             {(submission.status === 'ISBN_APPLIED' || submission.status === 'PUBLICATION_IN_PROGRESS' || submission.status === 'PUBLISHED') && (
                 <div className={`${styles.stepContainer} ${submission.status === 'ISBN_APPLIED' ? styles.active : ''} ${['PUBLICATION_IN_PROGRESS', 'PUBLISHED'].includes(submission.status) ? styles.completedPhase : ''}`}>
                     <div className={styles.stepHeader}>
@@ -777,8 +1016,8 @@ const EditorActionsTab: React.FC<{
                             <div className={styles.stepNumber}>4</div>
                             Start Publication
                         </h4>
-                        <span className={`${styles.stepStatus} ${submission.status === 'ISBN_APPLIED' ? styles.pending : styles.completed}`}>
-                            {submission.status === 'ISBN_APPLIED' ? 'Action Required' : 'Started'}
+                        <span className={`${styles.stepStatus} ${submission.status === 'ISBN_APPLIED' ? (['ACCEPTED', 'REJECTED'].includes(submission.proofStatus as string) ? styles.pending : styles.completed) : styles.completed}`}>
+                            {submission.status === 'ISBN_APPLIED' ? (['ACCEPTED', 'REJECTED'].includes(submission.proofStatus as string) ? 'Action Required' : 'Waiting for Proof') : 'Started'}
                         </span>
                     </div>
 
@@ -796,10 +1035,10 @@ const EditorActionsTab: React.FC<{
                                 />
                                 <button
                                     className={styles.acceptButton}
-                                    style={{ backgroundColor: '#0ea5e9', color: 'white' }}
-                                    disabled={isStartingPublication}
+                                    style={{ backgroundColor: ['ACCEPTED', 'REJECTED'].includes(submission.proofStatus as string) ? '#0ea5e9' : '#9ca3af', color: 'white' }}
+                                    disabled={isStartingPublication || !['ACCEPTED', 'REJECTED'].includes(submission.proofStatus as string)}
                                     onClick={async () => {
-                                        if (isStartingPublication) return;
+                                        if (isStartingPublication || !['ACCEPTED', 'REJECTED'].includes(submission.proofStatus as string)) return;
                                         setIsStartingPublication(true);
                                         const notes = (document.getElementById('editor-publication-notes') as HTMLTextAreaElement)?.value || '';
                                         try {
@@ -823,7 +1062,7 @@ const EditorActionsTab: React.FC<{
                                     }}
                                 >
                                     <FileText size={14} style={{ marginRight: '8px' }} />
-                                    {isStartingPublication ? 'Starting...' : 'Start Publication'}
+                                    {['ACCEPTED', 'REJECTED'].includes(submission.proofStatus as string) ? (isStartingPublication ? 'Starting...' : 'Start Publication') : 'Waiting for Proof Acceptance'}
                                 </button>
                             </div>
                         ) : (
@@ -836,7 +1075,7 @@ const EditorActionsTab: React.FC<{
                 </div>
             )}
 
-            {/* Step 5: Publication Section */}
+            {/* Step 6: Publication Section */}
             {(['PUBLICATION_IN_PROGRESS', 'PUBLISHED'].includes(submission.status)) && (
                 <div className={`${styles.stepContainer} ${submission.status === 'PUBLICATION_IN_PROGRESS' ? styles.active : ''} ${submission.status === 'PUBLISHED' ? styles.completedPhase : ''}`}>
                     <div className={styles.stepHeader}>
@@ -874,18 +1113,74 @@ const EditorActionsTab: React.FC<{
                                     </div>
                                 </div>
                             )}
-                            <button
-                                className={`${styles.actionButton} ${submission.status === 'PUBLISHED' ? styles.secondaryButton : styles.primaryButton}`}
-                                onClick={() => setShowPublishModal(true)}
-                                style={{
-                                    backgroundColor: (submission.status === 'PUBLICATION_IN_PROGRESS') ? '#10B981' : undefined,
-                                    color: (submission.status === 'PUBLICATION_IN_PROGRESS') ? 'white' : undefined,
-                                    cursor: 'pointer',
-                                }}
-                            >
-                                <FileText size={16} /> {submission.status === 'PUBLISHED' ? 'Edit Publication Details' : 'Publish Book'}
-                            </button>
                         </div>
+                        <button
+                            className={`${styles.actionButton} ${submission.status === 'PUBLISHED' ? styles.secondaryButton : (allChaptersReady ? styles.primaryButton : styles.disabledButton)}`}
+                            onClick={async () => {
+                                if (submission.status !== 'PUBLISHED' && !allChaptersReady) {
+                                    setAlertConfig({
+                                        isOpen: true,
+                                        type: 'warning',
+                                        title: 'Chapters Not Ready',
+                                        message: `Cannot publish yet. Only ${readinessDetails.ready} out of ${readinessDetails.total} chapters are marked as "Ready for Publication".`,
+                                        showCancel: false
+                                    });
+                                    return;
+                                }
+                                // Fetch all submissions and chapters for consolidated publication
+                                try {
+                                    const bookTitleValue = submission.bookTitle || '';
+                                    const subResp = await bookChapterService.getSubmissionsByBookTitle(bookTitleValue);
+                                    if (subResp.success && subResp.data?.submissions) {
+                                        setPublishAllSubmissions(subResp.data.submissions as BookChapterSubmission[]);
+                                    } else {
+                                        setPublishAllSubmissions([submission]);
+                                    }
+
+                                    const parsedId = parseInt(bookTitleValue);
+                                    let bookId: number | null = null;
+                                    if (!isNaN(parsedId) && bookTitleValue.trim() === parsedId.toString()) {
+                                        bookId = parsedId;
+                                    } else {
+                                        const btResp = await bookManagementService.bookTitle.getAllBookTitles();
+                                        if (btResp.success && btResp.data?.bookTitles) {
+                                            const bt = btResp.data.bookTitles.find((b: any) => b.title === bookTitleValue);
+                                            if (bt) bookId = bt.id;
+                                        }
+                                    }
+                                    if (bookId) {
+                                        const chapResp = await bookManagementService.bookChapter.getChaptersByBookTitle(bookId, false);
+                                        if (chapResp.success && chapResp.data?.chapters) {
+                                            const sorted = chapResp.data.chapters
+                                                .sort((a: any, b: any) => (a.chapterNumber || 0) - (b.chapterNumber || 0))
+                                                .map((ch: any) => ({
+                                                    title: ch.chapterTitle,
+                                                    chapterNumber: String(ch.chapterNumber || '').padStart(2, '0'),
+                                                }));
+                                            setPublishAllBookChapters(sorted);
+                                        }
+                                    }
+                                } catch (err) {
+                                    console.error('Failed to aggregate submission data for publish:', err);
+                                    setPublishAllSubmissions([submission]);
+                                }
+                                setShowPublishModal(true);
+                            }}
+                            disabled={submission.status !== 'PUBLISHED' && !allChaptersReady}
+                            style={{
+                                backgroundColor: (submission.status === 'PUBLICATION_IN_PROGRESS') ? (allChaptersReady ? '#10B981' : '#9ca3af') : undefined,
+                                color: (submission.status === 'PUBLICATION_IN_PROGRESS') ? 'white' : undefined,
+                                cursor: (submission.status === 'PUBLICATION_IN_PROGRESS' && !allChaptersReady) ? 'not-allowed' : 'pointer',
+                            }}
+                        >
+                            <FileText size={16} /> {submission.status === 'PUBLISHED' ? 'Edit Publication Details' : 'Publish Book Chapter'}
+                        </button>
+                        {submission.status === 'PUBLICATION_IN_PROGRESS' && !allChaptersReady && !checkingReadiness && (
+                            <p style={{ color: '#6b7280', fontSize: '0.8rem', marginTop: '8px' }}>
+                                <AlertCircle size={12} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
+                                Gated: All {readinessDetails.total} chapters in "{resolvedBookTitle}" must be ready before publishing.
+                            </p>
+                        )}
                     </div>
                 </div>
             )}
@@ -895,6 +1190,8 @@ const EditorActionsTab: React.FC<{
                     isOpen={showPublishModal}
                     onClose={() => setShowPublishModal(false)}
                     submission={submission}
+                    allSubmissions={publishAllSubmissions}
+                    allBookChapters={publishAllBookChapters}
                     onSuccess={(updated?: BookChapterSubmission) => {
                         setShowPublishModal(false);
                         if (onUpdate && updated) onUpdate(updated);

@@ -211,10 +211,9 @@ export default function Navbar() {
                         </button>
                       )}
 
-                      {/* Dropdown Content */}
                       <div className={`
                         ${isOpen ? 'block' : 'hidden'}
-                        absolute top-full left-1/2 -translate-x-1/2 bg-[#1e5292] min-w-[220px] shadow-[0_8px_16px_rgba(0,0,0,0.2)] rounded-b-[4px] overflow-hidden
+                        absolute top-full left-0 bg-[#1e5292] min-w-full shadow-[0_8px_16px_rgba(0,0,0,0.2)] rounded-b-[4px] overflow-hidden
                         max-[940px]:static max-[940px]:translate-x-0 max-[940px]:w-full max-[940px]:bg-[rgba(0,0,0,0.1)] max-[940px]:shadow-none max-[940px]:rounded-none
                       `}>
                         {item.dropdown?.map((subLink) => {
@@ -227,7 +226,7 @@ export default function Navbar() {
                               href={linkTo}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-white block px-[20px] py-[11px] no-underline text-[12px] text-left border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.15)]"
+                              className="text-white block px-[14px] py-[11px] no-underline text-[12px] text-left border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.15)] whitespace-nowrap"
                               onClick={() => {
                                 setActiveItem(item.name);
                                 setActiveDropdown(null);
@@ -240,7 +239,7 @@ export default function Navbar() {
                             <Link
                               key={subLink}
                               to={linkTo}
-                              className="text-white block px-[20px] py-[11px] no-underline text-[12px] text-left border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.15)]"
+                              className="text-white block px-[14px] py-[11px] no-underline text-[12px] text-left border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.15)] whitespace-nowrap"
                               onClick={() => {
                                 setActiveItem(item.name);
                                 setActiveDropdown(null);

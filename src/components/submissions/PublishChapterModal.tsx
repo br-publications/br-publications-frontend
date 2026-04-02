@@ -7,6 +7,8 @@ interface PublishChapterModalProps {
     onClose: () => void;
     submission: BookChapterSubmission;
     onSuccess: (submission?: BookChapterSubmission) => void;
+    allSubmissions?: BookChapterSubmission[];
+    allBookChapters?: { title: string; chapterNumber: string }[];
 }
 
 /**
@@ -17,4 +19,4 @@ const PublishChapterModal: React.FC<PublishChapterModalProps> = (props) => {
     return <PublishChapterWizard {...props} />;
 };
 
-export default PublishChapterModal;
+export default PublishChapterModal;

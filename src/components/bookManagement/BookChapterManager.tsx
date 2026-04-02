@@ -2,6 +2,26 @@ import { useState, useEffect, useRef } from 'react';
 import bookManagementService, { type BookChapter } from '../../services/bookManagement.service';
 import type { ToastMsg, BookTitleNav } from './BookManagement';
 
+// ─── Chapter status pill helper ───────────────────────────────────────────────
+function getChapterStatusPill(ch: BookChapter): { label: string; cls: string } {
+    // 1. Explicit Published/Ready flags from the book_chapters table
+    if (ch.isPublished) return { label: '✓ Published', cls: 'published' };
+    if (ch.isReadyForPublication) return { label: '● Ready for Pub', cls: 'ready' };
+
+    // 2. Submission-level status field (now supported by backend)
+    const sub = ((ch as any).submissionStatus as string || '').toUpperCase();
+
+    if (sub === 'PUBLICATION_IN_PROGRESS') return { label: '● Pub In Progress', cls: 'ready' };
+    if (sub === 'ISBN_APPLIED' || sub === 'IN_PROGRESS') return { label: '● In Progress', cls: 'ready' }; // Proofing stage
+    if (sub === 'APPROVED' || sub === 'CHAPTER_APPROVED') return { label: '✓ Approved', cls: 'approved' };
+    if (sub === 'REJECTED' || sub === 'CHAPTER_REJECTED') return { label: '✗ Rejected', cls: 'rejected' };
+    if (['UNDER_REVIEW', 'EDITORIAL_REVIEW', 'REVIEWER_ASSIGNMENT', 'ABSTRACT_SUBMITTED', 'MANUSCRIPTS_PENDING'].includes(sub)) {
+        return { label: '🔄 Under Review', cls: 'under-review' };
+    }
+
+    return { label: '— Draft', cls: 'draft' };
+}
+
 interface Props {
     bookTitle: BookTitleNav;
     addToast: (type: ToastMsg['type'], message: string) => void;
@@ -51,7 +71,9 @@ export default function BookChapterManager({ bookTitle, addToast, onBack }: Prop
         try {
             setLoading(true);
             const r = await bookManagementService.bookChapter.getChaptersByBookTitle(bookTitle.id);
-            if (r.success && r.data?.chapters) setChapters(r.data.chapters);
+            if (r.success && r.data?.chapters) {
+                setChapters(r.data.chapters);
+            }
         } catch (e: any) {
             addToast('error', e.message || 'Failed to load chapters');
         } finally {
@@ -210,8 +232,16 @@ export default function BookChapterManager({ bookTitle, addToast, onBack }: Prop
                     <div className="stat-label">Published</div>
                 </div>
                 <div className="bms-stat-card">
-                    <div className="stat-num" style={{ color: '#d97706' }}>{chapters.filter(c => !c.isPublished).length}</div>
-                    <div className="stat-label">Unpublished</div>
+                    <div className="stat-num" style={{ color: '#0ea5e9' }}>
+                        {chapters.filter(c => c.isReadyForPublication || c.submissionStatus === 'PUBLICATION_IN_PROGRESS' && !c.isPublished).length}
+                    </div>
+                    <div className="stat-label">Ready (Pending Pub)</div>
+                </div>
+                <div className="bms-stat-card">
+                    <div className="stat-num" style={{ color: '#d97706' }}>
+                        {chapters.filter(c => !c.isPublished && !c.isReadyForPublication && c.submissionStatus !== 'PUBLICATION_IN_PROGRESS').length}
+                    </div>
+                    <div className="stat-label">Draft / Under Review</div>
                 </div>
             </div>
 
@@ -226,13 +256,14 @@ export default function BookChapterManager({ bookTitle, addToast, onBack }: Prop
                                 <th style={{ width: 32 }}></th>
                                 <th style={{ width: 48 }}>No.</th>
                                 <th>Chapter Title</th>
+                                <th style={{ width: 160 }}>Status</th>
                                 <th style={{ textAlign: 'right', width: 160 }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {chapters.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4}>
+                                    <td colSpan={5}>
                                         <div className="bms-empty">
                                             <div className="bms-empty-icon">📖</div>
                                             <p>No chapters recorded yet — add one below.</p>
@@ -277,16 +308,21 @@ export default function BookChapterManager({ bookTitle, addToast, onBack }: Prop
                                                 <button className="btn btn-ghost btn-xs" onClick={cancelEdit}>✕</button>
                                             </div>
                                         ) : (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                                <span className={ch.isPublished ? 'chapter-published-title' : ''}
-                                                    style={{ fontFamily: 'var(--ff-body)', fontSize: 14, color: ch.isPublished ? 'var(--text-muted, #9ca3af)' : 'var(--text-main)' }}>
-                                                    {ch.chapterTitle}
-                                                </span>
-                                                {ch.isPublished && (
-                                                    <span className="chapter-published-badge">✓ Published</span>
-                                                )}
-                                            </div>
+                                            <span
+                                                className={ch.isPublished ? 'chapter-published-title' : ''}
+                                                style={{ fontFamily: 'var(--ff-body)', fontSize: 14, color: ch.isPublished ? 'var(--text-muted, #9ca3af)' : 'var(--text-main)' }}
+                                            >
+                                                {ch.chapterTitle}
+                                            </span>
                                         )}
+                                    </td>
+
+                                    {/* status pill */}
+                                    <td>
+                                        {(() => {
+                                            const { label, cls } = getChapterStatusPill(ch);
+                                            return <span className={`ch-status-pill ${cls}`}>{label}</span>;
+                                        })()}
                                     </td>
 
                                     {/* actions */}

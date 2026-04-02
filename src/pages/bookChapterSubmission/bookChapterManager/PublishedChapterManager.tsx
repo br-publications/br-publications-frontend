@@ -356,14 +356,14 @@ const PublishedChapterManager: React.FC = () => {
                                                         setSelectedChapter(chapter);
                                                         setEditModalOpen(true);
                                                     }}
-                                                    className="p-1 text-gray-300 transition-colors"
+                                                    className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
                                                     title="Edit Details"
                                                 >
                                                     <Edit size={16} />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteChapter(chapter)}
-                                                    className="p-1 text-gray-300 transition-colors"
+                                                    className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                                                     title="Delete Chapter"
                                                 >
                                                     <Trash2 size={16} />

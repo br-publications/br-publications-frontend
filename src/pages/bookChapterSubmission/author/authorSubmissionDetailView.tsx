@@ -60,7 +60,7 @@ export const AuthorSubmissionDetailView: React.FC<AuthorSubmissionDetailViewProp
   const [showDeliveryAddressForm, setShowDeliveryAddressForm] = useState(false);
   const [chapters, setChapters] = useState<IndividualChapter[]>([]);
   const [loadingChapters, setLoadingChapters] = useState(false);
-  const [alert, setAlert] = useState<{
+  const [alertConfig, setAlertConfig] = useState<{
     isOpen: boolean;
     type: AlertType;
     title: string;
@@ -71,10 +71,12 @@ export const AuthorSubmissionDetailView: React.FC<AuthorSubmissionDetailViewProp
     title: '',
     message: ''
   });
+  const [isReviewingProof, setIsReviewingProof] = useState(false);
+  const [proofReviewNotes, setProofReviewNotes] = useState('');
 
   useEffect(() => {
     const handleAppAlert = (e: any) => {
-      setAlert({
+      setAlertConfig({
         isOpen: true,
         type: e.detail.type,
         title: e.detail.title,
@@ -213,6 +215,44 @@ export const AuthorSubmissionDetailView: React.FC<AuthorSubmissionDetailViewProp
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
+  };
+
+  const handleReviewProof = async (decision: 'accept' | 'reject') => {
+    if (decision === 'reject' && !proofReviewNotes.trim()) {
+      setAlertConfig({
+        isOpen: true,
+        type: 'warning',
+        title: 'Notes Required',
+        message: 'Please provide a reason for rejecting the proof.'
+      });
+      return;
+    }
+
+    setIsReviewingProof(true);
+    try {
+      await bookChapterService.reviewProof(localSubmission.id, {
+        decision,
+        notes: proofReviewNotes
+      });
+
+      setAlertConfig({
+        isOpen: true,
+        type: 'success',
+        title: 'Success',
+        message: decision === 'accept' ? 'Proof accepted successfully.' : 'Proof feedback submitted.'
+      });
+
+      setTimeout(() => window.location.reload(), 1500);
+    } catch (error: any) {
+      setAlertConfig({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: error?.message || 'Failed to submit proof review'
+      });
+    } finally {
+      setIsReviewingProof(false);
+    }
   };
 
 
@@ -432,20 +472,95 @@ export const AuthorSubmissionDetailView: React.FC<AuthorSubmissionDetailViewProp
             )}
 
             <div className={styles.actionsGrid}>
-              {localSubmission.status === 'PUBLICATION_IN_PROGRESS' && !localSubmission.deliveryAddress ? (
+              {localSubmission.status === 'ISBN_APPLIED' && localSubmission.proofStatus === 'SENT' ? (
+                <div className={styles.decisionArea} style={{ width: '100%', padding: '24px', backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px' }}>
+                  <h3 style={{ marginBottom: '16px', color: '#111827', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <FileText size={20} style={{ color: '#4f46e5' }} />
+                    Proof Document Review
+                  </h3>
+                  <p style={{ marginBottom: '20px', color: '#4b5563', fontSize: '0.95rem' }}>
+                    The editor has uploaded the final proof for your review. Please download it, check for any errors, and confirm if it's ready for publication.
+                  </p>
+
+                  <div style={{ marginBottom: '24px', padding: '12px', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px dashed #d1d5db', display: 'flex', justifyContent: 'center' }}>
+                    <button
+                      onClick={async () => {
+                        try {
+                          const response = await bookChapterService.getSubmissionFiles(localSubmission.id);
+                          // Sort files by ID descending to get the latest one first
+                          const files = response.data || [];
+                          const proofFile = files
+                            .filter((f: any) => f.fileType === 'proof_document')
+                            .sort((a: any, b: any) => (b.id || 0) - (a.id || 0))[0];
+
+                          if (proofFile) {
+                            // Use the service's download method which handles auth and blob correctly
+                            await bookChapterService.downloadFile(proofFile.id, proofFile.fileName || 'proof_document.pdf');
+                          } else {
+                            setAlertConfig({
+                              isOpen: true,
+                              type: 'error',
+                              title: 'File Not Found',
+                              message: 'Proof document file not found.'
+                            });
+                          }
+                        } catch (err: any) {
+                          console.error('Failed to download proof file', err);
+                          setAlertConfig({
+                            isOpen: true,
+                            type: 'error',
+                            title: 'Download Failed',
+                            message: err.message || 'Failed to download proof file. Please try again later.'
+                          });
+                        }
+                      }}
+                      style={{ background: 'none', border: 'none', color: '#4f46e5', fontWeight: '600', textDecoration: 'underline', cursor: 'pointer' }}
+                    >
+                      Download proof document (PDF)
+                    </button>
+                  </div>
+
+                  <div className={styles.formGroup} style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', fontSize: '0.9rem' }}>Review Notes (Required for rejection)</label>
+                    <textarea
+                      placeholder="Enter your feedback or confirm the proof is correct..."
+                      value={proofReviewNotes}
+                      onChange={(e) => setProofReviewNotes(e.target.value)}
+                      style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px', minHeight: '100px' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button
+                      onClick={() => handleReviewProof('accept')}
+                      disabled={isReviewingProof}
+                      style={{ flex: 1, backgroundColor: '#10b981', color: 'white', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}
+                    >
+                      {isReviewingProof ? 'Processing...' : 'Accept Proof'}
+                    </button>
+                    <button
+                      onClick={() => handleReviewProof('reject')}
+                      disabled={isReviewingProof}
+                      style={{ flex: 1, backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}
+                    >
+                      {isReviewingProof ? 'Processing...' : 'Reject & Request Changes'}
+                    </button>
+                  </div>
+                </div>
+              ) : localSubmission.status === 'PUBLICATION_IN_PROGRESS' && !localSubmission.deliveryAddress ? (
                 /* Hidden as we show the banner above, but kept if the grid expands */
                 null
               ) : (
                 <div className={styles.emptyState} style={{ gridColumn: '1 / -1' }}>
-                  <div className={styles.emptyStateIcon}>✓</div>
                   <h3>No actions required</h3>
                   <p>
-                    {localSubmission.status === 'PUBLICATION_IN_PROGRESS' && localSubmission.deliveryAddress
-                      ? 'Delivery address has been submitted. The admin team will finalize the publication soon.'
-                      : 'Your submission is currently being processed.'}
-                  </p>
-                  <p className={styles.statusText}>
-                    Current status: <strong>{localSubmission.status.replace(/_/g, ' ')}</strong>
+                    {localSubmission.status === 'ISBN_APPLIED' && localSubmission.proofStatus === 'ACCEPTED'
+                      ? 'You have accepted the proof document. The editor will proceed with publication.'
+                      : localSubmission.status === 'ISBN_APPLIED' && localSubmission.proofStatus === 'REJECTED'
+                        ? 'You have requested changes to the proof. Awaiting updated document from the editor.'
+                        : localSubmission.status === 'PUBLICATION_IN_PROGRESS' && localSubmission.deliveryAddress
+                          ? 'Delivery address has been submitted. The admin team will finalize the publication soon.'
+                          : 'Your submission is currently being processed.'}
                   </p>
                 </div>
               )}
@@ -533,11 +648,11 @@ export const AuthorSubmissionDetailView: React.FC<AuthorSubmissionDetailViewProp
 
       {/* Global Alert Popup */}
       <AlertPopup
-        isOpen={alert.isOpen}
-        type={alert.type}
-        title={alert.title}
-        message={alert.message}
-        onClose={() => setAlert(prev => ({ ...prev, isOpen: false }))}
+        isOpen={alertConfig.isOpen}
+        type={alertConfig.type}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
       />
     </div>
   );
@@ -931,6 +1046,7 @@ const EditTab: React.FC<EditTabProps> = ({ submission, onUpdate, onCancel }) => 
                 </select>
               </div>
 
+              {/* ─── Editor Selection ─── 
               <div className={styles.formGroup}>
                 <label>Selected Editor</label>
                 <select
@@ -945,7 +1061,7 @@ const EditTab: React.FC<EditTabProps> = ({ submission, onUpdate, onCancel }) => 
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
 
               <div className={styles.formGroup}>
                 <label>Chapters</label>

@@ -55,15 +55,15 @@ export type TextBookFileType = typeof TextBookFileType[keyof typeof TextBookFile
 export interface Author {
     title?: string;
     firstName: string;
-    lastName: string;
+    lastName?: string;
     designation: string;
     departmentName: string;
-    institute: string;
+    institute?: string;
     instituteName?: string; // Kept for backward compatibility if any
-    city: string;
-    state: string;
-    country: string;
-    email: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    email?: string;
     phoneNumber?: string;
     biography?: string;
     isCorrespondingAuthor: boolean;

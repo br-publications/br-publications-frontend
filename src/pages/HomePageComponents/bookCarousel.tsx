@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './bookCarousel.css';
-import { toSlug } from '../../utils/stringUtils';
+import { generateUniqueSlug } from '../../utils/stringUtils';
 
 // Book type definition
 interface Book {
@@ -10,6 +10,8 @@ interface Book {
   author: string;
   editors?: string[];
   image: string;
+  isbn: string;
+  releaseDate?: string;
 }
 
 export default function BookCarousel() {
@@ -32,7 +34,9 @@ export default function BookCarousel() {
           author: book.author || 'Unknown Author',
           editors: book.editors || [],
           image: book.hasCoverImage ? getCoverUrl(book.id) : '/placeholder-book.png',
-          id: book.id // Store ID for potential navigation
+          id: book.id,
+          isbn: book.isbn,
+          releaseDate: book.releaseDate
         }));
 
         setBooks(apiBooks);
@@ -79,7 +83,7 @@ export default function BookCarousel() {
   const gap = 10;
 
   const handleBookClick = (book: Book) => {
-    const slug = toSlug(book.title);
+    const slug = generateUniqueSlug(book.isbn, book.releaseDate);
     navigate(`/bookchapter/${book.id}/${slug}`, {
       state: { book }
     });

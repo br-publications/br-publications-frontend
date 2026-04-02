@@ -222,13 +222,12 @@ const EditPublishedBookModal: React.FC<EditPublishedBookModalProps> = ({ book, i
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-500 mb-1">Last Name *</label>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">Last Name</label>
                                         <input
                                             type="text"
                                             value={formData.authorLastName}
                                             onChange={e => handleInputChange('authorLastName', e.target.value)}
                                             className="w-full px-3 py-1.5 border rounded-md text-sm"
-                                            required
                                         />
                                     </div>
                                     <div>

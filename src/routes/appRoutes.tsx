@@ -69,6 +69,8 @@ const ProductFinder = lazy(() => import('../pages/common/ProductFinder'));
 const UserProjectDashboard = lazy(() => import('../pages/projectsInternshipSubmission/UserProjectDashboard'));
 const AdminProjectDashboard = lazy(() => import('../pages/projectsInternshipSubmission/AdminProjectDashboard'));
 const ProjectDetailView = lazy(() => import('../pages/projectsInternshipSubmission/ProjectDetailView'));
+const AuthorDetail = lazy(() => import('../pages/dashboard/author/AuthorDetail'));
+
 
 export default function AppRoutes() {
   return (
@@ -103,6 +105,8 @@ export default function AppRoutes() {
         <Route path="/forms/projects-internships/mobile-development" element={<MobileDevelopmentForm />} />
         <Route path="/forms/projects-internships/student-internship" element={<StudentInternshipForm />} />
         <Route path="/recruitment" element={<RecruitmentForm />} />
+        <Route path="/author/:id" element={<AuthorDetail />} />
+
       </Route>
 
       <Route path="/dashboard" element={<UserDashboard />} />

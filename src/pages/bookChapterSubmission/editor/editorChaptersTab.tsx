@@ -10,6 +10,7 @@ import ChapterList from '../common/chapters/chapterList';
 import ChapterDetailModal from '../common/chapters/chapterDetailModal';
 import ChapterProgressBar from '../common/status/chapterProgressBar';
 import { AssignReviewersModal, RequestRevisionModal, FinalDecisionModal } from './editorChapterModals';
+import { getActiveReviewerCount, getNextAction, canMakeEditorDecision } from '../../../utils/chapterUtils';
 import styles from './editorChaptersTab.module.css';
 
 // Chapter Action Modal (for accept/reject abstract only)
@@ -330,28 +331,32 @@ export const EditorChaptersTab: React.FC<EditorChaptersTabProps> = ({
                                     </div>
                                 )}
 
-                                {chapters.filter(c => c.status === ChapterStatus.REVIEWER_ASSIGNMENT).length > 0 && (
+                                {chapters.filter(c => 
+                                    getNextAction(c, userRole)?.includes('Assign')
+                                ).length > 0 && (
                                     <div className={styles.actionCard}>
                                         <div className={styles.actionIcon}>
                                             <Users size={20} />
                                         </div>
                                         <div className={styles.actionContent}>
                                             <span className={styles.actionCount}>
-                                                {chapters.filter(c => c.status === ChapterStatus.REVIEWER_ASSIGNMENT).length}
+                                                {chapters.filter(c => 
+                                                    getNextAction(c, userRole)?.includes('Assign')
+                                                ).length}
                                             </span>
                                             <span className={styles.actionLabel}>Chapter(s) Need Reviewers</span>
                                         </div>
                                     </div>
                                 )}
 
-                                {chapters.filter(c => c.status === ChapterStatus.EDITORIAL_REVIEW).length > 0 && (
+                                {chapters.filter(c => canMakeEditorDecision(c)).length > 0 && (
                                     <div className={styles.actionCard}>
                                         <div className={styles.actionIcon}>
                                             <AlertCircle size={20} />
                                         </div>
                                         <div className={styles.actionContent}>
                                             <span className={styles.actionCount}>
-                                                {chapters.filter(c => c.status === ChapterStatus.EDITORIAL_REVIEW).length}
+                                                {chapters.filter(c => canMakeEditorDecision(c)).length}
                                             </span>
                                             <span className={styles.actionLabel}>Final Decision(s) Needed</span>
                                         </div>

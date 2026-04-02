@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import TextBookPublishingForm from '../publishing/TextBookPublishingForm';
 import type { PublishingFormData } from '../types/publishingTypes';
@@ -762,6 +762,7 @@ const SubmitRevisionModal: React.FC<{
     onSuccess: () => void;
 }> = ({ submission, onClose, onSuccess }) => {
     const [revisionFile, setRevisionFile] = useState<File | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [comments, setComments] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -810,21 +811,33 @@ const SubmitRevisionModal: React.FC<{
                 <div className={styles.modalContent}>
 
 
-                    {/* File Upload */}
+                    {/* File Upload - Custom Styled */}
                     <div className={styles.formGroup}>
                         <label>Revised Manuscript *</label>
                         <input
+                            ref={fileInputRef}
                             type="file"
                             accept=".pdf,.doc,.docx"
                             onChange={e => setRevisionFile(e.target.files?.[0] || null)}
                             disabled={loading}
-                            className={styles.fileInput}
+                            style={{ display: 'none' }}
                         />
+                        <div
+                            className={styles.customFileUpload}
+                            onClick={() => !loading && fileInputRef.current?.click()}
+                        >
+                            <span className={styles.customFileButton}>Choose File</span>
+                            <span className={styles.customFilePlaceholder}>
+                                {revisionFile ? revisionFile.name : 'No file chosen'}
+                            </span>
+                        </div>
                         {revisionFile && (
-                            <div className={styles.fileInfo}>
-                                ✓ Selected: {revisionFile.name} ({(revisionFile.size / 1024 / 1024).toFixed(2)} MB)
+                            <div className={styles.revisionFileInfo}>
+                                <CheckCircle size={14} color="#16a34a" />
+                                {revisionFile.name} &mdash; {(revisionFile.size / 1024 / 1024).toFixed(2)} MB
                             </div>
                         )}
+                        <p className={styles.uploadHint}>Supported: PDF, DOC, DOCX &bull; Max 20MB</p>
                     </div>
 
                     {/* Comments */}

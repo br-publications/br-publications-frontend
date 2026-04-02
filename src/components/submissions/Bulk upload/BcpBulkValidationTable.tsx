@@ -226,12 +226,12 @@ const BcpBulkValidationTable: React.FC<BcpBulkValidationTableProps> = ({
 
                                             <td>
                                                 <div className="bcp-bulk-row-actions">
-                                                    {!result.isValid && (
+                                                    {(!result.isValid || result.warnings.length > 0) && (
                                                         <button
                                                             className="bcp-bulk-action-btn"
                                                             onClick={() => toggleExpand(result.rowNumber)}
                                                         >
-                                                            {isExpanded ? 'Hide' : 'Errors'}
+                                                            {isExpanded ? 'Hide' : (result.isValid ? 'Warnings' : 'Errors')}
                                                         </button>
                                                     )}
                                                     <button
@@ -245,27 +245,31 @@ const BcpBulkValidationTable: React.FC<BcpBulkValidationTableProps> = ({
                                             </td>
                                         </tr>
 
-                                        {/* ── Expanded errors ── */}
-                                        {isExpanded && !result.isValid && (
+                                        {/* ── Expanded warnings/errors ── */}
+                                        {isExpanded && (
                                             <tr className="bcp-bulk-expand-row">
                                                 <td colSpan={8}>
                                                     <div className="bcp-bulk-expand-box">
-                                                        <h4>
-                                                            Errors — Row {result.rowNumber}:
-                                                        </h4>
-                                                        <ul className="bcp-bulk-err-list">
-                                                            {Object.entries(result.errors).map(
-                                                                ([field, msg]) => (
-                                                                    <li
-                                                                        key={field}
-                                                                        className="bcp-bulk-err-item"
-                                                                    >
-                                                                        <strong>{field}:</strong>{' '}
-                                                                        {msg as string}
-                                                                    </li>
-                                                                )
-                                                            )}
-                                                        </ul>
+                                                        {!result.isValid && (
+                                                            <>
+                                                                <h4>
+                                                                    Errors — Row {result.rowNumber}:
+                                                                </h4>
+                                                                <ul className="bcp-bulk-err-list">
+                                                                    {Object.entries(result.errors).map(
+                                                                        ([field, msg]) => (
+                                                                            <li
+                                                                                key={field}
+                                                                                className="bcp-bulk-err-item"
+                                                                            >
+                                                                                <strong>{field}:</strong>{' '}
+                                                                                {msg as string}
+                                                                            </li>
+                                                                        )
+                                                                    )}
+                                                                </ul>
+                                                            </>
+                                                        )}
                                                         {result.warnings.length > 0 && (
                                                             <>
                                                                 <h4>Warnings:</h4>
