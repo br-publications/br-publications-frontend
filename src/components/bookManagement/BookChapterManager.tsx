@@ -11,6 +11,7 @@ function getChapterStatusPill(ch: BookChapter): { label: string; cls: string } {
     // 2. Submission-level status field (now supported by backend)
     const sub = ((ch as any).submissionStatus as string || '').toUpperCase();
 
+    if (sub === 'PUBLISHED') return { label: '✓ Published', cls: 'published' };
     if (sub === 'PUBLICATION_IN_PROGRESS') return { label: '● Pub In Progress', cls: 'ready' };
     if (sub === 'ISBN_APPLIED' || sub === 'IN_PROGRESS') return { label: '● In Progress', cls: 'ready' }; // Proofing stage
     if (sub === 'APPROVED' || sub === 'CHAPTER_APPROVED') return { label: '✓ Approved', cls: 'approved' };
@@ -228,18 +229,28 @@ export default function BookChapterManager({ bookTitle, addToast, onBack }: Prop
                     <div className="stat-label">Total Chapters</div>
                 </div>
                 <div className="bms-stat-card">
-                    <div className="stat-num" style={{ color: '#059669' }}>{chapters.filter(c => c.isPublished).length}</div>
+                    <div className="stat-num" style={{ color: '#059669' }}>
+                        {chapters.filter(c => c.isPublished || (c as any).submissionStatus?.toUpperCase() === 'PUBLISHED').length}
+                    </div>
                     <div className="stat-label">Published</div>
                 </div>
                 <div className="bms-stat-card">
                     <div className="stat-num" style={{ color: '#0ea5e9' }}>
-                        {chapters.filter(c => c.isReadyForPublication || c.submissionStatus === 'PUBLICATION_IN_PROGRESS' && !c.isPublished).length}
+                        {chapters.filter(c => 
+                            (c.isReadyForPublication || c.submissionStatus === 'PUBLICATION_IN_PROGRESS') && 
+                            !c.isPublished && (c as any).submissionStatus?.toUpperCase() !== 'PUBLISHED'
+                        ).length}
                     </div>
                     <div className="stat-label">Ready (Pending Pub)</div>
                 </div>
                 <div className="bms-stat-card">
                     <div className="stat-num" style={{ color: '#d97706' }}>
-                        {chapters.filter(c => !c.isPublished && !c.isReadyForPublication && c.submissionStatus !== 'PUBLICATION_IN_PROGRESS').length}
+                        {chapters.filter(c => 
+                            !c.isPublished && 
+                            (c as any).submissionStatus?.toUpperCase() !== 'PUBLISHED' &&
+                            !c.isReadyForPublication && 
+                            c.submissionStatus !== 'PUBLICATION_IN_PROGRESS'
+                        ).length}
                     </div>
                     <div className="stat-label">Draft / Under Review</div>
                 </div>
@@ -309,8 +320,8 @@ export default function BookChapterManager({ bookTitle, addToast, onBack }: Prop
                                             </div>
                                         ) : (
                                             <span
-                                                className={ch.isPublished ? 'chapter-published-title' : ''}
-                                                style={{ fontFamily: 'var(--ff-body)', fontSize: 14, color: ch.isPublished ? 'var(--text-muted, #9ca3af)' : 'var(--text-main)' }}
+                                                className={ch.isPublished || (ch as any).submissionStatus?.toUpperCase() === 'PUBLISHED' ? 'chapter-published-title' : ''}
+                                                style={{ fontFamily: 'var(--ff-body)', fontSize: 14, color: ch.isPublished || (ch as any).submissionStatus?.toUpperCase() === 'PUBLISHED' ? 'var(--text-muted, #9ca3af)' : 'var(--text-main)' }}
                                             >
                                                 {ch.chapterTitle}
                                             </span>
