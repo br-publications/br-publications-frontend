@@ -36,6 +36,8 @@ class BookChapterService {
                 id: data.chapters[0].id,
                 title: data.chapters[0].title,
                 pdfKey: data.chapters[0].pdfKey,
+                publishedFileId: data.chapters[0].publishedFileId,
+                pdfName: data.chapters[0].pdfName,
                 hasPdfData: !!data.chapters[0].pdfData,
                 allFields: Object.keys(data.chapters[0])
             });
@@ -48,10 +50,10 @@ class BookChapterService {
                 title: ch.title || '',
                 authors: ch.authors || '',
                 abstract: ch.abstract || '',
-                price: ch.priceSoftCopy || 0,
-                pages: (ch.pagesFrom && ch.pagesTo) ? `${ch.pagesFrom}-${ch.pagesTo}` : (ch.pages || ''),
+                price: 0, // Relational chapters don't have individual prices in the current model
+                pages: (ch.pagesFrom && ch.pagesTo) ? `${ch.pagesFrom}-${ch.pagesTo}` : '',
                 pdfKey: ch.pdfKey,
-                pdfUrl: ch.pdfKey ? getChapterPdfUrl(data.id, index) : (ch.pdfData || undefined),
+                pdfUrl: (ch.pdfKey || ch.publishedFileId || ch.pdfName) ? getChapterPdfUrl(data.id, index) : (ch.pdfData || undefined),
                 views: ch.views || 0,
                 authorDetails: ch.authorDetails
             }));
