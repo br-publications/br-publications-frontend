@@ -290,35 +290,35 @@ export const ReviewerAssignmentDetailView: React.FC<ReviewerAssignmentDetailView
           <Clock size={16} /> History
         </button>
 
-        {/* Discussions — disabled ONLY after completion */}
+        {/* Discussions — disabled ONLY after completion or publication */}
         <button
           className={`${styles.tab} ${activeTab === 'discussions' ? styles.active : ''}`}
           onClick={() => setActiveTab('discussions')}
-          disabled={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed'}
-          title={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' ? 'Review already submitted' : undefined}
-          style={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' ? { opacity: 0.4, cursor: 'not-allowed', pointerEvents: 'none' } : undefined}
+          disabled={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' || (assignment.individualChapters?.[0]?.status === 'PUBLISHED')}
+          title={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' || (assignment.individualChapters?.[0]?.status === 'PUBLISHED') ? 'Action unavailable (Completed or Published)' : undefined}
+          style={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' || (assignment.individualChapters?.[0]?.status === 'PUBLISHED') ? { opacity: 0.4, cursor: 'not-allowed', pointerEvents: 'none' } : undefined}
         >
           <MessageSquare size={16} /> Discussions
         </button>
 
-        {/* Valid Revisions — disabled ONLY after completion */}
+        {/* Valid Revisions — disabled ONLY after completion or publication */}
         <button
           className={`${styles.tab} ${activeTab === 'revision' ? styles.active : ''}`}
           onClick={() => setActiveTab('revision')}
-          disabled={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed'}
-          title={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' ? 'Review already submitted' : undefined}
-          style={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' ? { opacity: 0.4, cursor: 'not-allowed', pointerEvents: 'none' } : undefined}
+          disabled={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' || (assignment.individualChapters?.[0]?.status === 'PUBLISHED')}
+          title={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' || (assignment.individualChapters?.[0]?.status === 'PUBLISHED') ? 'Action unavailable (Completed or Published)' : undefined}
+          style={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' || (assignment.individualChapters?.[0]?.status === 'PUBLISHED') ? { opacity: 0.4, cursor: 'not-allowed', pointerEvents: 'none' } : undefined}
         >
           <RefreshCw size={16} /> Request Revisions
         </button>
 
-        {/* Review Form — disabled ONLY after completion */}
+        {/* Review Form — disabled ONLY after completion or publication */}
         <button
           className={`${styles.tab} ${activeTab === 'review-form' ? styles.active : ''}`}
           onClick={() => setActiveTab('review-form')}
-          disabled={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed'}
-          title={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' ? 'Review already submitted' : undefined}
-          style={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' ? { opacity: 0.4, cursor: 'not-allowed', pointerEvents: 'none' } : undefined}
+          disabled={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' || (assignment.individualChapters?.[0]?.status === 'PUBLISHED')}
+          title={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' || (assignment.individualChapters?.[0]?.status === 'PUBLISHED') ? 'Action unavailable (Completed or Published)' : undefined}
+          style={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' || (assignment.individualChapters?.[0]?.status === 'PUBLISHED') ? { opacity: 0.4, cursor: 'not-allowed', pointerEvents: 'none' } : undefined}
         >
           <Star size={16} /> Final Review Form
         </button>

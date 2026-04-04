@@ -407,6 +407,7 @@ const EditorActionsTab: React.FC<{
     // Consolidated publication data
     const [publishAllSubmissions, setPublishAllSubmissions] = useState<BookChapterSubmission[]>([]);
     const [publishAllBookChapters, setPublishAllBookChapters] = useState<{ title: string; chapterNumber: string }[]>([]);
+    const isPublished = submission.status === 'PUBLISHED';
 
     // Readiness State
     const [allChaptersReady, setAllChaptersReady] = useState<boolean>(false);
@@ -603,6 +604,7 @@ const EditorActionsTab: React.FC<{
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
                                 rows={4}
+                                disabled={isPublished}
                             />
                             <div className={styles.decisionButtons}>
                                 <button
@@ -820,13 +822,13 @@ const EditorActionsTab: React.FC<{
                                     value={finalNotes}
                                     onChange={(e) => setFinalNotes(e.target.value)}
                                     rows={4}
-                                    disabled={!readyForFinalDecision}
+                                    disabled={!readyForFinalDecision || isPublished}
                                 />
                                 <div className={styles.decisionButtons}>
                                     <button
                                         className={styles.acceptButton}
-                                        disabled={!readyForFinalDecision}
-                                        style={{ opacity: !readyForFinalDecision ? 0.5 : 1 }}
+                                        disabled={!readyForFinalDecision || isPublished}
+                                        style={{ opacity: (!readyForFinalDecision || isPublished) ? 0.5 : 1 }}
                                         onClick={() => {
                                             setAlertConfig({
                                                 isOpen: true,
@@ -848,8 +850,8 @@ const EditorActionsTab: React.FC<{
                                     </button>
                                     <button
                                         className={styles.rejectButton}
-                                        disabled={!readyForFinalDecision}
-                                        style={{ opacity: !readyForFinalDecision ? 0.5 : 1 }}
+                                        disabled={!readyForFinalDecision || isPublished}
+                                        style={{ opacity: (!readyForFinalDecision || isPublished) ? 0.5 : 1 }}
                                         onClick={() => {
                                             if (!finalNotes || !finalNotes.trim()) {
                                                 setAlertConfig({
@@ -906,9 +908,9 @@ const EditorActionsTab: React.FC<{
                                 <p style={{ marginBottom: '10px' }}>The submission is approved. Click below to start the proof editing phase.</p>
                                 <button
                                     className={styles.acceptButton}
-                                    disabled={isSubmittingIsbn}
+                                    disabled={isSubmittingIsbn || isPublished}
                                     onClick={async () => {
-                                        if (isSubmittingIsbn) return;
+                                        if (isSubmittingIsbn || isPublished) return;
                                         setIsSubmittingIsbn(true);
                                         try {
                                             await bookChapterEditorService.applyIsbn(submission.id, 'Starting proof editing');
@@ -964,6 +966,7 @@ const EditorActionsTab: React.FC<{
                                                 id="proof-file-input"
                                                 style={{ display: 'none' }}
                                                 onChange={(e) => setProofFile(e.target.files?.[0] || null)}
+                                                disabled={isPublished}
                                             />
                                             <label
                                                 htmlFor="proof-file-input"
@@ -974,10 +977,11 @@ const EditorActionsTab: React.FC<{
                                                     borderRadius: '6px',
                                                     fontSize: '0.8rem',
                                                     fontWeight: '600',
-                                                    cursor: 'pointer',
+                                                    cursor: isPublished ? 'not-allowed' : 'pointer',
                                                     whiteSpace: 'nowrap',
                                                     flexShrink: 0,
                                                     transition: 'background-color 0.2s',
+                                                    opacity: isPublished ? 0.6 : 1
                                                 }}
                                             >
                                                 Choose File
@@ -995,7 +999,7 @@ const EditorActionsTab: React.FC<{
                                         </div>
                                         <button
                                             className={styles.acceptButton}
-                                            disabled={!proofFile || isUploadingProof}
+                                            disabled={!proofFile || isUploadingProof || isPublished}
                                             onClick={handleUploadProof}
                                         >
                                             {isUploadingProof ? 'Uploading...' : 'Send Proof to Author'}
@@ -1032,13 +1036,14 @@ const EditorActionsTab: React.FC<{
                                     rows={3}
                                     id="editor-publication-notes"
                                     style={{ marginBottom: '10px' }}
+                                    disabled={isPublished}
                                 />
                                 <button
                                     className={styles.acceptButton}
-                                    style={{ backgroundColor: ['ACCEPTED', 'REJECTED'].includes(submission.proofStatus as string) ? '#0ea5e9' : '#9ca3af', color: 'white' }}
-                                    disabled={isStartingPublication || !['ACCEPTED', 'REJECTED'].includes(submission.proofStatus as string)}
+                                    style={{ backgroundColor: (['ACCEPTED', 'REJECTED'].includes(submission.proofStatus as string) && !isPublished) ? '#0ea5e9' : '#9ca3af', color: 'white' }}
+                                    disabled={isStartingPublication || !['ACCEPTED', 'REJECTED'].includes(submission.proofStatus as string) || isPublished}
                                     onClick={async () => {
-                                        if (isStartingPublication || !['ACCEPTED', 'REJECTED'].includes(submission.proofStatus as string)) return;
+                                        if (isStartingPublication || !['ACCEPTED', 'REJECTED'].includes(submission.proofStatus as string) || isPublished) return;
                                         setIsStartingPublication(true);
                                         const notes = (document.getElementById('editor-publication-notes') as HTMLTextAreaElement)?.value || '';
                                         try {
@@ -1166,11 +1171,11 @@ const EditorActionsTab: React.FC<{
                                 }
                                 setShowPublishModal(true);
                             }}
-                            disabled={submission.status !== 'PUBLISHED' && !allChaptersReady}
+                            disabled={isPublished || (submission.status !== 'PUBLISHED' && !allChaptersReady)}
                             style={{
-                                backgroundColor: (submission.status === 'PUBLICATION_IN_PROGRESS') ? (allChaptersReady ? '#10B981' : '#9ca3af') : undefined,
-                                color: (submission.status === 'PUBLICATION_IN_PROGRESS') ? 'white' : undefined,
-                                cursor: (submission.status === 'PUBLICATION_IN_PROGRESS' && !allChaptersReady) ? 'not-allowed' : 'pointer',
+                                backgroundColor: (submission.status === 'PUBLICATION_IN_PROGRESS') ? (allChaptersReady ? '#10B981' : '#9ca3af') : (isPublished ? '#9ca3af' : undefined),
+                                color: (submission.status === 'PUBLICATION_IN_PROGRESS') ? 'white' : (isPublished ? 'white' : undefined),
+                                cursor: (isPublished || (submission.status === 'PUBLICATION_IN_PROGRESS' && !allChaptersReady)) ? 'not-allowed' : 'pointer',
                             }}
                         >
                             <FileText size={16} /> {submission.status === 'PUBLISHED' ? 'Edit Publication Details' : 'Publish Book Chapter'}
