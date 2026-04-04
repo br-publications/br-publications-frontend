@@ -41,7 +41,7 @@ class BookChapterService {
                 price: ch.priceSoftCopy || 0,
                 pages: (ch.pagesFrom && ch.pagesTo) ? `${ch.pagesFrom}-${ch.pagesTo}` : (ch.pages || ''),
                 pdfKey: ch.pdfKey,
-                pdfUrl: (ch.pdfKey) ? getChapterPdfUrl(data.id, index) : undefined,
+                pdfUrl: ch.pdfKey ? getChapterPdfUrl(data.id, index) : (ch.pdfData || undefined),
                 views: ch.views || 0,
                 authorDetails: ch.authorDetails
             }));
@@ -55,7 +55,7 @@ class BookChapterService {
                 price: toc.priceCombined || toc.priceSoftCopy || 0,
                 pages: (toc.pagesFrom && toc.pagesTo) ? `${toc.pagesFrom}-${toc.pagesTo}` : '',
                 pdfKey: toc.pdfKey,
-                pdfUrl: (toc.pdfKey || toc.pdfData) ? getChapterPdfUrl(data.id, index) : undefined,
+                pdfUrl: toc.pdfKey ? getChapterPdfUrl(data.id, index) : (toc.pdfData || undefined),
                 views: toc.views || 0
             }));
         }
