@@ -10,7 +10,7 @@ import ChapterList from '../common/chapters/chapterList';
 import ChapterDetailModal from '../common/chapters/chapterDetailModal';
 import ChapterProgressBar from '../common/status/chapterProgressBar';
 import { AssignReviewersModal, RequestRevisionModal, FinalDecisionModal } from './editorChapterModals';
-import { getActiveReviewerCount, getNextAction, canMakeEditorDecision } from '../../../utils/chapterUtils';
+import { getNextAction, canMakeEditorDecision } from '../../../utils/chapterUtils';
 import styles from './editorChaptersTab.module.css';
 
 // Chapter Action Modal (for accept/reject abstract only)
@@ -477,6 +477,7 @@ export const EditorChaptersTab: React.FC<EditorChaptersTabProps> = ({
                         setShowActionModal(false);
                         setSelectedChapter(null);
                         setActionType(null);
+                        window.location.reload();
                     }}
                 />
             )}

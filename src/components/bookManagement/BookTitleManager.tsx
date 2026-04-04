@@ -96,6 +96,7 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
         setChapterDrafts([]);
         setNewChapterTitle('');
         setSelectedEditorIds([]);
+        setPrimaryEditorId(null);
         setEditorSearch('');
         fetchEditors();
         setShowForm(true);
@@ -156,6 +157,7 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
     const handleSubmit = async () => {
         const title = formTitle.trim();
         if (!title) { setFormError('Book title is required.'); return; }
+        if (!editMode && !primaryEditorId) { setFormError('Please select a primary editor for this book.'); return; }
         setSaving(true);
         setFormError('');
         try {
@@ -316,7 +318,7 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
                                 <span className="bms-step-arrow">›</span>
                                 <div className="bms-step active">
                                     <div className="bms-step-num">3</div>
-                                    Assign Editors
+                                    Assign Editors &nbsp;<span className="req">*</span>
                                 </div>
                             </div>
                         )}
@@ -339,7 +341,7 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
                                     onChange={(e) => { setFormTitle(e.target.value); setFormError(''); }}
                                     placeholder="Enter the full book title"
                                 />
-                                {formError && <span className="bms-field-error">{formError}</span>}
+                                {formError && !formError.includes('primary editor') && <span className="bms-field-error">{formError}</span>}
                             </div>
                             {editMode && (
                                 <div className="bms-field" style={{ flex: 'none', minWidth: 120 }}>
@@ -416,12 +418,17 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
                                 <div className="bms-form-divider">
                                     <div className="bms-form-divider-line"></div>
                                     <div className="bms-form-divider-label">
-                                        Assign Editors ({selectedEditorIds.length} selected)
+                                        Assign Editors ({selectedEditorIds.length} selected) &nbsp;<span className="req">*</span>
                                     </div>
                                     <div className="bms-form-divider-line"></div>
                                 </div>
 
                                 <div className="bms-editors-picker">
+                                    {formError && formError.includes('primary editor') && (
+                                        <div className="bms-field-error" style={{ marginBottom: '0.65rem', padding: '0 0.5rem' }}>
+                                            {formError}
+                                        </div>
+                                    )}
                                     <div className="bms-editors-picker-head">
                                         <span>Available Editors</span>
                                         <input
@@ -459,6 +466,7 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
                                                         style={{ marginLeft: 'auto', fontSize: 10, padding: '2px 6px' }}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
+                                                            if (ed.id !== primaryEditorId) setFormError('');
                                                             setPrimaryEditorId(ed.id === primaryEditorId ? null : ed.id);
                                                         }}
                                                     >

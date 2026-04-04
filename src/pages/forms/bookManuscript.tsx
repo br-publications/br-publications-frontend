@@ -4,6 +4,7 @@ import { Upload, Add, Delete, NavigateNext, NavigateBefore, CheckCircle, Person,
 import { CircularProgress } from '@mui/material';
 import type { SubmitTextBookRequest } from '../../pages/textBookSubmission/types/textBookTypes';
 import { submitTextBook } from '../../services/textBookService';
+import { authService } from '../../services/auth.service';
 import AlertPopup, { type AlertType } from '../../components/common/alertPopup';
 import { COUNTRIES, type Country } from '../../utils/countries';
 import './bookManuscript.css';
@@ -544,6 +545,18 @@ const BookManuscript: React.FC = () => {
         title: 'Submission Successful',
         message: 'Your book content has been submitted successfully! We will review it shortly.'
       });
+
+      // Refresh user profile to update role (User -> Author)
+      try {
+        const userResponse = await authService.getCurrentUser();
+        if (userResponse.success && userResponse.data) {
+          localStorage.setItem('user', JSON.stringify(userResponse.data));
+          // Dispatch event to notify Header/Dashboard of role change
+          window.dispatchEvent(new Event('auth-changed'));
+        }
+      } catch (authError) {
+        console.error('⚠️ Failed to refresh user profile:', authError);
+      }
 
       // Navigate after delay
       setTimeout(() => {

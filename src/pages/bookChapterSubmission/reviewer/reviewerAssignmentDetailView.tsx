@@ -309,7 +309,7 @@ export const ReviewerAssignmentDetailView: React.FC<ReviewerAssignmentDetailView
           title={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' ? 'Review already submitted' : undefined}
           style={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' ? { opacity: 0.4, cursor: 'not-allowed', pointerEvents: 'none' } : undefined}
         >
-          <RefreshCw size={16} /> Valid Revisions
+          <RefreshCw size={16} /> Request Revisions
         </button>
 
         {/* Review Form — disabled ONLY after completion */}
@@ -320,7 +320,7 @@ export const ReviewerAssignmentDetailView: React.FC<ReviewerAssignmentDetailView
           title={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' ? 'Review already submitted' : undefined}
           style={assignment.reviewStatus === 'completed' || assignment.assignmentStatus === 'completed' ? { opacity: 0.4, cursor: 'not-allowed', pointerEvents: 'none' } : undefined}
         >
-          <Star size={16} /> Review Form
+          <Star size={16} /> Final Review Form
         </button>
       </div>
 

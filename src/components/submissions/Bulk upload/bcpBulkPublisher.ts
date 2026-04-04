@@ -113,15 +113,14 @@ async function buildPayload(entry: ParsedChapterEntry): Promise<PublishBookChapt
 
             return {
                 title: chapter.title,
+                chapterNumber: chapter.chapterNumber,
                 authors: chapter.authors,
                 pagesFrom: chapter.pagesFrom,
                 pagesTo: chapter.pagesTo,
                 abstract: chapter.abstract,
-                pricing: {
-                    softCopyPrice: chapter.priceSoftCopy,
-                    hardCopyPrice: chapter.priceHardCopy,
-                    combinedPrice: chapter.priceCombined
-                },
+                priceSoftCopy: chapter.priceSoftCopy,
+                priceHardCopy: chapter.priceHardCopy,
+                priceCombined: chapter.priceCombined,
                 ...pdfData
             };
         })
@@ -144,7 +143,9 @@ async function buildPayload(entry: ParsedChapterEntry): Promise<PublishBookChapt
         keywords: entry.keywords,
         author: authorName || '',
         mainAuthor: mainAuthorProvided ? entry.mainAuthor : undefined,
-        coAuthors: entry.coAuthors || undefined,
+        coAuthors: entry.coAuthorsData.length > 0
+            ? entry.coAuthorsData.map(ca => `${ca.firstName} ${ca.lastName}`.trim()).join(', ')
+            : (entry.coAuthors || undefined),
         coAuthorsData: entry.coAuthorsData.length > 0 ? (entry.coAuthorsData as any) : undefined,
         coverImage: coverImageBase64,
         category: entry.category,
@@ -168,7 +169,14 @@ async function buildPayload(entry: ParsedChapterEntry): Promise<PublishBookChapt
         scope: (entry.scopeIntro ? { paragraph_1: entry.scopeIntro } : {}) as Record<string, string>,
         tableContents,
         authorBiographies: entry.authorBiographies ?? [],
-        archives: {},
+        archives: (() => {
+            const archives: Record<string, string> = {};
+            if (entry.archiveIntro) archives['paragraph_1'] = entry.archiveIntro;
+            entry.archiveItems.forEach((item, i) => {
+                if (item.trim()) archives[`list_${i + 1}`] = item.trim();
+            });
+            return archives;
+        })(),
         frontmatterPdfs,
     };
 
