@@ -202,7 +202,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
             publishedDate: new Date().getFullYear().toString(),
             pages: 0,
             indexedIn: 'Google Scholar',
-            releaseDate: new Date().toLocaleDateString('en-GB'),
+            releaseDate: new Date().toISOString().split('T')[0],
             copyright: `© ${new Date().getFullYear()} BR Publications`,
             doi: '',
             priceSoftCopy: undefined,
@@ -1056,7 +1056,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                                     </div>
                                     <div className="pcw-field">
                                         <label className="pcw-label">Release Date <span className="req">*</span></label>
-                                        <input className="pcw-input" name="releaseDate" value={form.releaseDate} onChange={handleFormChange} placeholder="e.g. 23/12/2024" />
+                                        <input type="date" className="pcw-input" name="releaseDate" value={form.releaseDate} onChange={handleFormChange} />
                                     </div>
                                     <div className="pcw-field">
                                         <label className="pcw-label">Indexed In <span className="req">*</span></label>
