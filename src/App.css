@@ -17,21 +17,9 @@ input::after {
   content: none !important;
 }
 
-/* html {
+/* Scale the entire app down by 10%.
+   Using zoom instead of transform:scale because zoom affects layout
+   (no extra whitespace / no width compensation needed). */
+html {
   zoom: 0.9;
-} */
-
-/* body {
-  transform: scale(0.9);
-  transform-origin: top left;
-  width: 111.11%;
-  /* compensate: 100% / 0.9 
-  overflow-x: hidden;
-} */
-
-.app-scale-wrapper {
-  transform: scale(0.9);
-  transform-origin: top left;
-  width: 111.11%;
-  overflow-x: hidden;
 }

@@ -39,8 +39,9 @@ const Login: React.FC = () => {
   // OR from Google OAuth callback
   useEffect(() => {
     const state = location.state as any;
-    if (state?.emailVerified && state?.message) {
-      showAlert('success', 'Email Verified', state.message);
+    if (state?.message) {
+      const isVerified = !!state.emailVerified;
+      showAlert(isVerified ? 'success' : 'info', isVerified ? 'Email Verified' : 'Authentication Required', state.message);
     }
     // Redirected from GoogleCallbackHandler — jump straight to OTP
     if (state?.googleOtp && state?.email && state?.tempToken) {

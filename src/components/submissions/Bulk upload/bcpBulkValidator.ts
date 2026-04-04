@@ -112,6 +112,10 @@ export interface ParsedChapterEntry {
     synopsisParagraph4: string;
     scopeIntro: string;
 
+    // Archives
+    archiveIntro: string;
+    archiveItems: string[]; // archiveItem1 … archiveItem10
+
     // TOC Chapters
     tocChapters: ParsedTocChapter[];
 
@@ -238,6 +242,17 @@ export type ChapterCSVRow = {
     synopsisParagraph3?: string;
     synopsisParagraph4?: string;
     scopeIntro?: string;
+    archiveIntro?: string;
+    archiveItem1?: string;
+    archiveItem2?: string;
+    archiveItem3?: string;
+    archiveItem4?: string;
+    archiveItem5?: string;
+    archiveItem6?: string;
+    archiveItem7?: string;
+    archiveItem8?: string;
+    archiveItem9?: string;
+    archiveItem10?: string;
     coverImageFilename?: string;
 
     // PDFfilenames
@@ -524,6 +539,19 @@ export function parseChapterCSVRow(
         synopsisParagraph3: str(row.synopsisParagraph3),
         synopsisParagraph4: str(row.synopsisParagraph4),
         scopeIntro: str(row.scopeIntro),
+        archiveIntro: str(row.archiveIntro),
+        archiveItems: [
+            str(row.archiveItem1),
+            str(row.archiveItem2),
+            str(row.archiveItem3),
+            str(row.archiveItem4),
+            str(row.archiveItem5),
+            str(row.archiveItem6),
+            str(row.archiveItem7),
+            str(row.archiveItem8),
+            str(row.archiveItem9),
+            str(row.archiveItem10),
+        ].filter(Boolean),
         tocChapters,
         coverImageFilename: str(row.coverImageFilename),
         matchedCoverImage: null,
@@ -941,6 +969,17 @@ export const CHAPTER_CSV_TEMPLATE_HEADERS: string[] = [
     'synopsisParagraph3',
     'synopsisParagraph4',
     'scopeIntro',
+    'archiveIntro',
+    'archiveItem1',
+    'archiveItem2',
+    'archiveItem3',
+    'archiveItem4',
+    'archiveItem5',
+    'archiveItem6',
+    'archiveItem7',
+    'archiveItem8',
+    'archiveItem9',
+    'archiveItem10',
     'coverImageFilename',
     'pdfDedication',
     'pdfFrontmatter',
@@ -1023,7 +1062,7 @@ export const CHAPTER_CSV_SAMPLE_ROW: Record<string, string> = {
     coAuthor3Biography: '',
     isbn: '978-3-16-148410-0',
     doi: '10.1000/xyz123',
-    category: 'Computer Science',
+    category: 'Engineering & Management',
     publishedYear: '2024',
     pages: '350',
     releaseDate: '2024-06-15',
@@ -1040,7 +1079,18 @@ export const CHAPTER_CSV_SAMPLE_ROW: Record<string, string> = {
     synopsisParagraph2: 'It delves deeper into scaling neural network architectures.',
     synopsisParagraph3: '',
     synopsisParagraph4: '',
-    scopeIntro: 'The scope covers theoretical foundations.',
+    scopeIntro: 'The scope covers theoretical foundations and emerging research areas.',
+    archiveIntro: 'This book chapter is archived and accessible through the following repositories.',
+    archiveItem1: 'Google Scholar',
+    archiveItem2: 'Scopus',
+    archiveItem3: 'ResearchGate',
+    archiveItem4: '',
+    archiveItem5: '',
+    archiveItem6: '',
+    archiveItem7: '',
+    archiveItem8: '',
+    archiveItem9: '',
+    archiveItem10: '',
     coverImageFilename: 'advanced_ai_cover.jpg',
     pdfDedication: 'dedication_advanced_ai.pdf',
     pdfFrontmatter: 'frontmatter_advanced_ai.pdf',

@@ -114,7 +114,7 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
                     if (author.email?.trim() && !emailRegex.test(author.email)) {
                         newErrors[`coAuthor${index}Email`] = 'Invalid email format';
                     }
-                    if (!author.institute?.trim()) newErrors[`coAuthor${index}Institute`] = 'Institute is required';
+                    // Institute is now optional
                     if (author.phoneNumber && !isValidPhoneNumber(author.phoneNumber)) {
                         newErrors[`coAuthor${index}Phone`] = 'Phone number must be at least 10 digits';
                     }
@@ -487,7 +487,7 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
                                                 </div>
                                                 <div className="author-grid">
                                                     <div className="form-group">
-                                                        <label>First Name</label>
+                                                        <label>First Name*</label>
                                                         <input
                                                             type="text"
                                                             value={typeof author !== 'string' ? author.firstName : ''}
@@ -556,7 +556,6 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
                                                             className={errors[`coAuthor${index}Institute`] ? 'input-error' : ''}
                                                             placeholder="Institute"
                                                         />
-                                                        {errors[`coAuthor${index}Institute`] && <span className="error-text">{errors[`coAuthor${index}Institute`]}</span>}
                                                     </div>
                                                     <div className="form-group">
                                                         <label>Phone Number</label>

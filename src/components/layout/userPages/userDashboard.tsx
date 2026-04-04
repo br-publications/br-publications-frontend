@@ -1,6 +1,7 @@
 // components/dashboard/UserDashboard.tsx
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { isAuthenticated } from '../../../services/api.config';
 import DashboardHeader from './header';
 import DashboardNavbar from './navbar';
 import DashboardSidebar from './sidebar';
@@ -25,6 +26,7 @@ export default function UserDashboard() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [userRole, setUserRole] = useState<UserRole>('user');
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   const [isImpersonating, setIsImpersonating] = useState(false);
   const [hasTextbookSubmissions, setHasTextbookSubmissions] = useState(false);
   const [hasBookChapterSubmissions, setHasBookChapterSubmissions] = useState(false);
@@ -38,6 +40,15 @@ export default function UserDashboard() {
   }, [location.pathname]);
 
   useEffect(() => {
+    // Check authentication
+    if (!isAuthenticated()) {
+      navigate('/login', { 
+        replace: true, 
+        state: { message: "Please login to access the dashboard." } 
+      });
+      return;
+    }
+
     const impersonating = sessionStorage.getItem('isImpersonating') === 'true';
     setIsImpersonating(impersonating);
 

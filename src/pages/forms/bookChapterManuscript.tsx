@@ -936,9 +936,9 @@ const BookChapterManuscript: React.FC = () => {
           console.error('⚠️ Failed to refresh user profile:', authError);
         }
 
-        // Reload page after delay to reflect role changes and show dashboard link
+        // Redirect to author dashboard
         setTimeout(() => {
-          window.location.reload();
+          navigate('/dashboard/author/submissions');
         }, 2000);
       } else {
         throw new Error(response.message || 'Submission failed');

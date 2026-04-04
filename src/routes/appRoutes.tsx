@@ -75,87 +75,87 @@ const AuthorDetail = lazy(() => import('../pages/dashboard/author/AuthorDetail')
 export default function AppRoutes() {
   return (
     <Suspense fallback={null}>
-    <Routes>
-      <Route element={<Dashboard />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/user/register" element={<Register />} />
-        <Route path="/ipr" element={<IPR />} />
-        <Route path="/resnova" element={<ResNova />} />
-        <Route path="/bookchapter/:id/:slug?" element={<BookChapterDetail />} />
-        <Route path="/book/:id/chapter/:chapterId" element={<ChapterDetail />} />
-        <Route path="/bookchapters" element={<ProductBookChapter />} />
-        <Route path="/book/:id/:slug?" element={<BooksDetail />} />
-        <Route path="/bookpublications" element={<BookPublications />} />
-        <Route path="/books" element={<ProductBooks />} />
-        <Route path="/product/find/:isbn" element={<ProductFinder />} />
-        <Route path="/conference" element={<ConferencePage />} />
-        <Route path="/conference/:id" element={<ConferenceDetails />} />
-        <Route path="/conference/:id/article/:articleId" element={<ConferenceArticle />} />
-        <Route path="/webappdevelopment" element={<WebAppDevelopment />} />
-        <Route path="/mobileappdevelopment" element={<MobileAppDevelopment />} />
-        <Route path="/students-internship-program" element={<StudentsInternshipProgram />} />
-        <Route path="/about" element={<AboutUs />} />
-        <Route path="/contact" element={<ContactUs />} />
-        <Route path="/book-chapter-manuscript" element={<BookChapterManuscript />} />
-        <Route path="/book-manuscript" element={<BookManuscript />} />
-        {/* Projects & Internships & Recruitment*/}
-        <Route path="/forms/projects-internships/web-development" element={<WebDevelopmentForm />} />
-        <Route path="/forms/projects-internships/mobile-development" element={<MobileDevelopmentForm />} />
-        <Route path="/forms/projects-internships/student-internship" element={<StudentInternshipForm />} />
-        <Route path="/recruitment" element={<RecruitmentForm />} />
-        <Route path="/author/:id" element={<AuthorDetail />} />
+      <Routes>
+        <Route element={<Dashboard />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/user/register" element={<Register />} />
+          <Route path="/ipr" element={<IPR />} />
+          <Route path="/resnova" element={<ResNova />} />
+          <Route path="/bookchapter/:id/:slug?" element={<BookChapterDetail />} />
+          <Route path="/book/:id/chapter/:chapterId" element={<ChapterDetail />} />
+          <Route path="/bookchapters" element={<ProductBookChapter />} />
+          <Route path="/book/:id/:slug?" element={<BooksDetail />} />
+          <Route path="/bookpublications" element={<BookPublications />} />
+          <Route path="/books" element={<ProductBooks />} />
+          <Route path="/product/find/:isbn" element={<ProductFinder />} />
+          <Route path="/conference" element={<ConferencePage />} />
+          <Route path="/conference/:id" element={<ConferenceDetails />} />
+          <Route path="/conference/:id/article/:articleId" element={<ConferenceArticle />} />
+          <Route path="/webappdevelopment" element={<WebAppDevelopment />} />
+          <Route path="/mobileappdevelopment" element={<MobileAppDevelopment />} />
+          <Route path="/students-internship-program" element={<StudentsInternshipProgram />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/contact" element={<ContactUs />} />
+          <Route path="/book-chapter-manuscript" element={<BookChapterManuscript />} />
+          <Route path="/book-manuscript" element={<BookManuscript />} />
+          {/* Projects & Internships & Recruitment*/}
+          <Route path="/forms/projects-internships/web-development" element={<WebDevelopmentForm />} />
+          <Route path="/forms/projects-internships/mobile-development" element={<MobileDevelopmentForm />} />
+          <Route path="/forms/projects-internships/student-internship" element={<StudentInternshipForm />} />
+          <Route path="/recruitment" element={<RecruitmentForm />} />
+          <Route path="/author/:id" element={<AuthorDetail />} />
 
-      </Route>
+        </Route>
 
-      <Route path="/dashboard" element={<UserDashboard />} />
-      <Route element={<UserDashboard />} >
-        <Route path="/dashboard/author/submissions" element={<AuthorDashboard />} />
-        <Route path="/dashboard/author/textbooks" element={<AuthorTextBookDashboard />} />
-        <Route path="/dashboard/user/recruitment" element={<UserRecruitmentDashboard />} />
-        <Route path="/dashboard/user/projectsinternships" element={<UserProjectDashboard />} />
-        <Route path="/dashboard/author/submissions/:id" element={<AuthorSubmissionDetailsPage />} />
-        <Route path="/dashboard/admin/submissions" element={<AdminDashboard />} />
-        <Route path="/dashboard/admin/users" element={<UserRoleManagement />} />
-        <Route path="/dashboard/admin/book-chapters" element={<BookManagement />} />
-        <Route path="/dashboard/admin/textbooks" element={<AdminTextBookDashboard />} />
-        <Route path="/dashboard/admin/book-publishing" element={<AdminDirectPublishingPage />} />
-        <Route path="/dashboard/admin/textbooks/bulk-upload" element={<TextBookBulkUpload />} />
-        <Route path="/dashboard/admin/bookchapterbulkupload" element={<BookChapterBulkUpload />} />
-        <Route path="/dashboard/admin/recruitment" element={<AdminRecruitmentDashboard />} />
-        <Route path="/dashboard/user/projects-internships/view/:id" element={<ProjectDetailView />} />
-        <Route path="/dashboard/admin/projects-internships" element={<AdminProjectDashboard />} />
-        <Route path="/dashboard/admin/projects-internships/view/:id" element={<ProjectDetailView />} />
-        <Route path="/recruitment/id/:id" element={<RecruitmentDetailView />} />
-        <Route path="/dashboard/editor/submissions" element={<EditorDashboard />} />
-        <Route path="/dashboard/editor/reviewers" element={<ReviewerManagement />} />
-        <Route path="/dashboard/reviewer/submissions" element={<ReviewerDashboard />} />
-        <Route path="/dashboard/admin/textbooksmanager" element={<PublishedBookManager />} />
-        <Route path="/dashboard/admin/bookchaptermanager" element={<PublishedChapterManager />} />
-        <Route path="/dashboard/admin/conferences" element={<ConferenceManager />} />
-        <Route path="/dashboard/admin/conferences/bulk-upload" element={<ConferenceBulkUpload />} />
-        <Route path="/dashboard/admin/individualbookchapterpublish" element={<ManualPublishingAdminPage />} />
-        <Route path="/dashboard/admin/emailtemplates" element={<CommunicationTemplatesPage />} />
-        <Route path="/dashboard/admin/contactinquiries" element={<AdminContactDashboard />} />
-        <Route path="/dashboard/admin" element={<AdminStatsDashboard />} />
-        <Route path="/dashboard/profile" element={<ProfilePage />} />
-        <Route path="/dashboard/profile/edit" element={<ProfileEditPage />} />
-        {/* Dashboard 404 fallback */}
-        <Route path="/dashboard/*" element={<NotFound />} />
-      </Route>
+        <Route path="/dashboard" element={<UserDashboard />} />
+        <Route element={<UserDashboard />} >
+          <Route path="/dashboard/author/submissions" element={<AuthorDashboard />} />
+          <Route path="/dashboard/author/textbooks" element={<AuthorTextBookDashboard />} />
+          <Route path="/dashboard/user/recruitment" element={<UserRecruitmentDashboard />} />
+          <Route path="/dashboard/user/projectsinternships" element={<UserProjectDashboard />} />
+          <Route path="/dashboard/author/submissions/:id" element={<AuthorSubmissionDetailsPage />} />
+          <Route path="/dashboard/admin/submissions" element={<AdminDashboard />} />
+          <Route path="/dashboard/admin/users" element={<UserRoleManagement />} />
+          <Route path="/dashboard/admin/book-chapters" element={<BookManagement />} />
+          <Route path="/dashboard/admin/textbooks" element={<AdminTextBookDashboard />} />
+          <Route path="/dashboard/admin/book-publishing" element={<AdminDirectPublishingPage />} />
+          <Route path="/dashboard/admin/textbooks/bulk-upload" element={<TextBookBulkUpload />} />
+          <Route path="/dashboard/admin/bookchapterbulkupload" element={<BookChapterBulkUpload />} />
+          <Route path="/dashboard/admin/recruitment" element={<AdminRecruitmentDashboard />} />
+          <Route path="/dashboard/user/projects-internships/view/:id" element={<ProjectDetailView />} />
+          <Route path="/dashboard/admin/projects-internships" element={<AdminProjectDashboard />} />
+          <Route path="/dashboard/admin/projects-internships/view/:id" element={<ProjectDetailView />} />
+          <Route path="/recruitment/id/:id" element={<RecruitmentDetailView />} />
+          <Route path="/dashboard/editor/submissions" element={<EditorDashboard />} />
+          <Route path="/dashboard/editor/reviewers" element={<ReviewerManagement />} />
+          <Route path="/dashboard/reviewer/submissions" element={<ReviewerDashboard />} />
+          <Route path="/dashboard/admin/textbooksmanager" element={<PublishedBookManager />} />
+          <Route path="/dashboard/admin/bookchaptermanager" element={<PublishedChapterManager />} />
+          <Route path="/dashboard/admin/conferences" element={<ConferenceManager />} />
+          <Route path="/dashboard/admin/conferences/bulk-upload" element={<ConferenceBulkUpload />} />
+          <Route path="/dashboard/admin/individualbookchapterpublish" element={<ManualPublishingAdminPage />} />
+          <Route path="/dashboard/admin/emailtemplates" element={<CommunicationTemplatesPage />} />
+          <Route path="/dashboard/admin/contactinquiries" element={<AdminContactDashboard />} />
+          <Route path="/dashboard/admin" element={<AdminStatsDashboard />} />
+          <Route path="/dashboard/profile" element={<ProfilePage />} />
+          <Route path="/dashboard/profile/edit" element={<ProfileEditPage />} />
+          {/* Dashboard 404 fallback */}
+          <Route path="/dashboard/*" element={<NotFound />} />
+        </Route>
 
-      {/* Impersonation Handler Route */}
-      <Route path="/impersonate" element={<ImpersonateHandler />} />
+        {/* Impersonation Handler Route */}
+        <Route path="/impersonate" element={<ImpersonateHandler />} />
 
-      {/* Google OAuth Callback Route */}
-      <Route path="/auth/google/callback" element={<GoogleCallbackHandler />} />
+        {/* Google OAuth Callback Route */}
+        <Route path="/auth/google/callback" element={<GoogleCallbackHandler />} />
 
-      {/* Wildcard 404 Route - must be last */}
-      <Route path="*" element={<Dashboard />}>
-        <Route path="*" element={<NotFound />} />
-      </Route>
-    </Routes>
+        {/* Wildcard 404 Route - must be last */}
+        <Route path="*" element={<Dashboard />}>
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
     </Suspense>
   );
 }

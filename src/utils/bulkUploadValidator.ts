@@ -56,22 +56,27 @@ export interface ValidationResult {
  * Accepts: YYYY-MM-DD, DD-MM-YYYY
  */
 function normalizeDate(dateStr: string): string {
-    if (!dateStr) return '';
+    if (!dateStr || typeof dateStr !== 'string') return '';
+    const trimmed = dateStr.trim();
 
-    // Check if already YYYY-MM-DD
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-        return dateStr;
+    // Support for both - and / separators
+    // Pattern 1: YYYY-MM-DD or YYYY/MM/DD
+    const yyyymmddRegex = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/;
+    const ymatch = trimmed.match(yyyymmddRegex);
+    if (ymatch) {
+        const [_, year, month, day] = ymatch;
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     }
 
-    // Check if DD-MM-YYYY
-    const ddmmyyyyRegex = /^(\d{2})-(\d{2})-(\d{4})$/;
-    const match = dateStr.match(ddmmyyyyRegex);
-    if (match) {
-        const [_, day, month, year] = match;
-        return `${year}-${month}-${day}`;
+    // Pattern 2: DD-MM-YYYY or DD/MM/YYYY
+    const ddmmyyyyRegex = /^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/;
+    const dmatch = trimmed.match(ddmmyyyyRegex);
+    if (dmatch) {
+        const [_, day, month, year] = dmatch;
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     }
 
-    return dateStr; // Return original if no match, validation will catch it
+    return trimmed; // Return original if no match, validation will catch it
 }
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -120,14 +125,14 @@ export function validateBookEntry(
     if (!entry.releaseDate) {
         errors.releaseDate = 'Release date is required';
     } else {
-        // Validate format YYYY-MM-DD
+        // Validate format YYYY-MM-DD (must be normalized by this point)
         const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
         if (!dateRegex.test(entry.releaseDate)) {
-            errors.releaseDate = 'Release date must be in YYYY-MM-DD format';
+            errors.releaseDate = 'Release date must be in YYYY-MM-DD or DD-MM-YYYY format';
         } else {
             const date = new Date(entry.releaseDate);
             if (isNaN(date.getTime())) {
-                errors.releaseDate = 'Invalid date';
+                errors.releaseDate = 'Invalid date provided';
             }
         }
     }
