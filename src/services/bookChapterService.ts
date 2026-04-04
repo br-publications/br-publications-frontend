@@ -29,19 +29,6 @@ class BookChapterService {
         // Map chapters — Prefer relational 'chapters' if available, fallback to 'tableContents' JSONB
         let mappedChapters: Chapter[] = [];
 
-        console.log('DEBUG: mapBookData for Book ID', data.id, 'Relational Chapters count:', data.chapters?.length || 0);
-        
-        if (data.chapters && data.chapters.length > 0) {
-            console.log('DEBUG: First Relational Chapter Audit:', {
-                id: data.chapters[0].id,
-                title: data.chapters[0].title,
-                pdfKey: data.chapters[0].pdfKey,
-                publishedFileId: data.chapters[0].publishedFileId,
-                pdfName: data.chapters[0].pdfName,
-                hasPdfData: !!data.chapters[0].pdfData,
-                allFields: Object.keys(data.chapters[0])
-            });
-        }
 
         if (data.chapters && data.chapters.length > 0) {
             mappedChapters = data.chapters.map((ch, index: number) => ({
