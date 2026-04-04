@@ -29,10 +29,11 @@ const TAB_STATUS_MAPPING: Record<EditorTab, SubmissionStatus[]> = {
         'APPROVED',
         'ISBN_APPLIED',
         'PUBLICATION_IN_PROGRESS',
-        'REJECTED',
     ],
     completed: [
         'PUBLISHED',
+        'REJECTED',
+        'WITHDRAWN' as SubmissionStatus,
     ],
 };
 

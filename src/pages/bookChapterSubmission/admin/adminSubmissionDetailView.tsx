@@ -472,11 +472,13 @@ const ActionsTab: React.FC<{
           const chapterResp = await bookManagementService.bookChapter.getChaptersByBookTitle(bookId, true, true);
           if (chapterResp.success && chapterResp.data?.chapters) {
             const allChapters = chapterResp.data.chapters;
-            const readyOnes = allChapters.filter(ch => 
-              ch.isReadyForPublication || 
-              ch.isPublished || 
-              ch.submissionStatus === 'PUBLICATION_IN_PROGRESS'
-            );
+            const readyOnes = allChapters.filter(ch => {
+              const status = (ch.submissionStatus || '').toUpperCase();
+              return ch.isReadyForPublication || 
+                     ch.isPublished || 
+                     status === 'PUBLICATION_IN_PROGRESS' ||
+                     status === 'APPROVED';
+            });
 
             setReadinessDetails({
               total: allChapters.length,

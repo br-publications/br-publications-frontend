@@ -173,118 +173,137 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
 
         let isMounted = true;
 
+        // Helper to parse JSON fields safely
+        const parseJson = (val: any) => {
+            if (!val) return null;
+            if (typeof val === 'object') return val;
+            try { return JSON.parse(val); } catch (e) { return null; }
+        };
+
+        const processData = (bookData: any) => {
+            if (!bookData) return;
+
+            // Parse Main Author — prefer structured object, fall back to flat string
+            let parsedMainAuthor: Author = createEmptyAuthor();
+            if (bookData.mainAuthor && typeof bookData.mainAuthor === 'object') {
+                parsedMainAuthor = { ...createEmptyAuthor(), ...bookData.mainAuthor };
+            } else if (bookData.mainAuthor && typeof bookData.mainAuthor === 'string') {
+                try { parsedMainAuthor = { ...createEmptyAuthor(), ...JSON.parse(bookData.mainAuthor) }; } catch (_) { }
+            }
+            // Fall back to flat string name if structured data unavailable
+            if (!parsedMainAuthor.firstName && !parsedMainAuthor.lastName) {
+                const authorParts = (bookData.author || '').split(' ');
+                parsedMainAuthor.lastName = authorParts.length > 1 ? authorParts.pop()! : '';
+                parsedMainAuthor.firstName = authorParts.join(' ');
+                parsedMainAuthor.email = bookData.authorEmail || '';
+            }
+
+            // Parse Co-Authors — prefer structured array, fall back to flat string
+            let coAuthorsList: CoAuthorWithId[] = [];
+            if (Array.isArray(bookData.coAuthorsData) && bookData.coAuthorsData.length > 0) {
+                coAuthorsList = bookData.coAuthorsData.map((ca: any, idx: number) => ({
+                    ...createEmptyAuthor(),
+                    ...ca,
+                    tempId: `temp-${idx}-${Math.random()}`
+                }));
+            } else if (bookData.coAuthors && typeof bookData.coAuthors === 'string') {
+                coAuthorsList = bookData.coAuthors.split(',').map((name: string, idx: number) => {
+                    const parts = name.trim().split(' ');
+                    const lastName = parts.length > 1 ? parts.pop()! : '';
+                    const firstName = parts.join(' ');
+                    return { ...createEmptyAuthor(), firstName, lastName, tempId: `temp-${idx}-${Math.random()}` };
+                });
+            }
+
+            // Parse Synopses
+            const synopsisData = parseJson(bookData.synopsis) || {};
+            const synopses = Object.keys(synopsisData)
+                .sort((a, b) => {
+                    const aNum = parseInt(a.split('_')[1] || '0');
+                    const bNum = parseInt(b.split('_')[1] || '0');
+                    return aNum - bNum;
+                })
+                .map(key => synopsisData[key]);
+
+            // Parse Scope
+            const scopeData = parseJson(bookData.scope) || {};
+            const scIntro = scopeData.paragraph_1 || '';
+            const scItems = Object.keys(scopeData)
+                .filter(k => k.startsWith('list_'))
+                .sort((a, b) => a.localeCompare(b))
+                .map(k => scopeData[k]);
+
+            // Parse Archives
+            const archiveData = parseJson(bookData.archives) || {};
+            const archIntro = archiveData.paragraph_1 || '';
+            const archItems = Object.keys(archiveData)
+                .filter(k => k.startsWith('list_'))
+                .sort((a, b) => a.localeCompare(b))
+                .map(k => archiveData[k]);
+
+            // Parse Pricing
+            const pricingData = parseJson(bookData.pricing) || {};
+
+            setForm(prev => ({
+                ...prev,
+                submissionId: bookData.submissionId || prev.submissionId || '',
+                mainAuthor: parsedMainAuthor,
+                coAuthors: coAuthorsList,
+                title: bookData.title || prev.title || '',
+                category: bookData.category || prev.category || 'Engineering & Management',
+                description: bookData.description || prev.description || '',
+                isbn: bookData.isbn || prev.isbn || '',
+                publishedDate: bookData.publishedDate || prev.publishedDate || '',
+                pages: bookData.pages || prev.pages || 0,
+                indexedIn: bookData.indexedIn || prev.indexedIn || '',
+                releaseDate: bookData.releaseDate || prev.releaseDate || '',
+                copyright: bookData.copyright || prev.copyright || '',
+                doi: bookData.doi || prev.doi || '',
+                priceSoftCopy: pricingData.softCopyPrice,
+                priceHardCopy: pricingData.hardCopyPrice,
+                priceCombined: pricingData.combinedPrice,
+                googleLink: bookData.googleLink || prev.googleLink || '',
+                flipkartLink: bookData.flipkartLink || prev.flipkartLink || '',
+                amazonLink: bookData.amazonLink || prev.amazonLink || '',
+                synopses: synopses.length > 0 ? synopses : prev.synopses,
+                scopeIntro: scIntro || prev.scopeIntro,
+                coverImage: bookData.coverImage || prev.coverImage || '',
+                keywords: bookData.keywords || prev.keywords || [],
+                editors: Array.isArray(bookData.editors) ? bookData.editors : (typeof bookData.editors === 'string' ? bookData.editors.split(',').map((s: string) => s.trim()) : prev.editors),
+                frontmatterPdfs: parseJson(bookData.frontmatterPdfs) || prev.frontmatterPdfs || {},
+            }));
+
+            if (scItems.length > 0) setScopeItems(scItems);
+            if (archIntro) setArchiveIntro(archIntro);
+            if (archItems.length > 0) setArchiveItems(archItems);
+            if (bookData.tableContents) setTocChapters(bookData.tableContents);
+            if (bookData.authorBiographies) setBiographies(bookData.authorBiographies);
+        };
+
         const loadData = async () => {
             setLoading(true);
             try {
-                // Fetch the complete chapter details instead of relying only on the list-view row data
+                // Step 1: Populate with available 'book' data immediately for zero-lag UI
+                console.log("EditModal: Initializing with prop data:", book);
+                processData(book);
+
+                // Step 2: Fetch full details (TOC, Biographies, etc.)
+                console.log("EditModal: Fetching full details for ID:", book.id);
                 const fullBookData = await getPublishedChapterById(book.id);
+                
                 if (!isMounted) return;
 
-                const bookData = fullBookData || book; // Fallback to list view item if fetch fails
-
-                // Helper to parse JSON fields safely
-                const parseJson = (val: any) => {
-                    if (!val) return null;
-                    if (typeof val === 'object') return val;
-                    try { return JSON.parse(val); } catch (e) { return null; }
-                };
-
-                // Parse Main Author — prefer structured object, fall back to flat string
-                let parsedMainAuthor: Author = createEmptyAuthor();
-                if (bookData.mainAuthor && typeof bookData.mainAuthor === 'object') {
-                    parsedMainAuthor = { ...createEmptyAuthor(), ...bookData.mainAuthor };
-                } else if (bookData.mainAuthor && typeof bookData.mainAuthor === 'string') {
-                    try { parsedMainAuthor = { ...createEmptyAuthor(), ...JSON.parse(bookData.mainAuthor) }; } catch (_) { }
+                if (fullBookData) {
+                    console.log("EditModal: Received fullBookData, merging...", fullBookData);
+                    processData(fullBookData);
+                } else {
+                    console.warn("EditModal: API returned empty data for ID:", book.id);
                 }
-                // Fall back to flat string name if structured data unavailable
-                if (!parsedMainAuthor.firstName && !parsedMainAuthor.lastName) {
-                    const authorParts = (bookData.author || '').split(' ');
-                    parsedMainAuthor.lastName = authorParts.length > 1 ? authorParts.pop()! : '';
-                    parsedMainAuthor.firstName = authorParts.join(' ');
-                    parsedMainAuthor.email = bookData.authorEmail || '';
-                }
-
-                // Parse Co-Authors — prefer structured array, fall back to flat string
-                let coAuthorsList: CoAuthorWithId[] = [];
-                if (Array.isArray(bookData.coAuthorsData) && bookData.coAuthorsData.length > 0) {
-                    coAuthorsList = bookData.coAuthorsData.map((ca: any, idx: number) => ({
-                        ...createEmptyAuthor(),
-                        ...ca,
-                        tempId: `temp-${idx}-${Math.random()}`
-                    }));
-                } else if (bookData.coAuthors && typeof bookData.coAuthors === 'string') {
-                    coAuthorsList = bookData.coAuthors.split(',').map((name: string, idx: number) => {
-                        const parts = name.trim().split(' ');
-                        const lastName = parts.length > 1 ? parts.pop()! : '';
-                        const firstName = parts.join(' ');
-                        return { ...createEmptyAuthor(), firstName, lastName, tempId: `temp-${idx}-${Math.random()}` };
-                    });
-                }
-
-                // Parse Synopses
-                const synopsisData = parseJson(bookData.synopsis) || {};
-                // Support both "paragraph_N" and legacy "paragrapgh_N" (typo)
-                const synopses = Object.keys(synopsisData)
-                    .sort((a, b) => {
-                        const aNum = parseInt(a.split('_')[1] || '0');
-                        const bNum = parseInt(b.split('_')[1] || '0');
-                        return aNum - bNum;
-                    })
-                    .map(key => synopsisData[key]);
-
-                // Parse Scope
-                const scopeData = parseJson(bookData.scope) || {};
-                const scIntro = scopeData.paragraph_1 || '';
-                const scItems = Object.keys(scopeData)
-                    .filter(k => k.startsWith('list_'))
-                    .sort((a, b) => a.localeCompare(b))
-                    .map(k => scopeData[k]);
-
-                // Parse Archives
-                const archiveData = parseJson(bookData.archives) || {};
-                const archIntro = archiveData.paragraph_1 || '';
-                const archItems = Object.keys(archiveData)
-                    .filter(k => k.startsWith('list_'))
-                    .sort((a, b) => a.localeCompare(b))
-                    .map(k => archiveData[k]);
-
-                setForm({
-                    submissionId: bookData.submissionId || '',
-                    mainAuthor: parsedMainAuthor,
-                    coAuthors: coAuthorsList,
-                    title: bookData.title || '',
-                    category: bookData.category || 'Engineering & Management',
-                    description: bookData.description || '',
-                    isbn: bookData.isbn || '',
-                    publishedDate: bookData.publishedDate || '',
-                    pages: bookData.pages || 0,
-                    indexedIn: bookData.indexedIn || '',
-                    releaseDate: bookData.releaseDate || '',
-                    copyright: bookData.copyright || '',
-                    doi: bookData.doi || '',
-                    priceSoftCopy: bookData.pricing?.softCopyPrice,
-                    priceHardCopy: bookData.pricing?.hardCopyPrice,
-                    priceCombined: bookData.pricing?.combinedPrice,
-                    googleLink: bookData.googleLink || '',
-                    flipkartLink: bookData.flipkartLink || '',
-                    amazonLink: bookData.amazonLink || '',
-                    synopses: synopses.length > 0 ? synopses : [''],
-                    scopeIntro: scIntro,
-                    coverImage: bookData.coverImage || '',
-                    keywords: bookData.keywords || [],
-                    editors: Array.isArray(bookData.editors) ? bookData.editors : (typeof bookData.editors === 'string' ? bookData.editors.split(',').map((s: string) => s.trim()) : []),
-                    frontmatterPdfs: parseJson(bookData.frontmatterPdfs) || {},
-                });
-
-                setScopeItems(scItems.length > 0 ? scItems : ['']);
-                setArchiveIntro(archIntro);
-                setArchiveItems(archItems.length > 0 ? archItems : ['']);
-                setTocChapters(bookData.tableContents || []);
-                setBiographies(bookData.authorBiographies || []);
 
                 setActiveTab('author');
             } catch (err) {
                 console.error("Failed to load full chapter data", err);
+                // Even on failure, the form is already populated from 'book' prop in Step 1
             } finally {
                 if (isMounted) setLoading(false);
             }

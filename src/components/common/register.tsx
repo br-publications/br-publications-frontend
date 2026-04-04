@@ -208,19 +208,19 @@ const Register: React.FC = () => {
       // Check if user came from login page
       const state = location.state as any;
       if (state?.fromLogin) {
-        // Redirect back to login after successful verification
+        // Redirect to home after successful verification
         setTimeout(() => {
-          navigate('/login', {
+          navigate('/', {
             state: {
               emailVerified: true,
-              message: 'Email verified! Please login to continue.'
+              message: 'Email verified! Welcome back.'
             }
           });
         }, 2000);
       } else {
-        // New registration - redirect to login
+        // New registration - redirect to home
         setTimeout(() => {
-          navigate('/login');
+          navigate('/');
         }, 2000);
       }
     } catch (error) {

@@ -147,7 +147,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
         publishedDate: new Date().getFullYear().toString(),
         pages: 0,
         indexedIn: 'Google Scholar',
-        releaseDate: new Date().toLocaleDateString('en-GB'),
+        releaseDate: new Date().toISOString().split('T')[0],
         copyright: `© ${new Date().getFullYear()} BR Publications`,
         doi: submission.doi || '',
         priceSoftCopy: undefined,
@@ -226,7 +226,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
             publishedDate: new Date().getFullYear().toString(),
             pages: 0,
             indexedIn: 'Google Scholar',
-            releaseDate: new Date().toLocaleDateString('en-GB'),
+            releaseDate: new Date().toISOString().split('T')[0],
             copyright: `© ${new Date().getFullYear()} BR Publications`,
             doi: submission.doi || '',
             priceSoftCopy: undefined,
@@ -834,7 +834,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
             // We always include the current submission regardless of status if it was opened in the wizard
             const relatedSubmissions = (allSubmissions || []).filter(sub =>
                 sub.bookTitle === submission.bookTitle &&
-                (sub.status === 'PUBLICATION_IN_PROGRESS' || sub.id === submission.id)
+                (sub.status === 'PUBLICATION_IN_PROGRESS' || sub.status === 'APPROVED' || sub.id === submission.id)
             );
 
             // Filter out any duplicates and ensure we have a valid queue
@@ -1233,7 +1233,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                     </div>
                                     <div className="pcw-field">
                                         <label className="pcw-label">Release Date <span className="req">*</span></label>
-                                        <input className="pcw-input" name="releaseDate" value={form.releaseDate} onChange={handleFormChange} placeholder="e.g. 23/12/2024" />
+                                        <input type="date" className="pcw-input" name="releaseDate" value={form.releaseDate} onChange={handleFormChange} />
                                     </div>
                                     <div className="pcw-field">
                                         <label className="pcw-label">Indexed In <span className="req">*</span></label>

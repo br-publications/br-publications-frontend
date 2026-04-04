@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Users, Shield, Plus, MoreVertical, Edit2, Trash2, LogIn, Mail, Eye, UserCheck, UserX } from 'lucide-react';
 import { userService, type User, type UserRole } from '../../../services/user.service';
 import toast from 'react-hot-toast';
@@ -32,7 +33,7 @@ export default function UserRoleManagement() {
 
     // Actions state
     const [activeActionMenuId, setActiveActionMenuId] = useState<number | null>(null);
-    const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; alignment?: 'top' | 'bottom'; maxHeight?: number } | null>(null);
+    const [dropdownPosition, setDropdownPosition] = useState<{ top: number; right: number; alignment?: 'top' | 'bottom'; maxHeight?: number } | null>(null);
     const [showEditUserRoleModal, setShowEditUserRoleModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
@@ -458,19 +459,29 @@ export default function UserRoleManagement() {
                                                                                 setDropdownPosition(null);
                                                                             } else {
                                                                                 const rect = e.currentTarget.getBoundingClientRect();
-                                                                                const spaceBelow = window.innerHeight - rect.bottom;
+                                                                                const windowHeight = window.innerHeight;
+
+                                                                                const spaceBelow = windowHeight - rect.bottom;
                                                                                 const spaceAbove = rect.top;
 
-                                                                                // Prefer down if space allows (> 300px) OR if down has MORE space than up
-                                                                                const showBelow = spaceBelow >= 300 || spaceBelow > spaceAbove;
+                                                                                // Show below if there's enough space (250px) or more space below than above
+                                                                                const showBelow = spaceBelow >= 250 || spaceBelow > spaceAbove;
 
-                                                                                const availableHeight = showBelow ? spaceBelow : spaceAbove;
+                                                                                const zoomFactor = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+                                                                                
+                                                                                // Normalize coordinates by zoom factor for fixed positioning
+                                                                                const normalizedRect = {
+                                                                                    top: rect.top / zoomFactor,
+                                                                                    bottom: rect.bottom / zoomFactor,
+                                                                                    left: rect.left / zoomFactor,
+                                                                                    right: rect.right / zoomFactor
+                                                                                };
 
                                                                                 setDropdownPosition({
-                                                                                    top: showBelow ? rect.bottom : rect.top,
-                                                                                    left: rect.right - 192, // 192px is w-48
+                                                                                    top: showBelow ? normalizedRect.bottom : normalizedRect.top,
+                                                                                    right: (window.innerWidth - rect.right) / zoomFactor,
                                                                                     alignment: showBelow ? 'top' : 'bottom',
-                                                                                    maxHeight: availableHeight - 20 // 20px padding
+                                                                                    maxHeight: ((showBelow ? spaceBelow : spaceAbove) / zoomFactor) - 20
                                                                                 });
                                                                                 setActiveActionMenuId(user.id);
                                                                             }
@@ -640,19 +651,19 @@ export default function UserRoleManagement() {
                 onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
                 onConfirm={alertConfig.onConfirm}
             />
-            {/* Fixed Position Dropdown - Rendered outside the table to escape overflow */}
-            {activeActionMenuId !== null && dropdownPosition && (
+            {/* Fixed Position Dropdown - Rendered via Portal to escape transforms */}
+            {activeActionMenuId !== null && dropdownPosition && createPortal(
                 <div className="fixed inset-0 z-[100] cursor-default" onClick={() => setActiveActionMenuId(null)}>
                     <div
                         ref={actionMenuRef}
                         style={{
-                            top: dropdownPosition.alignment === 'bottom' ? 'auto' : `${dropdownPosition.top}px`,
-                            bottom: dropdownPosition.alignment === 'bottom' ? `${window.innerHeight - dropdownPosition.top}px` : 'auto',
-                            left: `${dropdownPosition.left}px`,
+                            top: `${dropdownPosition.top}px`,
+                            right: `${dropdownPosition.right}px`,
+                            transform: dropdownPosition.alignment === 'bottom' ? 'translateY(-100%)' : 'none',
                             maxHeight: dropdownPosition.maxHeight ? `${dropdownPosition.maxHeight}px` : '300px',
                             overflowY: 'auto'
                         }}
-                        className={`fixed w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-[101] animate-in fade-in zoom-in-95 duration-200 ${dropdownPosition.alignment === 'bottom' ? 'origin-bottom-right' : 'origin-top-right'}`}
+                        className={`fixed w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-[101] animate-in fade-in zoom-in-95 duration-200 ${dropdownPosition.alignment === 'bottom' ? 'origin-bottom-right' : 'origin-top-right'} transition-transform`}
                         onClick={(e) => e.stopPropagation()}
                     >
                         {(() => {
@@ -718,9 +729,9 @@ export default function UserRoleManagement() {
                             );
                         })()}
                     </div>
-                </div>
-            )
-            }
+                </div>,
+                document.body
+            )}
         </div >
     );
 }
