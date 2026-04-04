@@ -102,6 +102,7 @@ export interface PublishedAuthor {
 
 export interface PublishedIndividualChapter {
     id: number;
+    publishedBookChapterId?: number;
     title: string;
     chapterNumber: string | null;
     authors: string | null;
@@ -109,11 +110,12 @@ export interface PublishedIndividualChapter {
     pagesTo: string | null;
     pdfKey: string | null;
     pdfName: string | null;
+    publishedFileId?: number | null;
     pdfData?: string | null;
     abstract: string | null;
     views: number;
-    priceSoftCopy?: number | null;
-    pages?: string | null;
+    createdAt: string;
+    updatedAt: string;
     authorDetails?: PublishedAuthor[];
 }
 
