@@ -468,7 +468,7 @@ export default function UserRoleManagement() {
                                                                                 const showBelow = spaceBelow >= 250 || spaceBelow > spaceAbove;
 
                                                                                 const zoomFactor = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
-                                                                                
+
                                                                                 // Normalize coordinates by zoom factor for fixed positioning
                                                                                 const normalizedRect = {
                                                                                     top: rect.top / zoomFactor,
@@ -716,7 +716,7 @@ export default function UserRoleManagement() {
                                             </>
                                         )}
                                     </button>
-                                    {!user.isActive && (
+                                    {/* {!user.isActive && (
                                         <button
                                             onClick={() => handleDeletePermanent(user)}
                                             className="w-full text-left px-3 py-1.5 text-[10px] text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-100 mt-1 pt-1.5"
@@ -724,7 +724,7 @@ export default function UserRoleManagement() {
                                             <Trash2 size={12} />
                                             Delete Permanently
                                         </button>
-                                    )}
+                                    )} */}
                                 </>
                             );
                         })()}
