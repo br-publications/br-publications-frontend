@@ -47,6 +47,10 @@ export interface TocChapterPayload {
     pdfKey?: string;
     pdfMimeType?: string;
     pdfName?: string;
+    /** Base64 PDF data (fallback for legacy or preview) */
+    pdfData?: string;
+    /** View count recorded by the analytics system */
+    views?: number;
 }
 
 export interface AuthorBiographyPayload {
@@ -105,8 +109,11 @@ export interface PublishedIndividualChapter {
     pagesTo: string | null;
     pdfKey: string | null;
     pdfName: string | null;
+    pdfData?: string | null;
     abstract: string | null;
     views: number;
+    priceSoftCopy?: number | null;
+    pages?: string | null;
     authorDetails?: PublishedAuthor[];
 }
 
