@@ -424,9 +424,9 @@ const EditorActionsTab: React.FC<{
                     const chapterResp = await bookManagementService.bookChapter.getChaptersByBookTitle(bookId, true, true);
                     if (chapterResp.success && chapterResp.data?.chapters) {
                         const allChapters = chapterResp.data.chapters;
-                        const readyOnes = allChapters.filter(ch => 
-                            ch.isReadyForPublication || 
-                            ch.isPublished || 
+                        const readyOnes = allChapters.filter(ch =>
+                            ch.isReadyForPublication ||
+                            ch.isPublished ||
                             ch.submissionStatus === 'PUBLICATION_IN_PROGRESS'
                         );
 
@@ -1095,7 +1095,7 @@ const EditorActionsTab: React.FC<{
                                     <span>This book chapter has been successfully published.</span>
                                 </div>
                             )}
-                            {submission.status === 'PUBLICATION_IN_PROGRESS' && !(submission as any).deliveryAddress && (
+                            {/*{submission.status === 'PUBLICATION_IN_PROGRESS' && !(submission as any).deliveryAddress && (
                                 <div style={{
                                     display: 'flex',
                                     alignItems: 'flex-start',
@@ -1112,7 +1112,7 @@ const EditorActionsTab: React.FC<{
                                         <p style={{ fontSize: '0.85rem', color: '#0c4a6e' }}>The author has been notified to submit their delivery address. You can still proceed with publication.</p>
                                     </div>
                                 </div>
-                            )}
+                            )}*/}
                         </div>
                         <button
                             className={`${styles.actionButton} ${submission.status === 'PUBLISHED' ? styles.secondaryButton : (allChaptersReady ? styles.primaryButton : styles.disabledButton)}`}
@@ -1176,10 +1176,21 @@ const EditorActionsTab: React.FC<{
                             <FileText size={16} /> {submission.status === 'PUBLISHED' ? 'Edit Publication Details' : 'Publish Book Chapter'}
                         </button>
                         {submission.status === 'PUBLICATION_IN_PROGRESS' && !allChaptersReady && !checkingReadiness && (
-                            <p style={{ color: '#6b7280', fontSize: '0.8rem', marginTop: '8px' }}>
-                                <AlertCircle size={12} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
-                                Gated: All {readinessDetails.total} chapters in "{resolvedBookTitle}" must be ready before publishing.
-                            </p>
+                            <div style={{ 
+                                backgroundColor: '#fffbeb', 
+                                border: '1px solid #f59e0b', 
+                                borderRadius: '6px', 
+                                padding: '10px 12px',
+                                marginTop: '12px',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: '8px'
+                            }}>
+                                <AlertCircle size={16} style={{ color: '#d97706', flexShrink: 0, marginTop: '2px' }} />
+                                <p style={{ color: '#92400e', fontSize: '0.85rem', margin: 0, lineHeight: '1.5' }}>
+                                    <strong>Gated:</strong> All {readinessDetails.total} chapters in "{resolvedBookTitle}" must be marked as "Ready for Publication" before you can proceed with final publishing.
+                                </p>
+                            </div>
                         )}
                     </div>
                 </div>
