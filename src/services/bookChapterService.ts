@@ -30,9 +30,19 @@ class BookChapterService {
         let mappedChapters: Chapter[] = [];
 
         console.log('DEBUG: mapBookData for Book ID', data.id, 'Relational Chapters count:', data.chapters?.length || 0);
+        
+        if (data.chapters && data.chapters.length > 0) {
+            console.log('DEBUG: First Relational Chapter Audit:', {
+                id: data.chapters[0].id,
+                title: data.chapters[0].title,
+                pdfKey: data.chapters[0].pdfKey,
+                hasPdfData: !!data.chapters[0].pdfData,
+                allFields: Object.keys(data.chapters[0])
+            });
+        }
 
         if (data.chapters && data.chapters.length > 0) {
-            mappedChapters = data.chapters.map((ch: any, index: number) => ({
+            mappedChapters = data.chapters.map((ch, index: number) => ({
                 id: ch.id,
                 chapterNumber: ch.chapterNumber || '',
                 title: ch.title || '',
@@ -46,7 +56,7 @@ class BookChapterService {
                 authorDetails: ch.authorDetails
             }));
         } else {
-            mappedChapters = (data.tableContents || []).map((toc: any, index: number) => ({
+            mappedChapters = (data.tableContents || []).map((toc, index: number) => ({
                 id: `chapter-${index + 1}`,
                 chapterNumber: toc.chapterNumber || `Chapter ${index + 1}`,
                 title: toc.title || '',
