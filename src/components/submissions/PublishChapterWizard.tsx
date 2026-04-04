@@ -818,9 +818,9 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                     (b) => b.authorName.trim() || b.biography.trim()
                 ).map(b => ({
                     ...b,
-                    affiliation: b.affiliation.trim() 
-                        ? (b.affiliation.trim().startsWith('(') && b.affiliation.trim().endsWith(')') 
-                            ? b.affiliation.trim() 
+                    affiliation: b.affiliation.trim()
+                        ? (b.affiliation.trim().startsWith('(') && b.affiliation.trim().endsWith(')')
+                            ? b.affiliation.trim()
                             : `(${b.affiliation.trim()})`)
                         : b.affiliation
                 })),
@@ -913,7 +913,9 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                     setAlertConfig(p => ({ ...p, isOpen: false }));
                     onSuccess();
                     onClose();
-                    if (primaryResultId) {
+                    if (form.isbn) {
+                        navigate(`/product/find/${encodeURIComponent(form.isbn.trim())}`);
+                    } else if (primaryResultId) {
                         navigate(`/bookchapter/${primaryResultId}`);
                     }
                 }
