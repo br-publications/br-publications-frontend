@@ -7,8 +7,12 @@
 
 // Base URL for API
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
-  import.meta.env.REACT_APP_API_BASE_URL ||
-  'http://127.0.0.1:5001';
+  import.meta.env.REACT_APP_API_BASE_URL;
+
+if (!API_BASE_URL) {
+  console.error("CRITICAL: VITE_API_BASE_URL environment variable is missing.");
+}
+
 
 // API endpoints
 export const API_ENDPOINTS = {
@@ -57,10 +61,12 @@ export const getAuthToken = (): string | null => {
 };
 
 /**
- * Set auth token in localStorage
+ * Set auth token in sessionStorage only (safer than localStorage — XSS cannot steal cross-session)
  */
 export const setAuthToken = (token: string): void => {
-  localStorage.setItem('authToken', token);
+  sessionStorage.setItem('authToken', token);
+  // Remove any stale localStorage token so there is no confusion
+  localStorage.removeItem('authToken');
 };
 
 /**
@@ -97,10 +103,12 @@ export const getStoredUser = (): any | null => {
 };
 
 /**
- * Store user data
+ * Store user data in sessionStorage only
  */
 export const setStoredUser = (user: any): void => {
-  localStorage.setItem('user', JSON.stringify(user));
+  sessionStorage.setItem('user', JSON.stringify(user));
+  // Remove any stale localStorage copy
+  localStorage.removeItem('user');
 };
 
 /**

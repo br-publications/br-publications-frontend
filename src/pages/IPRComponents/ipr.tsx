@@ -58,7 +58,7 @@ const IPR = () => {
                 { title: "Prosecution Support", desc: "Assistance throughout the examination process, including responses to office actions." },
                 { title: "Project-to-Patent", desc: "Turn your research or product into a patentable entity with expert guidance." }
               ].map((item, index) => (
-                <div key={index} className="service-card">
+                <div key={index} className="ipr-service-card">
                   <h3><Check size={14} /> {item.title}</h3>
                   <p>{item.desc}</p>
                 </div>
@@ -126,7 +126,7 @@ const IPR = () => {
                 { title: "Plagiarism Checking", desc: "Advanced plagiarism detection tools to ensure originality and protect against infringement." },
                 { title: "Digital Rights", desc: "Protecting published work in digital formats from unauthorized use and reproduction." }
               ].map((item, index) => (
-                <div key={index} className="service-card">
+                <div key={index} className="ipr-service-card">
                   <h3><Check size={14} /> {item.title}</h3>
                   <p>{item.desc}</p>
                 </div>
@@ -191,7 +191,7 @@ const IPR = () => {
                 { title: "IPR Consultation", desc: "Professional advice on protecting your creative works and brand identity." },
                 { title: "Legal Documentation", desc: "Drafting and reviewing trademark and intellectual property agreements." }
               ].map((item, index) => (
-                <div key={index} className="service-card">
+                <div key={index} className="ipr-service-card">
                   <h3><Check size={14} /> {item.title}</h3>
                   <p>{item.desc}</p>
                 </div>

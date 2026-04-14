@@ -102,13 +102,13 @@
   gap: 20px;
 }
 
-.service-card {
+.ipr-service-card {
   padding: 15px;
   border: 1px solid var(--border-color);
   background: #fff;
 }
 
-.service-card h3 {
+.ipr-service-card h3 {
   font-size: 14px;
   color: var(--primary-blue);
   margin-bottom: 10px;
@@ -117,7 +117,7 @@
   gap: 10px;
 }
 
-.service-card p {
+.ipr-service-card p {
   font-size: 11px;
   color: var(--text-gray);
 }

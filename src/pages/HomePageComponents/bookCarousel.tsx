@@ -129,13 +129,10 @@ export default function BookCarousel() {
                   <h3 className="book-title">
                     {book.title}
                   </h3>
-                  {/* <p className="book-author">
-                    by {book.author}
-                  </p> */}
                   <p className="book-author">
                     {book.editors && book.editors.length > 0
-                      ? `Editors: ${book.editors.join(', ')}`
-                      : `Editors: ${book.author}`}
+                      ? `${book.editors.join(', ')}`
+                      : `${book.author}`}
                   </p>
 
                   {/* Buttons */}

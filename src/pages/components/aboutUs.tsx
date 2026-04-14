@@ -9,7 +9,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 export default function AboutUs() {
   return (
     <div className="font-sans text-[#333333] leading-[1.6] bg-white overflow-x-hidden">
-      
+
       {/* Hero Section */}
       <header className="bg-[#1e5292] text-white py-[50px] px-[20px] text-center border-b-[4px] border-[#164175] w-full">
         <h1 className="text-[25px] uppercase tracking-[1px] max-[480px]:text-[20px] font-bold">Who We Are</h1>
@@ -28,7 +28,7 @@ export default function AboutUs() {
             <strong>BR Publications</strong> is dedicated to publishing a diverse range of high-quality
             academic and professional works for readers and researchers with a passion for knowledge
             across multidisciplinary domains. Our publications span <span className="text-[#1e5292] font-bold">Sciences,
-            Medical Sciences, Engineering, Technology, Humanities</span> and more—reflecting our
+              Medical Sciences, Engineering, Technology, Humanities</span> and more—reflecting our
             commitment to academic excellence and intellectual growth.
           </p>
         </div>
@@ -36,7 +36,7 @@ export default function AboutUs() {
         {/* Divisions Section */}
         <section>
           <h3 className="text-[14px] text-[#1e5292] mb-[5px] font-bold">Under the BR Publications umbrella, we operate specialized publishing divisions:</h3>
-          
+
           <div className="p-[15px] mb-[15px] bg-[#f9f9f9] border border-[#dddddd] border-l-[4px] border-l-[#1e5292]">
             <h3 className="text-[14px] mb-[8px] font-bold">ResNova Academic Press</h3>
             <p className="text-[12px] text-[#666666]">which publishes <strong>Book Chapters, Edited Volumes, and Academic Compilations</strong> serving as
@@ -44,7 +44,7 @@ export default function AboutUs() {
           </div>
 
           <div className="p-[15px] mb-[15px] bg-[#f9f9f9] border border-[#dddddd] border-l-[4px] border-l-[#1e5292]">
-            <h3 className="text-[14px] mb-[8px] font-bold">BR Book Publications</h3>
+            <h3 className="text-[14px] mb-[8px] font-bold">Book Publications</h3>
             <p className="text-[12px] text-[#666666]">which focuses on <strong>Comprehensive Textbooks and Reference Materials</strong> for higher
               education, offering well-structured content designed to support both teaching and learning.</p>
           </div>
@@ -58,7 +58,7 @@ export default function AboutUs() {
           </div>
           <p className="text-[12px]">
             An integral part of our publishing ecosystem is the <a href="#" className="font-bold underline text-white">Journal of Advances
-            in Management, Engineering and Science (JAMES)</a>, a scholarly open-access international journal
+              in Management, Engineering and Science (JAMES)</a>, a scholarly open-access international journal
             providing authors with the opportunity to publish peer-reviewed original research papers across
             management, engineering, science, and their real-world applications.
           </p>

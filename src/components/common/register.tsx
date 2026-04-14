@@ -246,7 +246,11 @@ const Register: React.FC = () => {
 
   const handleGoogleSignUp = () => {
     const googleAuthUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || import.meta.env.REACT_APP_GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID';
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || import.meta.env.REACT_APP_GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      console.error("VITE_GOOGLE_CLIENT_ID is missing.");
+    }
+
     const redirectUri = `${window.location.origin}/auth/google/callback`;
     const scope = 'openid email profile';
     const responseType = 'code';

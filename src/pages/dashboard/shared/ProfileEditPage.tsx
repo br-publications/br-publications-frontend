@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { userService, type User, type UpdateProfilePayload } from '../../../services/user.service';
 import AlertPopup from '../../../components/common/alertPopup';
 import axios from 'axios';
-import { getAuthToken, API_BASE_URL } from '../../../services/api.config';
+import { getAuthToken, API_BASE_URL, getStoredUser, setStoredUser } from '../../../services/api.config';
 import { COUNTRIES } from '../../../utils/countries';
 
 /* ── Icons (same sizes as ProfilePage) ── */
@@ -159,11 +159,10 @@ export default function ProfileEditPage() {
             if (res.data.success) {
                 setUser(prev => prev ? { ...prev, profilePicture: res.data.data.profilePicture } : null);
                 setAvatarPreview(res.data.data.profilePicture);
-                const stored = localStorage.getItem('user') || sessionStorage.getItem('user');
+                const stored = getStoredUser();
                 if (stored) {
-                    const upd = { ...JSON.parse(stored), profilePicture: res.data.data.profilePicture };
-                    if (localStorage.getItem('user')) localStorage.setItem('user', JSON.stringify(upd));
-                    if (sessionStorage.getItem('user')) sessionStorage.setItem('user', JSON.stringify(upd));
+                    const upd = { ...stored, profilePicture: res.data.data.profilePicture };
+                    setStoredUser(upd);
                 }
                 window.dispatchEvent(new Event('auth-changed'));
                 setAlertConfig({ isOpen: true, title: 'Success', message: 'Profile picture updated!', type: 'success' });
@@ -250,11 +249,10 @@ export default function ProfileEditPage() {
     };
 
     const updateStored = (data: any) => {
-        const s = localStorage.getItem('user') || sessionStorage.getItem('user');
+        const s = getStoredUser();
         if (s) {
-            const upd = { ...JSON.parse(s), ...data };
-            if (localStorage.getItem('user')) localStorage.setItem('user', JSON.stringify(upd));
-            if (sessionStorage.getItem('user')) sessionStorage.setItem('user', JSON.stringify(upd));
+            const upd = { ...s, ...data };
+            setStoredUser(upd);
             window.dispatchEvent(new Event('auth-changed'));
         }
     };

@@ -42,9 +42,9 @@ export default function UserDashboard() {
   useEffect(() => {
     // Check authentication
     if (!isAuthenticated()) {
-      navigate('/login', { 
-        replace: true, 
-        state: { message: "Please login to access the dashboard." } 
+      navigate('/login', {
+        replace: true,
+        state: { message: "Please login to access the dashboard." }
       });
       return;
     }
@@ -157,7 +157,13 @@ export default function UserDashboard() {
           <p className="flex items-center justify-center gap-2 flex-wrap">
             ⚠️ Impersonating <strong>{userData?.fullName}</strong>. All actions will be performed as this user.
             <button
-              onClick={() => { sessionStorage.clear(); window.close(); }}
+              onClick={() => {
+                sessionStorage.clear();
+                localStorage.removeItem('user');
+                localStorage.removeItem('authToken');
+                window.close();
+                setTimeout(() => { window.location.href = '/'; }, 250);
+              }}
               className="ml-2 underline hover:text-amber-100"
             >
               Close Session

@@ -26,7 +26,7 @@ import PublishChapterModal from '../../../components/submissions/PublishChapterM
 import AlertPopup, { type AlertType } from '../../../components/common/alertPopup';
 
 
-type EditorTab = 'overview' | 'chapters' | 'workflow' | 'history' | 'discussions' | 'reviewers' | 'actions';
+type EditorTab = 'overview' | 'chapters' | 'workflow' | 'history' | 'discussions' | 'actions';
 
 interface EditorSubmissionDetailViewProps {
     submission: BookChapterSubmission;
@@ -1181,10 +1181,10 @@ const EditorActionsTab: React.FC<{
                             <FileText size={16} /> {submission.status === 'PUBLISHED' ? 'Edit Publication Details' : 'Publish Book Chapter'}
                         </button>
                         {submission.status === 'PUBLICATION_IN_PROGRESS' && !allChaptersReady && !checkingReadiness && (
-                            <div style={{ 
-                                backgroundColor: '#fffbeb', 
-                                border: '1px solid #f59e0b', 
-                                borderRadius: '6px', 
+                            <div style={{
+                                backgroundColor: '#fffbeb',
+                                border: '1px solid #f59e0b',
+                                borderRadius: '6px',
                                 padding: '10px 12px',
                                 marginTop: '12px',
                                 display: 'flex',

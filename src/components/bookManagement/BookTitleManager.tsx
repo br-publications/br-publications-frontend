@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import bookManagementService, { type BookTitle } from '../../services/bookManagement.service';
 import { userService, type UserServiceUser as User } from '../../services';
 import type { ToastMsg, BookTitleNav } from './BookManagement';
+import AlertPopup from '../common/alertPopup';
 
 interface Props {
     addToast: (type: ToastMsg['type'], message: string) => void;
@@ -64,6 +65,13 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
 
     /* confirm */
     const [confirm, setConfirm] = useState<{ msg: string; action: () => void } | null>(null);
+
+    /* duplicate alert */
+    const [alert, setAlert] = useState<{ isOpen: boolean; title: string; message: string }>({
+        isOpen: false,
+        title: '',
+        message: ''
+    });
 
     useEffect(() => { fetchTitles(); }, [search]);
 
@@ -157,6 +165,22 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
     const handleSubmit = async () => {
         const title = formTitle.trim();
         if (!title) { setFormError('Book title is required.'); return; }
+
+        // Duplicate Check (Trimmed & Case-Insensitive)
+        const isDuplicate = bookTitles.some(t => 
+            t.title.trim().toLowerCase() === title.toLowerCase() && 
+            (!editMode || t.id !== editId)
+        );
+
+        if (isDuplicate) {
+            setAlert({
+                isOpen: true,
+                title: 'Duplicate Title',
+                message: `The book title "${title}" already exists in our records. Please provide a unique title to proceed.`
+            });
+            return;
+        }
+
         if (!editMode && !primaryEditorId) { setFormError('Please select a primary editor for this book.'); return; }
         setSaving(true);
         setFormError('');
@@ -258,6 +282,14 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
     return (
         <>
             {confirm && <ConfirmDialog message={confirm.msg} onConfirm={confirm.action} onCancel={() => setConfirm(null)} />}
+            
+            <AlertPopup 
+                isOpen={alert.isOpen}
+                type="error"
+                title={alert.title}
+                message={alert.message}
+                onClose={() => setAlert(prev => ({ ...prev, isOpen: false }))}
+            />
 
             {/* ── Section header ── */}
             <div className="bms-section-header">

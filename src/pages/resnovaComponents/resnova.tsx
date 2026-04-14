@@ -13,7 +13,7 @@ const ResNova: React.FC = () => {
       {/* ResNova Page */}
       <section id="resNovaPage" className="resNova-page">
         <section className="resNova-hero">
-          <h1>BR ResNova Academic Press</h1>
+          <h1>ResNova Academic Press</h1>
           <p>Empowering Knowledge. Inspiring Discovery</p>
         </section>
 
@@ -36,7 +36,7 @@ const ResNova: React.FC = () => {
             {/* Overview Section */}
             <section className="resNova-section" id="resNova-overview">
               <div className="resNova-section-intro">
-                BR ResNova Academic Press is a premier platform dedicated to advancing scholarly
+                ResNova Academic Press is a premier platform dedicated to advancing scholarly
                 communication,
                 fostering innovation, and disseminating high-quality academic knowledge globally. With a
                 focus on
@@ -132,7 +132,7 @@ const ResNova: React.FC = () => {
 
               <div className="resNova-section-header" id="resNova-areas">
                 <div className="resNova-section-title-wrapper">
-                  <h2>BR ResNova Academic Press welcomes book chapters and edited volumes in the following
+                  <h2>ResNova Academic Press welcomes book chapters and edited volumes in the following
                     areas</h2>
                 </div>
               </div>
@@ -176,7 +176,7 @@ const ResNova: React.FC = () => {
               </div>
 
               <div className="resNova-section-intro">
-                BR ResNova Academic Press is committed to upholding the highest ethical standards in
+                ResNova Academic Press is committed to upholding the highest ethical standards in
                 scholarly
                 publishing. We follow the core practices recommended by the Committee on Publication Ethics
                 (COPE)

@@ -4,7 +4,7 @@ import Header from './header';
 import Navbar from './navbar';
 import Footer from './footer';
 import { authService } from '../../services';
-import { getAuthToken, getStoredUser } from '../../services/api.config';
+import { getAuthToken, getStoredUser, setStoredUser, removeAuthToken } from '../../services/api.config';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -39,7 +39,7 @@ export default function Dashboard() {
     if (token) {
       authService.getCurrentUser().then(response => {
         if (response.success && response.data) {
-          localStorage.setItem('user', JSON.stringify(response.data));
+          setStoredUser(response.data);
           setUser({
             isLoggedIn: true,
             userName: response.data.username || response.data.fullName || '',
@@ -88,9 +88,8 @@ export default function Dashboard() {
     } catch (error) {
       // Continue with logout even if API fails
     } finally {
-      // Clear localStorage
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
+      // Clear all auth storage via centralized function
+      removeAuthToken();
 
       // Update state immediately
       // Update state immediately

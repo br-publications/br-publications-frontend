@@ -353,28 +353,30 @@ export default function BookChapterManager({ bookTitle, addToast, onBack }: Prop
             )}
 
             {/* ── Add chapter row ── */}
-            <div className="bms-form-panel">
-                <div className="bms-form-panel-head">
-                    <h3>Add New Chapter</h3>
-                </div>
-                <div className="bms-form-panel-body" style={{ gap: '0.75rem' }}>
-                    <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-                        <input
-                            ref={addRef}
-                            className="bms-input"
-                            style={{ flex: 1, minWidth: 200 }}
-                            placeholder="Enter chapter title..."
-                            value={addTitle}
-                            onChange={(e) => setAddTitle(e.target.value)}
-                            onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
-                        />
-                        <button className="btn btn-navy btn-sm" onClick={handleAdd} disabled={addSaving || !addTitle.trim()}>
-                            {addSaving ? 'Adding...' : '+ Add Chapter'}
-                        </button>
+            {!(chapters.length > 0 && chapters.every(ch => ch.isPublished || (ch as any).submissionStatus?.toUpperCase() === 'PUBLISHED')) && (
+                <div className="bms-form-panel">
+                    <div className="bms-form-panel-head">
+                        <h3>Add New Chapter</h3>
                     </div>
-                    <span className="bms-field-hint">Press Enter or click Add. Drag rows in the table above to reorder.</span>
+                    <div className="bms-form-panel-body" style={{ gap: '0.75rem' }}>
+                        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                            <input
+                                ref={addRef}
+                                className="bms-input"
+                                style={{ flex: 1, minWidth: 200 }}
+                                placeholder="Enter chapter title..."
+                                value={addTitle}
+                                onChange={(e) => setAddTitle(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
+                            />
+                            <button className="btn btn-navy btn-sm" onClick={handleAdd} disabled={addSaving || !addTitle.trim()}>
+                                {addSaving ? 'Adding...' : '+ Add Chapter'}
+                            </button>
+                        </div>
+                        <span className="bms-field-hint">Press Enter or click Add. Drag rows in the table above to reorder.</span>
+                    </div>
                 </div>
-            </div>
+            )}
         </>
     );
 }

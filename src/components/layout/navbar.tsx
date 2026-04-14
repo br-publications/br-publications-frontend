@@ -112,7 +112,7 @@ export default function Navbar() {
     }
 
     if (menuName === 'Journals & Publications') {
-      if (subItem === 'JAMES') return 'https://brpublications.com/index.php/James/index';
+      if (subItem === 'JAMES') return 'https://james.brpublications.com/index.php/James/index';
     }
 
     if (menuName === 'ResNova Academic Press') {

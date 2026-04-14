@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import AlertPopup, { type AlertType } from '../../components/common/alertPopup';
 import { authService } from '../../services/auth.service';
+import { setAuthToken, setStoredUser } from '../../services/api.config';
 import './login.css';
 
 const Login: React.FC = () => {
@@ -154,13 +155,13 @@ const Login: React.FC = () => {
         });
       }
 
-      // Store user data and token
+      // Store user data and token via centralized functions (sessionStorage)
       if (result.data?.user) {
-        localStorage.setItem('user', JSON.stringify(result.data.user));
+        setStoredUser(result.data.user);
       }
 
       if (result.data?.token) {
-        localStorage.setItem('authToken', result.data.token);
+        setAuthToken(result.data.token);
       }
 
       // Dispatch custom event to notify Dashboard of auth change
@@ -217,7 +218,11 @@ const Login: React.FC = () => {
 
   const handleGoogleLogin = () => {
     const googleAuthUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || import.meta.env.REACT_APP_GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID';
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || import.meta.env.REACT_APP_GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      console.error("VITE_GOOGLE_CLIENT_ID is missing.");
+    }
+
     const redirectUri = `${window.location.origin}/auth/google/callback`;
     const scope = 'openid email profile';
     const responseType = 'code';

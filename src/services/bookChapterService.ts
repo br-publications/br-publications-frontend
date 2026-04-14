@@ -66,6 +66,7 @@ class BookChapterService {
             "co-authors": data.coAuthors,
             editors: data.editors,
             primaryEditor: data.primaryEditor,
+            editorDetails: data.editorDetails,
             coverImage: coverImage,
             category: data.category,
             description: data.description || '',
@@ -85,7 +86,8 @@ class BookChapterService {
             chapters: mappedChapters,
             googleLink: data.googleLink,
             flipkartLink: data.flipkartLink,
-            amazonLink: data.amazonLink
+            amazonLink: data.amazonLink,
+            frontmatterPdfs: data.frontmatterPdfs
         };
     }
 

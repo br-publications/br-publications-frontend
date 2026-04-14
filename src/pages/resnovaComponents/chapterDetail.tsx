@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { bookChapterService } from '../../services/bookChapterService';
 import { getExtraPdfUrl, incrementChapterViews } from '../../services/bookChapterPublishing.service';
 import type { Book, Chapter, PublishedAuthor } from '../../types/bookTypes';
+import { generateUniqueSlug } from '../../utils/stringUtils';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import './chapterDetail.css';
 
@@ -21,13 +22,21 @@ const ChapterDetail: React.FC = () => {
 
         return details.map((auth, idx) => (
             <React.Fragment key={auth.id}>
-                <Link to={`/author/${auth.id}`} className="author-link">{auth.name}</Link>
-                {auth.affiliation && (
-                    <span className="author-affiliation"> 
-                        {auth.affiliation.trim().startsWith('(') ? auth.affiliation : `(${auth.affiliation})`}
-                    </span>
+                {/* separator: ", and " before last, ", " between others, nothing before first */}
+                {idx > 0 && (
+                    idx === details.length - 1
+                        ? <span style={{ color: '#555', fontWeight: 'normal' }}>{', and '}</span>
+                        : ', '
                 )}
-                {idx < details.length - 1 ? ', ' : ''}
+                {/* keep name + affiliation together so they never break mid-name */}
+                <span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>
+                    <Link to={`/author/${auth.id}`} className="author-link">{auth.name}</Link>
+                    {auth.affiliation && (
+                        <span className="author-affiliation">
+                            {' '}{auth.affiliation.trim().startsWith('(') ? auth.affiliation : `(${auth.affiliation})`}
+                        </span>
+                    )}
+                </span>
             </React.Fragment>
         ));
     };
@@ -129,10 +138,14 @@ const ChapterDetail: React.FC = () => {
     return (
         <main className="content chapter-detail-page">
             <section className="resNova-page">
-                <div className="back-btn-wrapper">
-                    <button className="chapter-back-btn" onClick={() => navigate(-1)}>
-                        <ArrowLeft size={13} /> Back
-                    </button>
+                <div className="breadcrumbs">
+                    <Link to="/bookchapters">Books</Link>
+                    <ChevronRight size={14} className="breadcrumb-separator" />
+                    <Link to={`/bookchapter/${book.id}/${generateUniqueSlug(book.isbn, book.releaseDate)}`}>
+                        {book.title}
+                    </Link>
+                    <ChevronRight size={14} className="breadcrumb-separator" />
+                    <span className="current-page">{chapter.title}</span>
                 </div>
 
                 <div className="chapter-layout">
@@ -159,6 +172,7 @@ const ChapterDetail: React.FC = () => {
                                     <div className="meta-details-grid">
                                         <div className="meta-info-item"><strong>Source Title:</strong> <span>{book.title}</span></div>
                                         <div className="meta-info-item"><strong>Copyright:</strong> <span>{book.copyright || 'N/A'}</span></div>
+                                        <div className="meta-info-item"><strong>DOI:</strong> <span>{book.doi || 'N/A'}</span></div>
                                         <div className="meta-info-item"><strong>Pages:</strong> <span>{chapter.pages || 'N/A'}</span></div>
                                         <div className="meta-info-item"><strong>Views:</strong> <span>{chapter.views || 0}</span></div>
                                     </div>
@@ -192,18 +206,22 @@ const ChapterDetail: React.FC = () => {
                                 {/* Frontmatter Rows - Hidden when searching */}
                                 {!chapterSearchQuery && (
                                     <>
-                                        <div className="toc-frontmatter-row">
-                                            <span className="row-title">Dedication</span>
-                                            <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Dedication'), '_blank')}>
-                                                <PictureAsPdfIcon fontSize="small" /> View PDF
-                                            </button>
-                                        </div>
-                                        <div className="toc-frontmatter-row">
-                                            <span className="row-title">Table of Contents</span>
-                                            <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Table of Contents'), '_blank')}>
-                                                <PictureAsPdfIcon fontSize="small" /> View PDF
-                                            </button>
-                                        </div>
+                                        {book.frontmatterPdfs?.['Dedication'] && (
+                                            <div className="toc-frontmatter-row">
+                                                <span className="row-title">Dedication</span>
+                                                <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Dedication'), '_blank')}>
+                                                    <PictureAsPdfIcon fontSize="small" /> View PDF
+                                                </button>
+                                            </div>
+                                        )}
+                                        {book.frontmatterPdfs?.['Table of Contents'] && (
+                                            <div className="toc-frontmatter-row">
+                                                <span className="row-title">Table of Contents</span>
+                                                <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Table of Contents'), '_blank')}>
+                                                    <PictureAsPdfIcon fontSize="small" /> View PDF
+                                                </button>
+                                            </div>
+                                        )}
                                     </>
                                 )}
 
@@ -219,7 +237,7 @@ const ChapterDetail: React.FC = () => {
 
                                     return filteredChapters && filteredChapters.length > 0 ? (
                                         <>
-                                            {[...filteredChapters].sort((a, b) => 
+                                            {[...filteredChapters].sort((a, b) =>
                                                 a.chapterNumber.toString().localeCompare(b.chapterNumber.toString(), undefined, { numeric: true })
                                             ).map((ch) => (
                                                 <div key={ch.id} className={`toc-chapter-card ${String(ch.id) === String(chapter.id) ? 'active-chapter' : ''}`}>
@@ -264,18 +282,22 @@ const ChapterDetail: React.FC = () => {
                                 {/* Backmatter Rows - Hidden when searching */}
                                 {!chapterSearchQuery && (
                                     <>
-                                        <div className="toc-frontmatter-row">
-                                            <span className="row-title">About the Contributors</span>
-                                            <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'About the Contributors'), '_blank')}>
-                                                <PictureAsPdfIcon fontSize="small" /> View PDF
-                                            </button>
-                                        </div>
-                                        <div className="toc-frontmatter-row">
-                                            <span className="row-title">Index</span>
-                                            <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Index'), '_blank')}>
-                                                <PictureAsPdfIcon fontSize="small" /> View PDF
-                                            </button>
-                                        </div>
+                                        {book.frontmatterPdfs?.['About the Contributors'] && (
+                                            <div className="toc-frontmatter-row">
+                                                <span className="row-title">About the Contributors</span>
+                                                <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'About the Contributors'), '_blank')}>
+                                                    <PictureAsPdfIcon fontSize="small" /> View PDF
+                                                </button>
+                                            </div>
+                                        )}
+                                        {book.frontmatterPdfs?.['Index'] && (
+                                            <div className="toc-frontmatter-row">
+                                                <span className="row-title">Index</span>
+                                                <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Index'), '_blank')}>
+                                                    <PictureAsPdfIcon fontSize="small" /> View PDF
+                                                </button>
+                                            </div>
+                                        )}
                                     </>
                                 )}
                             </div>

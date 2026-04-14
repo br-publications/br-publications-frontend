@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Users, Shield, Plus, MoreVertical, Edit2, Trash2, LogIn, Mail, Eye, UserCheck, UserX } from 'lucide-react';
+import { Users, Shield, Plus, MoreVertical, Edit2, Trash2, LogIn, Mail, Eye, UserCheck, UserX, Copy } from 'lucide-react';
 import { userService, type User, type UserRole } from '../../../services/user.service';
 import toast from 'react-hot-toast';
 import UserDetailModal from './components/UserDetailModal';
@@ -151,28 +151,50 @@ export default function UserRoleManagement() {
         setAlertConfig({
             isOpen: true,
             type: 'warning',
-            title: 'Confirm Login',
-            message: `Are you sure you want to login as ${user.fullName}? This will open a new tab.`,
+            title: 'Login as User',
+            message: `Are you sure you want to login as ${user.fullName}? This will open a new browser tab.`,
             showCancel: true,
-            confirmText: 'Login',
+            confirmText: 'Open Tab',
             onConfirm: () => executeImpersonate(user),
         });
     };
 
+    const copyImpersonateLink = async (user: User) => {
+        setActiveActionMenuId(null);
+        setDropdownPosition(null);
+        try {
+            const response = await userService.impersonateUser(user.id);
+            if (response.success && response.data) {
+                const { token, user: impersonatedUser } = response.data;
+                const userParam = encodeURIComponent(JSON.stringify(impersonatedUser));
+                const url = `${window.location.origin}/impersonate?token=${token}&user=${userParam}`;
+
+                await navigator.clipboard.writeText(url);
+                toast.success(
+                    `Link copied! Open an incognito/private window, paste the link in the address bar, and press Enter to start the session as ${user.fullName}.`,
+                    { duration: 6000 }
+                );
+            } else {
+                toast.error(response.message || 'Failed to generate impersonation link');
+            }
+        } catch (error: any) {
+            console.error('Copy impersonation link error:', error);
+            toast.error(error.message || 'Failed to generate link');
+        }
+    };
+
     const executeImpersonate = async (user: User) => {
-        setAlertConfig(prev => ({ ...prev, isOpen: false })); // Close alert
+        setAlertConfig(prev => ({ ...prev, isOpen: false }));
         try {
             const response = await userService.impersonateUser(user.id);
             if (response.success && response.data) {
                 const { token, user: impersonatedUser } = response.data;
 
-                // Construct URL for new tab
+                // Use absolute URL so it works from any origin context
                 const userParam = encodeURIComponent(JSON.stringify(impersonatedUser));
-                const url = `/impersonate?token=${token}&user=${userParam}`;
+                const url = `${window.location.origin}/impersonate?token=${token}&user=${userParam}`;
 
-                // Open in new tab
                 window.open(url, '_blank');
-
                 toast.success(`Opening session for ${user.fullName}...`);
             }
         } catch (error: any) {
@@ -697,7 +719,14 @@ export default function UserRoleManagement() {
                                         className="w-full text-left px-3 py-1.5 text-[10px] text-amber-600 hover:bg-amber-50 flex items-center gap-2"
                                     >
                                         <LogIn size={12} />
-                                        Login as User
+                                        Open Tab (Login as User)
+                                    </button>
+                                    <button
+                                        onClick={() => copyImpersonateLink(user)}
+                                        className="w-full text-left px-3 py-1.5 text-[10px] text-violet-600 hover:bg-violet-50 flex items-center gap-2"
+                                    >
+                                        <Copy size={12} />
+                                        Copy Incognito Link
                                     </button>
                                     <div className="border-t border-gray-100 my-1"></div>
                                     <button

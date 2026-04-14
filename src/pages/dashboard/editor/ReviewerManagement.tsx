@@ -6,7 +6,8 @@ import {
     LogIn,
     UserX,
     UserCheck,
-    Users
+    Users,
+    Copy
 } from 'lucide-react';
 import { userService, type User } from '../../../services/user.service';
 import ReviewerDetailModal from './components/ReviewerDetailModal';
@@ -84,7 +85,7 @@ const ReviewerManagement = () => {
     }, [openActionId]);
 
     const handleImpersonate = async (reviewer: User) => {
-        if (!window.confirm(`Are you sure you want to login as ${reviewer.fullName}?`)) return;
+        if (!window.confirm(`Are you sure you want to login as ${reviewer.fullName}? This will open a new tab.`)) return;
 
         try {
             const response = await userService.impersonateUser(reviewer.id);
@@ -92,8 +93,8 @@ const ReviewerManagement = () => {
                 const { token, user } = response.data;
                 const userData = encodeURIComponent(JSON.stringify(user));
 
-                // Open in new tab
-                const impersonateUrl = `/impersonate?token=${token}&user=${userData}`;
+                // Absolute URL so it works from any context
+                const impersonateUrl = `${window.location.origin}/impersonate?token=${token}&user=${userData}`;
                 window.open(impersonateUrl, '_blank');
 
                 toast.success(`Opened ${user.fullName}'s dashboard in a new tab`);
@@ -103,6 +104,29 @@ const ReviewerManagement = () => {
         } catch (error) {
             console.error('Impersonate error:', error);
             toast.error('Failed to impersonate user');
+        }
+    };
+
+    const copyImpersonateLink = async (reviewer: User) => {
+        setOpenActionId(null);
+        try {
+            const response = await userService.impersonateUser(reviewer.id);
+            if (response.success && response.data) {
+                const { token, user } = response.data;
+                const userData = encodeURIComponent(JSON.stringify(user));
+                const url = `${window.location.origin}/impersonate?token=${token}&user=${userData}`;
+
+                await navigator.clipboard.writeText(url);
+                toast.success(
+                    `Link copied! Open an incognito/private window, paste the link in the address bar, and press Enter to start the session as ${reviewer.fullName}.`,
+                    { duration: 6000 }
+                );
+            } else {
+                toast.error(response.message || 'Failed to generate impersonation link');
+            }
+        } catch (error) {
+            console.error('Copy impersonation link error:', error);
+            toast.error('Failed to generate link');
         }
     };
 
@@ -278,10 +302,17 @@ const ReviewerManagement = () => {
                                                                     handleImpersonate(reviewer);
                                                                     setOpenActionId(null);
                                                                 }}
-                                                                className="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                                                className="w-full text-left px-4 py-2 text-xs text-amber-600 hover:bg-amber-50 flex items-center gap-2"
                                                             >
-                                                                <LogIn className="h-3.5 w-3.5 text-gray-500" />
-                                                                Login as Reviewer
+                                                                <LogIn className="h-3.5 w-3.5" />
+                                                                Open Tab (Login as Reviewer)
+                                                            </button>
+                                                            <button
+                                                                onClick={() => copyImpersonateLink(reviewer)}
+                                                                className="w-full text-left px-4 py-2 text-xs text-violet-600 hover:bg-violet-50 flex items-center gap-2"
+                                                            >
+                                                                <Copy className="h-3.5 w-3.5" />
+                                                                Copy Incognito Link
                                                             </button>
                                                             <div className="border-t border-gray-100 my-1"></div>
                                                             <button

@@ -35,12 +35,30 @@ export const handleTokenExpiration = () => {
  */
 const originalFetch = window.fetch;
 
+// Endpoints where a 401 is an expected failure mode (e.g. invalid credentials)
+// and should NOT trigger a global logout
+const PUBLIC_ENDPOINTS = [
+    '/api/auth/login', 
+    '/api/auth/register', 
+    '/api/auth/send-otp', 
+    '/api/auth/google'
+];
+
 window.fetch = async (...args) => {
     try {
         const response = await originalFetch(...args);
 
         // Check if response is 401 Unauthorized
         if (response.status === 401) {
+            // Check if this request was to a public endpoint
+            const urlOptions = typeof args[0] === 'string' ? args[0] : (args[0] as Request).url;
+            const isPublicEndpoint = PUBLIC_ENDPOINTS.some(ep => urlOptions.includes(ep));
+
+            if (isPublicEndpoint) {
+                // Ignore 401 for login/register as it just means invalid credentials
+                return response;
+            }
+
             // Clone the response to read the body
             const clonedResponse = response.clone();
 
@@ -59,8 +77,11 @@ window.fetch = async (...args) => {
                 if (isTokenError) {
                     console.warn('🔒 Token expired or invalid. Logging out...', message);
                     handleTokenExpiration();
-                } else {
-                    console.warn('⚠️ Received 401 Unauthorized but not a token error. Message:', message);
+                } else if (!message.includes('no token') && !message.includes('missing auth token')) {
+                    // Safe default: if it's not a public endpoint, and there is a token but it was rejected,
+                    // we log out by default to be safe, rather than silently ignoring it.
+                    console.warn('⚠️ Received 401 Unauthorized outside public endpoints. Logging out...', message);
+                    handleTokenExpiration();
                 }
             } catch (error) {
                 // If we can't parse the response, it's safer to logout on 401 to be secure

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { userService, type User } from '../../../services/user.service';
 import AlertPopup from '../../../components/common/alertPopup';
-import { API_BASE_URL } from '../../../services/api.config';
+import { API_BASE_URL, getStoredUser, setStoredUser } from '../../../services/api.config';
+import { sanitizeUrl } from '../../../utils/urlValidation';
 
 const Icons = {
     User: (<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>),
@@ -43,13 +44,11 @@ export default function ProfilePage() {
             setLoading(false);
         }
     };
-
     const updateStored = (data: any) => {
-        const s = localStorage.getItem('user') || sessionStorage.getItem('user');
+        const s = getStoredUser();
         if (s) {
-            const upd = { ...JSON.parse(s), ...data };
-            if (localStorage.getItem('user')) localStorage.setItem('user', JSON.stringify(upd));
-            if (sessionStorage.getItem('user')) sessionStorage.setItem('user', JSON.stringify(upd));
+            const upd = { ...s, ...data };
+            setStoredUser(upd);
             window.dispatchEvent(new Event('auth-changed'));
         }
     };
@@ -224,7 +223,7 @@ export default function ProfilePage() {
                                     ].map(({ label, val }) => (
                                         <Field key={label} label={label}>
                                             <div className={valueCls}>
-                                                {val ? <a href={val} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline break-all">{val}</a> : '—'}
+                                                {val ? <a href={sanitizeUrl(val)} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline break-all">{val}</a> : '—'}
                                             </div>
                                         </Field>
                                     ))}

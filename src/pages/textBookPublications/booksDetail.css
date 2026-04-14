@@ -185,12 +185,23 @@ body {
 }
 
 .author-list {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-medium);
   font-style: italic;
   margin: 0;
   padding-bottom: 15px;
   border-bottom: 1px solid var(--border-color);
+  line-height: 1.6;
+}
+
+.author-list strong {
+  color: var(--primary-blue);
+  font-style: normal;
+  font-size: 14px;
+}
+
+.co-authors-text {
+  color: var(--text-medium);
 }
 
 /* Meta Info */

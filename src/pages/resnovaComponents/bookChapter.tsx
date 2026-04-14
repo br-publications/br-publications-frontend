@@ -273,11 +273,10 @@ const ProductBookChapter: React.FC = () => {
                           </div>
                           <div className="book-info">
                             <h3>{book.title}</h3>
-                            {/* <p>by {book.author}</p> */}
                             <p>
                               {book.editors && book.editors.length > 0
-                                ? `Editors: ${book.editors.join(', ')}`
-                                : `Editors: ${book.author}`}
+                                ? `${book.editors.join(', ')}`
+                                : `${book.author}`}
                             </p>
                           </div>
                           <div className="book-buttons">

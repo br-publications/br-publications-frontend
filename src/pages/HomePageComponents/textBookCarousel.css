@@ -115,7 +115,7 @@
 }
 
 .textbook-title {
-    font-size: 14px;
+    font-size: 12px;
     /* Next size down */
     font-weight: 600;
     color: #333;
@@ -131,13 +131,21 @@
 }
 
 .textbook-author {
-    font-size: 12px;
-    /* Smaller font */
+    font-size: 11px;
     color: #666;
     margin-bottom: 8px;
-    /* Reduced spacing */
     margin-top: 0;
-    line-height: 1.2;
+    line-height: 1.4;
+    font-style: italic;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.co-authors-text {
+    color: #888;
 }
 
 .textbook-actions {

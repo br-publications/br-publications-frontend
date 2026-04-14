@@ -60,6 +60,13 @@ export interface AuthorBiographyPayload {
     biography: string;
 }
 
+export interface EditorBiographyPayload {
+    editorName: string;
+    affiliation?: string;
+    email?: string;
+    biography: string;
+}
+
 export interface PublishBookChapterPayload {
     title: string;
     editors?: string[];
@@ -83,6 +90,7 @@ export interface PublishBookChapterPayload {
     scope?: Record<string, string>;
     tableContents?: TocChapterPayload[];
     authorBiographies?: AuthorBiographyPayload[];
+    editorBiographies?: EditorBiographyPayload[];
     archives?: Record<string, string>;
     pricing?: Record<string, number>;
     googleLink?: string;
@@ -98,6 +106,15 @@ export interface PublishedAuthor {
     email?: string;
     affiliation?: string;
     biography?: string;
+}
+
+export interface PublishedEditor {
+    id: number;
+    name: string;
+    email?: string;
+    affiliation?: string;
+    biography?: string;
+    books?: PublishedBookChapter[];
 }
 
 export interface PublishedIndividualChapter {
@@ -128,6 +145,7 @@ export interface PublishedBookChapter extends PublishBookChapterPayload {
     updatedAt: string;
     hasCoverImage: boolean;
     chapters?: PublishedIndividualChapter[];
+    editorDetails?: PublishedEditor[];
 }
 
 // ============================================================
@@ -379,6 +397,40 @@ export const findAuthors = async (params: {
     if (params.search) q.set('search', params.search);
 
     const response = await fetch(`${API_BASE}/authors?${q}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+};
+
+/**
+ * GET /api/book-chapter-publishing/editors
+ * Find editors by name, affiliation, or email.
+ */
+export const findEditors = async (params: {
+    name?: string;
+    affiliation?: string;
+    email?: string;
+    search?: string;
+}): Promise<PublishedEditor[]> => {
+    const q = new URLSearchParams();
+    if (params.name) q.set('name', params.name);
+    if (params.affiliation) q.set('affiliation', params.affiliation);
+    if (params.email) q.set('email', params.email);
+    if (params.search) q.set('search', params.search);
+
+    const response = await fetch(`${API_BASE}/editors?${q}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+};
+
+/**
+ * GET /api/book-chapter-publishing/editors/:id
+ */
+export const getEditorById = async (id: number): Promise<PublishedEditor> => {
+    const response = await fetch(`${API_BASE}/editors/${id}`, {
         method: 'GET',
         headers: getAuthHeaders(),
     });
