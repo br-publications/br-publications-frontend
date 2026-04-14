@@ -23,7 +23,7 @@ import {
     templateService,
     type CommunicationTemplate,
 } from "../../../services/template.service";
-import AlertPopup from "../../../components/common/alertPopup";
+// import AlertPopup from "../../../components/common/alertPopup";
 import { RichEditor } from "../../../components/common/RichEditor";
 
 // ─── Domain Config ────────────────────────────────────────────────────────────

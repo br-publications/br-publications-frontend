@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, Add, Delete, NavigateNext, NavigateBefore, CheckCircle, Person, Group, Book, RateReview } from '@mui/icons-material';
+import { Upload, Add, Delete, NavigateNext, NavigateBefore, CheckCircle } from '@mui/icons-material';
 import { CircularProgress } from '@mui/material';
 import type { SubmitTextBookRequest } from '../../pages/textBookSubmission/types/textBookTypes';
 import { submitTextBook } from '../../services/textBookService';

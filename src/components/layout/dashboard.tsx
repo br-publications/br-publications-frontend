@@ -85,7 +85,7 @@ export default function Dashboard() {
 
     try {
       await authService.logout();
-    } catch (error) {
+    } catch {
       // Continue with logout even if API fails
     } finally {
       // Clear all auth storage via centralized function

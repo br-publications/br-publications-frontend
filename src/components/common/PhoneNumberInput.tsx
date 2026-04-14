@@ -25,31 +25,17 @@ const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
 }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [dropdownDirection, setDropdownDirection] = useState<'up' | 'down'>('down');
-    const [countryCode, setCountryCode] = useState('+91');
-    const [phoneDigits, setPhoneDigits] = useState('');
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // Initial sync and parse
-    useEffect(() => {
-        if (!value) {
-            setPhoneDigits('');
-            // Keep current countryCode or stick to default
-            return;
-        }
-
-        // Find longest matching country code
-        const sorted = [...COUNTRIES].sort((a, b) => b.code.length - a.code.length);
-        const match = sorted.find(c => value.startsWith(c.code));
-
-        if (match) {
-            setCountryCode(match.code);
-            setPhoneDigits(value.slice(match.code.length).replace(/\D/g, ''));
-        } else {
-            // If no match (e.g. old data without + prefix properly set), 
-            // fallback to default country and assume all are digits
-            setPhoneDigits(value.replace(/\D/g, ''));
-        }
-    }, [value]);
+    // Derive country code and digits from value prop
+    // Find longest matching country code
+    const sortedCountries = [...COUNTRIES].sort((a, b) => b.code.length - a.code.length);
+    const matchedCountry = sortedCountries.find(c => value.startsWith(c.code));
+    
+    const countryCode = matchedCountry ? matchedCountry.code : '+91';
+    const phoneDigits = matchedCountry 
+        ? value.slice(matchedCountry.code.length).replace(/\D/g, '')
+        : value.replace(/\D/g, '');
 
     const toggleDropdown = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -65,7 +51,6 @@ const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
     };
 
     const handleCountrySelect = (code: string) => {
-        setCountryCode(code);
         setIsDropdownOpen(false);
         onChange(code + phoneDigits);
     };
@@ -73,10 +58,10 @@ const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
     const handleDigitsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value.replace(/\D/g, '');
         if (val.length <= 15) {
-            setPhoneDigits(val);
             onChange(countryCode + val);
         }
     };
+
 
     // Close dropdown on click outside or scroll
     useEffect(() => {

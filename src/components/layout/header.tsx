@@ -55,8 +55,8 @@ export default function Header({
         try {
           const apps = await recruitmentService.getMyApplications();
           setHasRecruitmentSubmissions(apps && apps.length > 0);
-        } catch (error) {
-          console.error('Error checking recruitment submissions:', error);
+        } catch {
+          console.error('Error checking recruitment submissions');
         }
       }
     };
@@ -75,8 +75,8 @@ export default function Header({
 
           setHasBookChapters(hasBC);
           setHasTextBooks(hasTB);
-        } catch (error) {
-          console.error('Error checking author submissions:', error);
+        } catch {
+          console.error('Error checking author submissions');
         }
       }
     };
@@ -117,7 +117,6 @@ export default function Header({
 
 
 
-  // Get user initials
   const getUserInitials = () => {
     if (!userName) return 'U';
     return userName
@@ -126,6 +125,27 @@ export default function Header({
       .join('')
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const showAlert = (type: AlertType, title: string, message: string) => {
+    setAlertConfig({
+      isOpen: true,
+      type,
+      title,
+      message
+    });
+  };
+
+  const closeAlert = () => {
+    setAlertConfig(prev => ({ ...prev, isOpen: false }));
+  };
+
+  const handleLogout = () => {
+    setIsProfileMenuOpen(false);
+    setIsMenuOpen(false);
+    if (onLogout) {
+      onLogout();
+    }
   };
 
   // Close menu when clicking outside
@@ -149,7 +169,6 @@ export default function Header({
         setIsProfileMenuOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
 
     // Global listener for app-wide alerts (e.g. from interceptors)
     const handleAppAlert = (event: Event) => {
@@ -158,6 +177,7 @@ export default function Header({
       showAlert(type, title, message);
     };
 
+    document.addEventListener("mousedown", handleClickOutside);
     window.addEventListener('app-alert', handleAppAlert);
 
     return () => {
@@ -166,26 +186,6 @@ export default function Header({
     };
   }, []);
 
-  const handleLogout = () => {
-    setIsProfileMenuOpen(false);
-    setIsMenuOpen(false);
-    if (onLogout) {
-      onLogout();
-    }
-  };
-
-  const showAlert = (type: AlertType, title: string, message: string) => {
-    setAlertConfig({
-      isOpen: true,
-      type,
-      title,
-      message
-    });
-  };
-
-  const closeAlert = () => {
-    setAlertConfig(prev => ({ ...prev, isOpen: false }));
-  };
   return (
     <>
       <header className="bg-[#1e5292] text-white relative z-[1001] shadow-[0_2px_10px_rgba(0,0,0,0.1)]">

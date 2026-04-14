@@ -207,7 +207,7 @@ const BookChapterBulkUpload: React.FC = () => {
                             `${validCnt} valid, ${invalidCnt} invalid out of ${validations.length} entries.`
                         );
                     }
-                } catch (err: any) {
+                } catch {
                     showAlert(
                         'error',
                         'Validation Error',

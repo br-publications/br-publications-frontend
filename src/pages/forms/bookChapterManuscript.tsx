@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, Close, Add, Delete, NavigateNext, NavigateBefore } from '@mui/icons-material';
+import { Add, Delete, NavigateNext, NavigateBefore } from '@mui/icons-material';
 import AlertPopup, { type AlertType } from '../../components/common/alertPopup';
 import type { Author, SubmitBookChapterPayload } from '../../types/bookChapterManuscriptTypes';
 import { DESIGNATIONS } from '../../types/bookChapterManuscriptTypes';
@@ -34,7 +34,7 @@ interface UserInfo {
 
 const BookChapterManuscript: React.FC = () => {
   const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   // Auth State
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -73,7 +73,7 @@ const BookChapterManuscript: React.FC = () => {
   const [availableChapters, setAvailableChapters] = useState<Array<{ id: string, chapterTitle: string }>>([]);
   const [bookTitles, setBookTitles] = useState<Array<{ id: number, title: string }>>([]);
   const [isLoadingBooks, setIsLoadingBooks] = useState<boolean>(false);
-  const [manuscript, setManuscript] = useState<File | null>(null);
+  const [manuscript] = useState<File | null>(null);
   const [abstract, setAbstract] = useState<string>('');
   const [keywords, setKeywords] = useState<string>('');
 
@@ -608,84 +608,6 @@ const BookChapterManuscript: React.FC = () => {
       ...author,
       isCorrespondingAuthor: author.tempId === tempId
     })));
-  };
-
-  // Validate file
-  const validateFile = (file: File): string | null => {
-    const allowedTypes = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ];
-
-    const allowedExtensions = ['.pdf', '.doc', '.docx'];
-    const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-
-    // Check file type
-    if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
-      return 'Only PDF, DOC, and DOCX files are allowed';
-    }
-
-    // Check file size (10MB = 10 * 1024 * 1024 bytes)
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      return 'File size must be less than 10MB';
-    }
-
-    return null;
-  };
-
-  // Handle file change
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validate file
-      const fileError = validateFile(file);
-      if (fileError) {
-        showAlert('error', 'Invalid File', fileError);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-        return;
-      }
-
-      setManuscript(file);
-      const fileName = file.name;
-      const fileSize = (file.size / (1024 * 1024)).toFixed(2); // Convert to MB
-      const fileNameSpan = document.getElementById('file-name-display');
-      const deleteBtn = document.getElementById('file-delete-btn');
-
-      if (fileNameSpan) {
-        fileNameSpan.textContent = `${fileName} (${fileSize} MB)`;
-        fileNameSpan.classList.add('has-file');
-      }
-
-      if (deleteBtn) {
-        deleteBtn.style.display = 'flex';
-      }
-
-
-    }
-  };
-
-  // Handle file delete
-  const handleDeleteFile = () => {
-    setManuscript(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-
-    const fileNameSpan = document.getElementById('file-name-display');
-    const deleteBtn = document.getElementById('file-delete-btn');
-
-    if (fileNameSpan) {
-      fileNameSpan.textContent = 'No file chosen';
-      fileNameSpan.classList.remove('has-file');
-    }
-
-    if (deleteBtn) {
-      deleteBtn.style.display = 'none';
-    }
   };
 
   // Validate specific tab

@@ -64,7 +64,7 @@ function normalizeDate(dateStr: string): string {
     const yyyymmddRegex = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/;
     const ymatch = trimmed.match(yyyymmddRegex);
     if (ymatch) {
-        const [_, year, month, day] = ymatch;
+        const [, year, month, day] = ymatch;
         return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     }
 
@@ -72,7 +72,7 @@ function normalizeDate(dateStr: string): string {
     const ddmmyyyyRegex = /^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/;
     const dmatch = trimmed.match(ddmmyyyyRegex);
     if (dmatch) {
-        const [_, day, month, year] = dmatch;
+        const [, day, month, year] = dmatch;
         return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     }
 

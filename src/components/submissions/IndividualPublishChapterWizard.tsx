@@ -793,7 +793,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                     return acc;
                 }, {} as Record<string, any>),
                 mainAuthor: form.mainAuthor,
-                coAuthorsData: form.coAuthors.map(({ tempId, ...rest }) => rest),
+                coAuthorsData: form.coAuthors.map(({ tempId: _, ...rest }) => rest),
             };
 
             // Send payload to the backend

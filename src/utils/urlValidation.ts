@@ -9,7 +9,7 @@ export const isValidUrl = (url: string | undefined | null): boolean => {
         const parsedUrl = new URL(url);
         // Ensure it has a protocol and it's either http or https
         return ['http:', 'https:'].includes(parsedUrl.protocol);
-    } catch (_) {
+    } catch {
         return false;
     }
 };
@@ -43,7 +43,7 @@ export const sanitizeUrl = (url: string | null | undefined): string => {
 
         console.warn(`Blocked potentially dangerous URL protocol: ${parsedUrl.protocol}`);
         return '#';
-    } catch (e) {
+    } catch {
         return '#';
     }
 };
