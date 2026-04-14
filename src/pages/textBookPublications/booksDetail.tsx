@@ -8,6 +8,7 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import './booksDetail.css';
 import { setPageTitle, setMetaDescription, setOpenGraph, setCanonicalUrl, setJsonLd, resetSeo } from '../../utils/seoUtils';
 import { generateUniqueSlug } from '../../utils/stringUtils';
+import { sanitizeUrl } from '../../utils/urlValidation';
 
 const BooksDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -53,7 +54,7 @@ const BooksDetail: React.FC = () => {
           const bookData = await productBooksService.getBookById(parseInt(id));
           if (bookData) {
             setBook(bookData);
-             // Apply SEO after data is loaded
+            // Apply SEO after data is loaded
             const slug = generateUniqueSlug(bookData.isbn, bookData.releaseDate);
             const canonicalPath = `/book/${bookData.id}/${slug}`;
             // synopsis is a SynopsisSection (object), extract text from its values
@@ -193,7 +194,12 @@ const BooksDetail: React.FC = () => {
                   <h1>{book.title}</h1>
                   <p className="author-list">
                     {book.author}
-                    {book["co-authors"] && `, ${book["co-authors"]}`}
+                    {book["co-authors"] && (
+                      <span className="co-authors-text">
+                        {", "}
+                        {book["co-authors"]}
+                      </span>
+                    )}
                   </p>
 
                   <div className="meta-info">
@@ -222,7 +228,7 @@ const BooksDetail: React.FC = () => {
                     {book.doi && (
                       <div className="meta-item">
                         <strong>DOI:</strong>
-                        <a href={book.doi} target="_blank" rel="noopener noreferrer">{book.doi}</a>
+                        <a href={sanitizeUrl(book.doi)} target="_blank" rel="noopener noreferrer">{book.doi}</a>
                       </div>
                     )}
                     <div

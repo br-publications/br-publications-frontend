@@ -13,11 +13,11 @@ const BookPublications: React.FC = () => {
         <div className="books-container">
           <section className="books-section" id="books-section">
             <div className="books-section-intro">
-              At <strong>BR Publication</strong>, we specialize in <em>delivering comprehensive publishing
+              At <strong>BR Publications</strong>, we specialize in <em>delivering comprehensive publishing
                 solutions</em> for
-              <strong>Researchers, Academicians, Institutions, and Independent Authors</strong>. Whether
+              <strong> Researchers, Academicians, Institutions, and Independent Authors</strong>. Whether
               you're publishing a
-              <strong>Research Book, Technical Handbook, Conference Proceedings, or Journal</strong> we
+              <strong> Research Book, Technical Handbook, Conference Proceedings, or Journal</strong> we
               ensure
               a smooth,
               professional, and globally recognized publishing experience.
@@ -49,7 +49,7 @@ const BookPublications: React.FC = () => {
                   work.</li>
               </ul>
               <br />
-              <p>At BR Publication, we are dedicated to helping scholars and
+              <p>At BR Publications, we are dedicated to helping scholars and
                 institutions <strong>publish high-quality
                   academic content</strong> with <strong>global visibility, credibility, and
                     recognition.</strong></p>
@@ -69,7 +69,7 @@ const BookPublications: React.FC = () => {
               <section className="books-section-inner" id="books-guidelines">
                 <div className="books-section-header">
                   <div className="books-section-title-wrapper">
-                    <h3><i className="fa fa-book" style={{ color: 'var(--accent-gold)', marginRight: '10px' }}></i> Manuscript Structure</h3>
+                    <h3><i className="fa fa-book" style={{ color: 'var(--accent-gold)' }}></i> Manuscript Structure</h3>
                   </div>
                 </div>
 
@@ -169,7 +169,7 @@ const BookPublications: React.FC = () => {
                         <tr>
                           <td>Figures and Tables</td>
                           <td>
-                            <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                            <ul>
                               <li>Number sequentially</li>
                               <li>Captions below figures, above tables</li>
                               <li>High-resolution (300 DPI minimum)</li>

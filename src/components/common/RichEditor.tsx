@@ -13,6 +13,7 @@ import {
     Highlighter,
     Tag
 } from "lucide-react";
+import DOMPurify from 'dompurify';
 import AlertPopup from "./alertPopup";
 
 // ─── Rich Text Toolbar Button ─────────────────────────────────────────────────
@@ -78,13 +79,21 @@ export function RichEditor({ html, onChange, variables = [] }: RichEditorProps) 
         }
     }, [html]);
 
+    const sanitizeAndChange = (dirtyHtml: string) => {
+        const clean = DOMPurify.sanitize(dirtyHtml, {
+            ALLOWED_TAGS: ['p', 'b', 'strong', 'i', 'em', 'u', 's', 'ul', 'ol', 'li', 'br', 'a', 'span', 'div', 'font'],
+            ALLOWED_ATTR: ['href', 'target', 'style', 'class', 'size', 'color']
+        });
+        lastHtmlRef.current = clean; 
+        onChange(clean);
+    };
+
     const exec = (command: string, value?: string) => {
         editorRef.current?.focus();
         document.execCommand(command, false, value);
         if (editorRef.current) {
             const newHtml = editorRef.current.innerHTML;
-            lastHtmlRef.current = newHtml;
-            onChange(newHtml);
+            sanitizeAndChange(newHtml);
         }
     };
 
@@ -128,8 +137,7 @@ export function RichEditor({ html, onChange, variables = [] }: RichEditorProps) 
         }
         if (editorRef.current) {
             const newHtml = editorRef.current.innerHTML;
-            lastHtmlRef.current = newHtml;
-            onChange(newHtml);
+            sanitizeAndChange(newHtml);
         }
     };
 
@@ -169,8 +177,7 @@ export function RichEditor({ html, onChange, variables = [] }: RichEditorProps) 
 
         if (editorRef.current) {
             const newHtml = editorRef.current.innerHTML;
-            lastHtmlRef.current = newHtml;
-            onChange(newHtml);
+            sanitizeAndChange(newHtml);
         }
     };
 
@@ -403,13 +410,11 @@ export function RichEditor({ html, onChange, variables = [] }: RichEditorProps) 
                 onInput={() => {
                     if (editorRef.current) {
                         isTypingRef.current = true;
-                        // Always update the ref immediately so it's always fresh
-                        lastHtmlRef.current = editorRef.current.innerHTML;
                         // Debounce the state push to prevent re-render lag
                         if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
                         debounceTimerRef.current = setTimeout(() => {
                             isTypingRef.current = false;
-                            onChange(lastHtmlRef.current);
+                            sanitizeAndChange(editorRef.current?.innerHTML || "");
                         }, 400);
                     }
                 }}
@@ -421,7 +426,7 @@ export function RichEditor({ html, onChange, variables = [] }: RichEditorProps) 
                         debounceTimerRef.current = null;
                     }
                     if (editorRef.current) {
-                        onChange(editorRef.current.innerHTML);
+                        sanitizeAndChange(editorRef.current.innerHTML);
                     }
                 }}
                 onMouseUp={() => {

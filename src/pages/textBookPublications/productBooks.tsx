@@ -39,7 +39,7 @@ const ProductBooks: React.FC = () => {
         setError(null);
 
         let booksData: Book[];
-        
+
         // If we have any search criteria, use searchBooks service
         if (searchQuery || author || (selectedCategory && selectedCategory !== 'All') || publishedAfter || publishedBefore) {
           booksData = await productBooksService.searchBooks({
@@ -277,7 +277,13 @@ const ProductBooks: React.FC = () => {
                           </div>
                           <div className="book-info">
                             <h3>{book.title}</h3>
-                            <p>by {book.author}</p>
+                            <p>{book.author}
+                              {book["co-authors"] && (
+                                <span className="co-authors-text">
+                                  {", "}
+                                  {book["co-authors"]}
+                                </span>
+                              )}</p>
                           </div>
                           <div className="book-buttons">
                             <button

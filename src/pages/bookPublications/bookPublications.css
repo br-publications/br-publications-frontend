@@ -109,30 +109,41 @@
   font-weight: 700;
 }
 
-.books-section-intro ul {
+.books-section ul,
+.books-section ol {
   list-style: none;
   padding-left: 0;
   margin-top: 10px;
 }
 
-.books-section-intro ul li {
+.books-section ul li,
+.books-section ol li {
   padding: 5px 0 5px 20px;
   position: relative;
-  border-bottom: 1px dotted #ccc;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-light);
 }
 
-.books-section-intro ul li:last-child {
-  border-bottom: none;
-}
-
-.books-section-intro ul li::before {
+.books-section ul li::before,
+.books-section ol li::before {
   content: '■';
   /* Square bullet for traditional look */
   position: absolute;
   left: 0;
   color: var(--accent-gold);
   font-size: 10px;
-  top: 8px;
+  top: 6px;
+}
+
+/* Specific styling for intro list */
+.books-section-intro ul li {
+  border-bottom: 1px dotted #ccc;
+  color: var(--text-dark);
+}
+
+.books-section-intro ul li:last-child {
+  border-bottom: none;
 }
 
 /* Services Grid */
@@ -196,13 +207,11 @@
   font-size: 12px;
 }
 
-.books-services-card ul,
-.books-services-card ol {
-  padding-left: 15px;
-}
-
-.books-services-card li {
-  margin-bottom: 4px;
+.books-services-card p,
+.books-services-card table {
+  color: var(--text-light);
+  line-height: 1.4;
+  font-size: 12px;
 }
 
 /* Tables - Classic Academic Style */

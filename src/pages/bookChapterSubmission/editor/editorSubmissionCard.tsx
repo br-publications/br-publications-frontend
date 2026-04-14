@@ -177,13 +177,6 @@ export const EditorSubmissionCard: React.FC<EditorSubmissionCardProps> = ({
                 </button>
                 <button
                     className={styles.quickActionButton}
-                    onClick={() => onView(submission, 'reviewers')}
-                    title="Review Submission"
-                >
-                    Review
-                </button>
-                <button
-                    className={styles.quickActionButton}
                     onClick={() => onView(submission, 'discussions')}
                     title="View Discussions"
                 >

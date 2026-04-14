@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authService } from '../../services/auth.service';
+import { setAuthToken, setStoredUser } from '../../services/api.config';
 
 /**
  * GoogleCallbackHandler
@@ -66,9 +67,9 @@ const GoogleCallbackHandler: React.FC = () => {
                         },
                     });
                 } else if (result.data?.token && result.data?.user) {
-                    // Immediate login (no OTP required)
-                    localStorage.setItem('authToken', result.data.token);
-                    localStorage.setItem('user', JSON.stringify(result.data.user));
+                    // Immediate login (no OTP required) — store via centralized functions (sessionStorage)
+                    setAuthToken(result.data.token);
+                    setStoredUser(result.data.user);
                     window.dispatchEvent(new Event('auth-changed'));
                     navigate('/', { replace: true });
                 } else {

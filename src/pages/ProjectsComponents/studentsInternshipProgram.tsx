@@ -212,24 +212,24 @@ const StudentsInternshipProgram: React.FC = () => {
             <div style={{ marginTop: '30px', textAlign: 'left' }}>
               <h4 style={{ color: '#1e5292', marginBottom: '15px', fontSize: '17px', paddingBottom: '10px', borderBottom: '2px solid #ffa726' }}>What's Included:</h4>
               <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li style={{ padding: '8px 0', paddingLeft: '25px', position: 'relative', fontSize: '14px', borderBottom: '1px solid #f0f0f0' }}>
-                  <span style={{ position: 'absolute', left: 0, color: '#ffa726', fontWeight: 'bold' }}>✓</span>
+                <li style={{ padding: '8px 0', display: 'flex', alignItems: 'flex-start', gap: '12px', fontSize: '14px', borderBottom: '1px solid #f0f0f0' }}>
+                  <span style={{ color: '#ffa726', fontWeight: 'bold', flexShrink: 0 }}>✓</span>
                   30 hours of specialized training
                 </li>
-                <li style={{ padding: '8px 0', paddingLeft: '25px', position: 'relative', fontSize: '14px', borderBottom: '1px solid #f0f0f0' }}>
-                  <span style={{ position: 'absolute', left: 0, color: '#ffa726', fontWeight: 'bold' }}>✓</span>
+                <li style={{ padding: '8px 0', display: 'flex', alignItems: 'flex-start', gap: '12px', fontSize: '14px', borderBottom: '1px solid #f0f0f0' }}>
+                  <span style={{ color: '#ffa726', fontWeight: 'bold', flexShrink: 0 }}>✓</span>
                   Complete capstone project
                 </li>
-                <li style={{ padding: '8px 0', paddingLeft: '25px', position: 'relative', fontSize: '14px', borderBottom: '1px solid #f0f0f0' }}>
-                  <span style={{ position: 'absolute', left: 0, color: '#ffa726', fontWeight: 'bold' }}>✓</span>
+                <li style={{ padding: '8px 0', display: 'flex', alignItems: 'flex-start', gap: '12px', fontSize: '14px', borderBottom: '1px solid #f0f0f0' }}>
+                  <span style={{ color: '#ffa726', fontWeight: 'bold', flexShrink: 0 }}>✓</span>
                   Internship certificate
                 </li>
-                <li style={{ padding: '8px 0', paddingLeft: '25px', position: 'relative', fontSize: '14px', borderBottom: '1px solid #f0f0f0' }}>
-                  <span style={{ position: 'absolute', left: 0, color: '#ffa726', fontWeight: 'bold' }}>✓</span>
+                <li style={{ padding: '8px 0', display: 'flex', alignItems: 'flex-start', gap: '12px', fontSize: '14px', borderBottom: '1px solid #f0f0f0' }}>
+                  <span style={{ color: '#ffa726', fontWeight: 'bold', flexShrink: 0 }}>✓</span>
                   Mentorship and support
                 </li>
-                <li style={{ padding: '8px 0', paddingLeft: '25px', position: 'relative', fontSize: '14px' }}>
-                  <span style={{ position: 'absolute', left: 0, color: '#ffa726', fontWeight: 'bold' }}>✓</span>
+                <li style={{ padding: '8px 0', display: 'flex', alignItems: 'flex-start', gap: '12px', fontSize: '14px' }}>
+                  <span style={{ color: '#ffa726', fontWeight: 'bold', flexShrink: 0 }}>✓</span>
                   Resume and portfolio guidance
                 </li>
               </ul>

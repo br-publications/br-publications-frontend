@@ -60,6 +60,13 @@ export interface AuthorBiographyPayload {
     biography: string;
 }
 
+export interface EditorBiographyPayload {
+    editorName: string;
+    affiliation?: string;
+    email?: string;
+    biography: string;
+}
+
 export interface PublishBookChapterPayload {
     title: string;
     editors?: string[];
@@ -83,6 +90,7 @@ export interface PublishBookChapterPayload {
     scope?: Record<string, string>;
     tableContents?: TocChapterPayload[];
     authorBiographies?: AuthorBiographyPayload[];
+    editorBiographies?: EditorBiographyPayload[];
     archives?: Record<string, string>;
     pricing?: Record<string, number>;
     googleLink?: string;

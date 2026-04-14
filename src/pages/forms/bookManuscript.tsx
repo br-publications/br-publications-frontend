@@ -5,6 +5,7 @@ import { CircularProgress } from '@mui/material';
 import type { SubmitTextBookRequest } from '../../pages/textBookSubmission/types/textBookTypes';
 import { submitTextBook } from '../../services/textBookService';
 import { authService } from '../../services/auth.service';
+import { setStoredUser } from '../../services/api.config';
 import AlertPopup, { type AlertType } from '../../components/common/alertPopup';
 import { COUNTRIES, type Country } from '../../utils/countries';
 import './bookManuscript.css';
@@ -550,7 +551,7 @@ const BookManuscript: React.FC = () => {
       try {
         const userResponse = await authService.getCurrentUser();
         if (userResponse.success && userResponse.data) {
-          localStorage.setItem('user', JSON.stringify(userResponse.data));
+          setStoredUser(userResponse.data);
           // Dispatch event to notify Header/Dashboard of role change
           window.dispatchEvent(new Event('auth-changed'));
         }

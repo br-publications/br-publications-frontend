@@ -7,7 +7,7 @@ import type { BookChapterSubmission, Author } from '../../types/submissionTypes'
 import { DESIGNATIONS } from '../../types/bookChapterManuscriptTypes';
 import { publishDirectBookChapter, uploadDirectTempPdf, findAuthors } from '../../services/bookChapterPublishing.service';
 import { bookChapterAdminService } from '../../services/bookChapterSumission.service';
-import type { TocChapterPayload, AuthorBiographyPayload } from '../../services/bookChapterPublishing.service';
+import type { TocChapterPayload, AuthorBiographyPayload, EditorBiographyPayload } from '../../services/bookChapterPublishing.service';
 import AuthorMultiSelect from '../common/AuthorMultiSelect';
 import AlertPopup from '../common/alertPopup';
 import type { AlertType } from '../common/alertPopup';
@@ -28,7 +28,7 @@ interface IndividualPublishChapterWizardProps {
     onSuccess: (submission?: BookChapterSubmission) => void;
 }
 
-type TabType = 'author' | 'metadata' | 'content' | 'bio' | 'toc' | 'review';
+type TabType = 'author' | 'editorBio' | 'metadata' | 'content' | 'bio' | 'toc' | 'review';
 
 interface TabDef {
     id: TabType;
@@ -38,11 +38,12 @@ interface TabDef {
 
 const TABS: TabDef[] = [
     { id: 'author', label: 'Authors', num: 1 },
-    { id: 'metadata', label: 'Book Metadata', num: 2 },
-    { id: 'content', label: 'Content', num: 3 },
-    { id: 'bio', label: 'Author Biography', num: 4 },
-    { id: 'toc', label: 'TOC & Assets', num: 5 },
-    { id: 'review', label: 'Cover & Review', num: 6 },
+    { id: 'editorBio', label: 'Editor Biography', num: 2 },
+    { id: 'metadata', label: 'Book Metadata', num: 3 },
+    { id: 'content', label: 'Content', num: 4 },
+    { id: 'bio', label: 'Author Biography', num: 5 },
+    { id: 'toc', label: 'TOC & Assets', num: 6 },
+    { id: 'review', label: 'Cover & Review', num: 7 },
 ];
 
 interface CoAuthorWithId extends Author {
@@ -168,6 +169,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
     const [biographies, setBiographies] = useState<AuthorBiographyPayload[]>([
         { authorName: '', affiliation: '', email: '', biography: '' },
     ]);
+    const [editorBiographies, setEditorBiographies] = useState<EditorBiographyPayload[]>([]);
     const [archiveIntro, setArchiveIntro] = useState('');
     const [archiveItems, setArchiveItems] = useState<string[]>(['']);
 
@@ -220,6 +222,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
         setScopeItems(['']);
         setTocChapters([{ title: '', chapterNumber: '01' }]);
         setBiographies([{ authorName: '', affiliation: '', email: '', biography: '' }]);
+        setEditorBiographies([]);
         setArchiveIntro('');
         setArchiveItems(['']);
         setOriginalImage('');
@@ -260,6 +263,27 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
             setBiographies(prev => prev.map((b, i) => i === 0 ? { ...b, authorName: mainAuthorName } : b));
         }
     }, [form.mainAuthor.firstName, form.mainAuthor.lastName]);
+
+    // Sync editor names from editorBiographies to form.editors (Step 2)
+    useEffect(() => {
+        if (!isOpen) return;
+        const currentNames = editorBiographies.map(b => b.editorName.trim()).filter(Boolean);
+        
+        setForm(prev => {
+            const currentString = prev.editors.join(', ');
+            const newString = currentNames.join(', ');
+            
+            if (currentString === newString) return prev;
+
+            const updated: FormState = { ...prev, editors: currentNames };
+            
+            if (prev.primaryEditor && !currentNames.includes(prev.primaryEditor)) {
+                updated.primaryEditor = '';
+            }
+            
+            return updated;
+        });
+    }, [editorBiographies, isOpen]);
 
     const handleFormChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -370,9 +394,15 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                     }
                 }
                 break;
+            case 'editorBio':
+                if (form.editors.filter(e => e.trim()).length === 0) return 'At least one Editor is required.';
+                // Validate editor bios if needed
+                if (editorBiographies.some(b => !b.editorName.trim() || !b.biography.trim())) {
+                    return 'All editor biographies must have a name and biography text.';
+                }
+                break;
             case 'metadata':
                 if (!form.title.trim()) return 'Book title is required.';
-                if (form.editors.filter(e => e.trim()).length === 0) return 'At least one Editor is required.';
                 if (!form.category.trim()) return 'Category is required.';
                 if (!form.description.trim()) return 'Short description / abstract is required.';
                 if (!form.isbn.trim()) return 'ISBN is required.';
@@ -400,10 +430,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                 if (tocChapters.some((c) => !c.title.trim() || !c.chapterNumber?.trim() || !c.authors?.trim() || !c.pdfKey)) {
                     return 'All chapters must have a title, number, author(s), and an uploaded PDF.';
                 }
-                const missingFrontmatter = extraPdfTypes.filter(type => !form.frontmatterPdfs[type]?.pdfKey);
-                if (missingFrontmatter.length > 0) {
-                    return `Please upload all 7 frontmatter PDFs. Missing: ${missingFrontmatter.join(', ')}.`;
-                }
+                // Frontmatter PDFs are now optional
                 break;
             case 'bio':
                 if (biographies.some(b => !b.authorName.trim() || !b.affiliation.trim() || !b.biography.trim())) {
@@ -421,7 +448,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
     };
 
     const handleNextTab = () => {
-        const order: TabType[] = ['author', 'metadata', 'content', 'bio', 'toc', 'review'];
+        const order: TabType[] = ['author', 'editorBio', 'metadata', 'content', 'bio', 'toc', 'review'];
         const err = validateTab(activeTab);
         if (err) {
             setErrors(err);
@@ -443,7 +470,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
     };
 
     const handlePrevTab = () => {
-        const order: TabType[] = ['author', 'metadata', 'content', 'bio', 'toc', 'review'];
+        const order: TabType[] = ['author', 'editorBio', 'metadata', 'content', 'bio', 'toc', 'review'];
         setErrors('');
         setAlertConfig(p => ({ ...p, isOpen: false }));
         const idx = order.indexOf(activeTab);
@@ -558,6 +585,46 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
         }
     };
 
+    const addEditorBio = () => setEditorBiographies((p) => [...p, { editorName: '', affiliation: '', email: '', biography: '' }]);
+    const removeEditorBio = (i: number) => {
+        setEditorBiographies((p) => p.filter((_, idx) => idx !== i));
+    };
+    const updateEditorBio = (i: number, field: keyof EditorBiographyPayload, val: string) =>
+        setEditorBiographies((p) => p.map((b, idx) => (idx === i ? { ...b, [field]: val } : b)));
+
+    const handleEditorSearch = async (i: number) => {
+        const bio = editorBiographies[i];
+        if (!bio.editorName.trim()) return;
+        try {
+            const results = await findAuthors({
+                name: bio.editorName,
+                affiliation: bio.affiliation || undefined,
+                email: bio.email || undefined
+            });
+            if (results && results.length > 0) {
+                let match = results.find(a =>
+                    a.name.toLowerCase() === bio.editorName.toLowerCase() &&
+                    ((bio.affiliation && a.affiliation?.toLowerCase() === bio.affiliation.toLowerCase()) ||
+                        (bio.email && a.email?.toLowerCase() === bio.email.toLowerCase()))
+                );
+                if (!match && results.length === 1 && !bio.affiliation && !bio.email && !bio.biography) {
+                    match = results[0];
+                }
+                if (match) {
+                    setEditorBiographies(prev => prev.map((b, idx) => idx === i ? {
+                        ...b,
+                        editorName: match!.name,
+                        affiliation: match!.affiliation || b.affiliation,
+                        email: match!.email || b.email,
+                        biography: match!.biography || b.biography
+                    } : b));
+                }
+            }
+        } catch (err) {
+            console.error('Error searching editors:', err);
+        }
+    };
+
     // Scope / Archives 
     const addItem = (setter: React.Dispatch<React.SetStateAction<string[]>>) =>
         setter((p) => [...p, '']);
@@ -635,7 +702,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
 
     // Submit 
     const handleSubmit = async () => {
-        const order: TabType[] = ['author', 'metadata', 'content', 'bio', 'toc', 'review'];
+        const order: TabType[] = ['author', 'editorBio', 'metadata', 'content', 'bio', 'toc', 'review'];
         for (const tab of order) {
             const err = validateTab(tab);
             if (err) {
@@ -699,14 +766,32 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                     (b) => b.authorName.trim() || b.biography.trim()
                 ).map(b => ({
                     ...b,
-                    affiliation: b.affiliation.trim() 
-                        ? (b.affiliation.trim().startsWith('(') && b.affiliation.trim().endsWith(')') 
-                            ? b.affiliation.trim() 
+                    affiliation: b.affiliation.trim()
+                        ? (b.affiliation.trim().startsWith('(') && b.affiliation.trim().endsWith(')')
+                            ? b.affiliation.trim()
+                            : `(${b.affiliation.trim()})`)
+                        : b.affiliation
+                })),
+                editorBiographies: editorBiographies.filter(
+                    (b) => b.editorName.trim() || b.biography.trim()
+                ).map(b => ({
+                    ...b,
+                    affiliation: b.affiliation?.trim()
+                        ? (b.affiliation.trim().startsWith('(') && b.affiliation.trim().endsWith(')')
+                            ? b.affiliation.trim()
                             : `(${b.affiliation.trim()})`)
                         : b.affiliation
                 })),
                 archives,
-                frontmatterPdfs: form.frontmatterPdfs,
+                frontmatterPdfs: extraPdfTypes.reduce((acc, type) => {
+                    const existing = form.frontmatterPdfs[type];
+                    acc[type] = {
+                        pdfKey: existing?.pdfKey || null,
+                        mimeType: existing?.mimeType || null,
+                        name: existing?.name || null
+                    };
+                    return acc;
+                }, {} as Record<string, any>),
                 mainAuthor: form.mainAuthor,
                 coAuthorsData: form.coAuthors.map(({ tempId, ...rest }) => rest),
             };
@@ -714,7 +799,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
             // Send payload to the backend
             await publishDirectBookChapter(payload);
             setLoading(false);
-            
+
             setAlertConfig({
                 isOpen: true,
                 type: 'success',
@@ -850,8 +935,8 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                                     </div>
                                     <div className="pcw-field">
                                         <label className="pcw-label">Email Address</label>
-                                        <input className="pcw-input" type="email" value={form.mainAuthor.email} 
-                                            onChange={(e) => handleMainAuthorChange('email', e.target.value)} 
+                                        <input className="pcw-input" type="email" value={form.mainAuthor.email}
+                                            onChange={(e) => handleMainAuthorChange('email', e.target.value)}
                                             onBlur={() => handleEmailBlur(form.mainAuthor.email, 'mainAuthorEmail')}
                                             placeholder="e.g. john.doe@example.com" />
                                         {fieldErrors.mainAuthorEmail && <small className="pcw-field-error" style={{ color: 'red', fontSize: '10px' }}>{fieldErrors.mainAuthorEmail}</small>}
@@ -934,8 +1019,8 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                                             </div>
                                             <div className="pcw-field">
                                                 <label className="pcw-label">Email Address</label>
-                                                <input className="pcw-input" type="email" value={ca.email} 
-                                                    onChange={(e) => handleCoAuthorChange(ca.tempId, 'email', e.target.value)} 
+                                                <input className="pcw-input" type="email" value={ca.email}
+                                                    onChange={(e) => handleCoAuthorChange(ca.tempId, 'email', e.target.value)}
                                                     onBlur={() => handleEmailBlur(ca.email, `coAuthorEmail-${ca.tempId}`)}
                                                     placeholder="e.g. jane.doe@example.com" />
                                                 {fieldErrors[`coAuthorEmail-${ca.tempId}`] && <small className="pcw-field-error" style={{ color: 'red', fontSize: '10px' }}>{fieldErrors[`coAuthorEmail-${ca.tempId}`]}</small>}
@@ -978,6 +1063,70 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                             </div>
                         )}
 
+                        {activeTab === 'editorBio' && (
+                            <div className="tab-pane active slide-in-bottom">
+                                <p className="pcw-step-title">Editor Biography</p>
+                                <p className="pcw-step-desc">List the editors and provide their professional biographies.</p>
+                                
+                                <div className="pcw-field span-full" style={{ marginBottom: '24px' }}>
+                                    <label className="pcw-label">Editors <span className="req">*</span></label>
+                                    <input
+                                        className="pcw-input"
+                                        style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
+                                        value={form.editors.join(', ')}
+                                        readOnly
+                                        placeholder="Names will appear here as you fill biographies below..."
+                                    />
+                                    {form.editors.filter(e => e.trim()).length > 0 && (
+                                        <div style={{ marginTop: '8px', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '10px', fontWeight: 700, color: '#1e5292', textTransform: 'uppercase' }}>Select Primary:</span>
+                                            {form.editors.filter(e => e.trim()).map((ed, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    type="button"
+                                                    className={`pcw-editor-chip ${form.primaryEditor === ed ? 'active' : ''}`}
+                                                    onClick={() => setForm(p => ({ ...p, primaryEditor: p.primaryEditor === ed ? '' : ed }))}
+                                                >
+                                                    {ed} {form.primaryEditor === ed && '★'}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="pcw-section">
+                                    <p className="pcw-section-title">Editor Biographies</p>
+                                    {editorBiographies.map((bio, i) => (
+                                        <div className="pcw-bio-card" key={i}>
+                                            <div className="pcw-bio-card-header">
+                                                <span className="pcw-bio-label">Editor {i + 1}</span>
+                                                <button type="button" className="pcw-remove-btn" onClick={() => removeEditorBio(i)}>Remove</button>
+                                            </div>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+                                                <div className="pcw-field">
+                                                    <label className="pcw-label">Full Name</label>
+                                                    <input className="pcw-input" value={bio.editorName} onChange={(e) => updateEditorBio(i, 'editorName', e.target.value)} onBlur={() => handleEditorSearch(i)} placeholder="Dr. Jane Editor" />
+                                                </div>
+                                                <div className="pcw-field">
+                                                    <label className="pcw-label">Affiliation</label>
+                                                    <input className="pcw-input" value={bio.affiliation} onChange={(e) => updateEditorBio(i, 'affiliation', e.target.value)} onBlur={() => handleEditorSearch(i)} placeholder="University of Ed" />
+                                                </div>
+                                                <div className="pcw-field">
+                                                    <label className="pcw-label">Email</label>
+                                                    <input className="pcw-input" value={bio.email} onChange={(e) => updateEditorBio(i, 'email', e.target.value)} onBlur={() => handleEditorSearch(i)} placeholder="jane@editor.com" />
+                                                </div>
+                                            </div>
+                                            <div className="pcw-field">
+                                                <label className="pcw-label">Biography</label>
+                                                <textarea className="pcw-textarea" rows={3} value={bio.biography} onChange={(e) => updateEditorBio(i, 'biography', e.target.value)} placeholder="Academic bio..." />
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <button type="button" className="pcw-add-btn" onClick={addEditorBio}>+ Add Editor Bio</button>
+                                </div>
+                            </div>
+                        )}
+
                         {activeTab === 'metadata' && (
                             <div className="tab-pane active slide-in-bottom">
                                 <p className="pcw-step-title">Book Metadata</p>
@@ -988,38 +1137,14 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                                         <input className="pcw-input" name="title" value={form.title} onChange={handleFormChange} placeholder="e.g. Advanced AI Research 2024" />
                                     </div>
                                     <div className="pcw-field span-full">
-                                        <label className="pcw-label">Editors (comma separated) <span className="req">*</span></label>
+                                        <label className="pcw-label">Editors <span className="req">*</span></label>
                                         <input
                                             className="pcw-input"
+                                            style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
                                             value={form.editors.join(', ')}
-                                            onChange={(e) => {
-                                                const newEds = e.target.value.split(',').map(s => s.trimStart());
-                                                setForm(p => {
-                                                    const updated: FormState = { ...p, editors: newEds };
-                                                    // If primary is no longer in the list, clear it
-                                                    if (p.primaryEditor && !newEds.includes(p.primaryEditor)) {
-                                                        updated.primaryEditor = '';
-                                                    }
-                                                    return updated;
-                                                });
-                                            }}
-                                            placeholder="e.g. Dr. Alice Smith, Prof. Bob Johnson"
+                                            readOnly
+                                            placeholder="Names will appear here as you fill biographies in Step 2..."
                                         />
-                                        {form.editors.filter(e => e.trim()).length > 0 && (
-                                            <div style={{ marginTop: '8px', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-                                                <span style={{ fontSize: '10px', fontWeight: 700, color: '#1e5292', textTransform: 'uppercase' }}>Select Primary:</span>
-                                                {form.editors.filter(e => e.trim()).map((ed, idx) => (
-                                                    <button
-                                                        key={idx}
-                                                        type="button"
-                                                        className={`pcw-editor-chip ${form.primaryEditor === ed ? 'active' : ''}`}
-                                                        onClick={() => setForm(p => ({ ...p, primaryEditor: p.primaryEditor === ed ? '' : ed }))}
-                                                    >
-                                                        {ed} {form.primaryEditor === ed && '★'}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
                                     </div>
                                     <div className="pcw-field">
                                         <label className="pcw-label">Category <span className="req">*</span></label>
@@ -1271,13 +1396,13 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                                     <button type="button" className="pcw-add-btn" onClick={addTocChapter}>+ Add Chapter</button>
 
                                     <div className="pcw-section">
-                                        <p className="pcw-section-title">Additional PDFs <span className="req">*</span></p>
+                                        <p className="pcw-section-title">Additional PDFs</p>
                                         <div className="pcw-field-grid">
                                             {extraPdfTypes.map((type) => {
                                                 const hasPdf = !!form.frontmatterPdfs[type];
                                                 return (
                                                     <div key={type} className="pcw-field" style={{ border: '1px solid #e8edf5', padding: '6px', borderRadius: '4px' }}>
-                                                        <label className="pcw-label" style={{ fontSize: '9px' }}>{type} <span className="req">*</span></label>
+                                                        <label className="pcw-label" style={{ fontSize: '9px' }}>{type}</label>
                                                         <input type="file" accept="application/pdf" className="pcw-hidden-input" ref={(el) => { extraPdfInputRefs.current[type] = el; }}
                                                             onChange={(e) => { const f = e.target.files?.[0]; if (f) handleExtraPdfUpload(type, f); }} />
                                                         <button type="button" className={`pcw-pdf-upload-btn ${hasPdf ? 'has-pdf' : ''}`} onClick={() => extraPdfInputRefs.current[type]?.click()}>
@@ -1468,6 +1593,25 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                                                 </div>
                                             ))
                                             : <span className="pcw-review-tag warn">⚠️ No biographies added</span>
+                                        }
+                                    </div>
+
+                                    {/* Editor Biographies Review */}
+                                    <div className="pcw-review-section" style={{ marginBottom: '20px' }}>
+                                        <div className="pcw-review-section-title">Step 4 — Editor Biographies</div>
+                                        {editorBiographies.filter(b => b.editorName).length > 0
+                                            ? editorBiographies.filter(b => b.editorName).map((b, i) => (
+                                                <div key={i} style={{ marginBottom: '10px' }}>
+                                                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#374151', marginBottom: '3px' }}>
+                                                        {b.editorName} {b.affiliation ? <span style={{ fontWeight: 400, color: '#6b7280' }}>({b.affiliation})</span> : ''}
+                                                    </div>
+                                                    {b.biography
+                                                        ? <div style={{ fontSize: '14px', color: '#4b5563', lineHeight: 1.6, background: '#f9fafb', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e5e7eb' }}>{b.biography}</div>
+                                                        : <span className="pcw-review-tag warn" style={{ fontSize: '14px' }}>⚠️ No biography text</span>
+                                                    }
+                                                </div>
+                                            ))
+                                            : <span className="pcw-review-tag warn">⚠️ No editor biographies added</span>
                                         }
                                     </div>
 

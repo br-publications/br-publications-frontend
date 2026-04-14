@@ -47,7 +47,6 @@ export default function ImpersonateHandler() {
                         redirectPath = '/dashboard/author/submissions';
                         break;
                     case 'admin':
-                    case 'developer':
                         redirectPath = '/dashboard/admin/submissions';
                         break;
                     default:

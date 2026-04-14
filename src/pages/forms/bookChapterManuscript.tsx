@@ -8,6 +8,7 @@ import { COUNTRIES as PHONE_COUNTRIES } from '../../utils/countries';
 import './bookChapterManuscript.css';
 import { bookChapterService } from '../../services/bookChapterSumission.service';
 import { authService } from '../../services/auth.service';
+import { setStoredUser } from '../../services/api.config';
 import bookManagementService from '../../services/bookManagement.service';
 
 interface CoAuthorWithId extends Author {
@@ -919,7 +920,7 @@ const BookChapterManuscript: React.FC = () => {
           const userResponse = await authService.getCurrentUser();
           if (userResponse.success && userResponse.data) {
 
-            localStorage.setItem('user', JSON.stringify(userResponse.data));
+            setStoredUser(userResponse.data);
 
             // Dispatch event to notify Header/Dashboard of role change
             window.dispatchEvent(new Event('auth-changed'));

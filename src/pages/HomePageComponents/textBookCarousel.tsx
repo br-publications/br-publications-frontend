@@ -8,6 +8,7 @@ interface Book {
     id?: number;
     title: string;
     author: string;
+    "co-authors"?: string;
     image: string;
     coverImage?: string;
     isbn: string;
@@ -135,7 +136,13 @@ export default function TextBookCarousel() {
                                         {book.title}
                                     </h3>
                                     <p className="textbook-author">
-                                        by {book.author}
+                                        {book.author}
+                                        {book["co-authors"] && (
+                                            <span className="co-authors-text">
+                                                {", "}
+                                                {book["co-authors"]}
+                                            </span>
+                                        )}
                                     </p>
 
                                     {/* Buttons */}

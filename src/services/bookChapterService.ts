@@ -85,7 +85,8 @@ class BookChapterService {
             chapters: mappedChapters,
             googleLink: data.googleLink,
             flipkartLink: data.flipkartLink,
-            amazonLink: data.amazonLink
+            amazonLink: data.amazonLink,
+            frontmatterPdfs: data.frontmatterPdfs
         };
     }
 

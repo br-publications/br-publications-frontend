@@ -32,6 +32,7 @@ export interface Book {
   flipkartLink?: string;
   amazonLink?: string;
   chapters?: Chapter[];
+  frontmatterPdfs?: Record<string, { pdfKey?: string; mimeType?: string; name?: string; }>;
 }
 
 export interface Chapter {
