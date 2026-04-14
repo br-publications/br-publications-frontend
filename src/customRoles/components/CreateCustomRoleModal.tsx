@@ -4,7 +4,6 @@ import {
     type PermissionCategory,
     type CreateCustomRoleRequest,
     ROLE_TEMPLATES,
-    type RoleTemplate,
 } from '../types/customRoleTypes';
 import * as customRoleService from '../services/customRoleService';
 import '../styles/customRoles.css';

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AuthorSubmissionCard from './authorSubmissionCard';
 import AuthorSubmissionDetailView from './authorSubmissionDetailView';
 import FilterPanel from '../common/ui/filterPanel';
-import NotificationBell from '../common/ui/notificationBell';
+// import NotificationBell from '../common/ui/notificationBell';
 import AlertPopup from '../../../components/common/alertPopup'; // Import AlertPopup
 import bookChapterService from '../../../services/bookChapterSumission.service';
 import { resolveSubmissionBookTitles } from '../../../utils/submissionUtils';

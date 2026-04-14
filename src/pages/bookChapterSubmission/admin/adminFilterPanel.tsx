@@ -56,7 +56,7 @@ export const AdminFilterPanel: React.FC<AdminFilterPanelProps> = ({
     onFilterChange({ ...filters, statuses: newStatuses });
   };
 
-  const handleAssignmentChange = (value: string) => {
+  const handleAssignmentChange = (_value: string) => {
     // Note: This could be extended to filter by assignedEditorId in the future
     // For now, it's just passed to parent component
     onFilterChange({ ...filters });

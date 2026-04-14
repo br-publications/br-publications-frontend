@@ -680,10 +680,10 @@ const EditTab: React.FC<EditTabProps> = ({ submission, onUpdate, onCancel }) => 
   // State for available chapters and book titles
   const [availableChapters, setAvailableChapters] = useState<Array<{ id: string, chapterTitle: string }>>([]);
   const [bookTitles, setBookTitles] = useState<Array<{ id: number, title: string }>>([]);
-  const [availableEditors, setAvailableEditors] = useState<Array<{ id: number, fullName: string, email: string }>>([]);
+  // const [availableEditors, setAvailableEditors] = useState<Array<{ id: number, fullName: string, email: string }>>([]);
   const [isLoadingBooks, setIsLoadingBooks] = useState<boolean>(false);
   const [isLoadingChapters, setIsLoadingChapters] = useState<boolean>(false);
-  const [isLoadingEditors, setIsLoadingEditors] = useState<boolean>(false);
+  // const [isLoadingEditors, setIsLoadingEditors] = useState<boolean>(false);
 
   // UI State
   const [activeSection, setActiveSection] = useState<'details' | 'author' | 'coauthors'>('details');
@@ -700,10 +700,10 @@ const EditTab: React.FC<EditTabProps> = ({ submission, onUpdate, onCancel }) => 
   useEffect(() => {
     if (formData.bookTitle) {
       fetchChapters(formData.bookTitle);
-      fetchEditors(formData.bookTitle);
+      // fetchEditors(formData.bookTitle);
     } else {
       setAvailableChapters([]);
-      setAvailableEditors([]);
+      // setAvailableEditors([]);
     }
   }, [formData.bookTitle]);
 
@@ -791,6 +791,7 @@ const EditTab: React.FC<EditTabProps> = ({ submission, onUpdate, onCancel }) => 
     }
   };
 
+  /*
   const fetchEditors = async (bookTitleId: string | number) => {
     setIsLoadingEditors(true);
     let resolvedId: number | null = null;
@@ -828,12 +829,13 @@ const EditTab: React.FC<EditTabProps> = ({ submission, onUpdate, onCancel }) => 
       setIsLoadingEditors(false);
     }
   };
+  */
 
   // Trigger fetchChapters when bookTitles load if we have a title but no chapters
   useEffect(() => {
     if (bookTitles.length > 0 && formData.bookTitle && availableChapters.length === 0) {
       fetchChapters(formData.bookTitle);
-      fetchEditors(formData.bookTitle);
+      // fetchEditors(formData.bookTitle);
     }
   }, [bookTitles]);
 

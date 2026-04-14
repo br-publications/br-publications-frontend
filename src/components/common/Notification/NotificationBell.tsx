@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, Check } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { isToday, isYesterday } from 'date-fns';
 import notificationService from '../../../services/notification.service';
 import { type Notification } from '../../../types/notificationTypes';
@@ -132,15 +132,15 @@ export default function NotificationBell() {
         }
     };
 
-    const handleMarkAllAsRead = async () => {
-        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-        setUnreadCount(0);
-        try {
-            await notificationService.markAllAsRead();
-        } catch (error) {
-            console.error('Error marking all as read:', error);
-        }
-    };
+    // const handleMarkAllAsRead = async () => {
+    //     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    //     setUnreadCount(0);
+    //     try {
+    //         await notificationService.markAllAsRead();
+    //     } catch (error) {
+    //         console.error('Error marking all as read:', error);
+    //     }
+    // };
 
     // Navigate to related entity
     const handleNotificationClick = (notification: Notification) => {
