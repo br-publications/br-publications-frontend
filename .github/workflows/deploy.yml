@@ -37,11 +37,11 @@ jobs:
           username: ${{ secrets.HOSTINGER_USERNAME }}
           password: ${{ secrets.HOSTINGER_PASSWORD }}
           local-dir: ./dist/
-          server-dir: /public_html/
+          server-dir: /home/u349309030/domains/brpublications.com/public_html/
           dangerous-clean-slate: true
           exclude: |
             **/james/**
-            **/James Backup/**
+            **/James backup/**
 
       - name: Verify deployment
         run: echo "Deployment complete"
