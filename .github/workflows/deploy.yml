@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - Release/ui_v1_14_04_2026
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
