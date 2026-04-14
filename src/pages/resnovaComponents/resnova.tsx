@@ -4,9 +4,6 @@ import './resNova.css';
 
 const ResNova: React.FC = () => {
 
-  const handleSidebarClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-  };
 
   return (
     <main className="content">
