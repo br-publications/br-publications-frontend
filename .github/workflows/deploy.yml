@@ -1,0 +1,34 @@
+name: Deploy React App
+
+on:
+  push:
+    branches:
+      - Release/ui_v1_14_04_2026
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install & Build
+        run: |
+          npm install
+          npm run build
+
+      - name: Deploy to Hostinger via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USERNAME }}
+          password: ${{ secrets.HOSTINGER_PASSWORD }}
+          local-dir: ./dist/
+          server-dir: /public_html/
+          exclude: |
+            **/james/**
+            **/James Backup/**
