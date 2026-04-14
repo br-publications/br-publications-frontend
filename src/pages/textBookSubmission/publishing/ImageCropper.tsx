@@ -13,7 +13,7 @@ interface ImageCropperProps {
     initialAlignment?: 'right' | 'center';
 }
 
-const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCancel, initialAlignment = 'right' }) => {
+const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCancel }) => {
     // Initialize crop position to the right side of the image
     // The cropper will calculate the exact position based on the image dimensions
     const [crop, setCrop] = useState<Point>({ x: 0, y: 150 });

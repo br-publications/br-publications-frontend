@@ -242,34 +242,34 @@ export default function UserRoleManagement() {
         }
     };
 
-    const handleDeletePermanent = (user: User) => {
-        if (!user) return;
-        setAlertConfig({
-            isOpen: true,
-            type: 'error',
-            title: 'Permanent Deletion',
-            message: `Are you sure you want to PERMANENTLY delete ${user.fullName}? This action cannot be undone.`,
-            showCancel: true,
-            confirmText: 'Delete Permanently',
-            onConfirm: () => executeDeletePermanent(user),
-        });
-    };
+    // const handleDeletePermanent = (user: User) => {
+    //     if (!user) return;
+    //     setAlertConfig({
+    //         isOpen: true,
+    //         type: 'error',
+    //         title: 'Permanent Deletion',
+    //         message: `Are you sure you want to PERMANENTLY delete ${user.fullName}? This action cannot be undone.`,
+    //         showCancel: true,
+    //         confirmText: 'Delete Permanently',
+    //         onConfirm: () => executeDeletePermanent(user),
+    //     });
+    // };
 
-    const executeDeletePermanent = async (user: User) => {
-        setAlertConfig(prev => ({ ...prev, isOpen: false }));
-        try {
-            const response = await userService.deleteUserPermanent(user.id);
+    // const executeDeletePermanent = async (user: User) => {
+    //     setAlertConfig(prev => ({ ...prev, isOpen: false }));
+    //     try {
+    //         const response = await userService.deleteUserPermanent(user.id);
 
-            if (response.success) {
-                toast.success(`User ${user.fullName} permanently deleted`);
-                fetchUsers(); // Refresh list
-                setActiveActionMenuId(null);
-            }
-        } catch (error: any) {
-            console.error('Delete permanent error:', error);
-            toast.error(error.message || 'Failed to delete user permanently');
-        }
-    };
+    //         if (response.success) {
+    //             toast.success(`User ${user.fullName} permanently deleted`);
+    //             fetchUsers(); // Refresh list
+    //             setActiveActionMenuId(null);
+    //         }
+    //     } catch (error: any) {
+    //         console.error('Delete permanent error:', error);
+    //         toast.error(error.message || 'Failed to delete user permanently');
+    //     }
+    // };
 
     const handleEditUserRole = (user: User) => {
         setSelectedUser(user);

@@ -1,7 +1,7 @@
 // components/HistoryPopup.tsx
 
 import type { HistoryItem } from '../../types/submissionTypes';
-import { formatDateTime } from '../../utils/submissionutils';
+import { formatDateTime } from '../../utils/submissionUtils';
 
 interface HistoryPopupProps {
   history: HistoryItem[];
@@ -68,15 +68,15 @@ export default function HistoryPopup({ history, onClose, submissionTitle }: Hist
                       <div className="flex items-start justify-between mb-2">
                         <h3 className="font-semibold text-gray-800">{item.action}</h3>
                         <span className="text-xs text-gray-500 whitespace-nowrap ml-4">
-                          {formatDateTime(item.date)}
+                          {formatDateTime(item.changedAt)}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 mb-2">{item.details}</p>
+                      <p className="text-sm text-gray-600 mb-2">{item.notes}</p>
                       <div className="flex items-center gap-2 text-xs text-gray-500">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
-                        <span>{item.performedBy}</span>
+                        <span>User ID: {item.changedBy}</span>
                       </div>
                     </div>
                   </div>

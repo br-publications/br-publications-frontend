@@ -897,7 +897,7 @@ export const bookChapterReviewerService = {
    * OR implementing it if needed. 
    * BUT ReviewerDashboard calls it.
    */
-  startReview: async (assignmentId: number): Promise<ApiResponse> => {
+  startReview: async (): Promise<ApiResponse> => {
     // TEMPORARY: Just return success? Or is there an endpoint?
     // chapterController.reviewerResponse with 'accept' sets status to ACCEPTED.
     // If we want IN_PROGRESS, we might need a specific endpoint.

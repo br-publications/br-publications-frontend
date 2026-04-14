@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import type { PublishedBook } from '../../../services/publishedBookService';
-import { Save } from 'lucide-react';
 import AlertPopup from '../../../components/common/alertPopup';
 import PhoneNumberInput from '../../../components/common/PhoneNumberInput';
 import { isValidPhoneNumber } from '../../../utils/phoneValidation';
@@ -94,9 +93,9 @@ const EditPublishedBookModal: React.FC<EditPublishedBookModalProps> = ({ book, i
                 title: book.title || '',
                 authorFirstName: authorFirstName || '',
                 authorLastName: authorLastName || '',
-                authorEmail: '', 
-                authorInstitute: '', 
-                authorPhone: '', 
+                authorEmail: '',
+                authorInstitute: '',
+                authorPhone: '',
                 coAuthors: coAuthorsList,
                 isbn: book.isbn || '',
                 doi: book.doi || '',

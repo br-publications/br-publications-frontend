@@ -4,13 +4,8 @@ import { API_BASE_URL } from '../../../services/api.config';
 import {
     ArrowLeft,
     CheckCircle2,
-    Linkedin,
-    Mail,
-    Globe,
-    Award,
     BookOpen,
     User,
-    Lightbulb,
     ChevronUp,
 } from 'lucide-react';
 import './authorDetail.css';
@@ -109,17 +104,17 @@ const AuthorDetail: React.FC = () => {
     )}&background=1e5292&color=fff&size=180`;
 
     // Derive expertise tags from biography sentences (short, keyword-like)
-    const expertiseTags: string[] = author.biography
-        ? Array.from(
-            new Set(
-                author.biography
-                    .split(/[.,;]/)
-                    .map((s) => s.replace(/[^a-zA-Z ]/g, '').trim())
-                    .filter((s) => s.length >= 5 && s.length <= 40)
-                    .slice(0, 8)
-            )
-        )
-        : ['Research', 'Academic Writing', 'Publication'];
+    // const expertiseTags: string[] = author.biography
+    //     ? Array.from(
+    //         new Set(
+    //             author.biography
+    //                 .split(/[.,;]/)
+    //                 .map((s) => s.replace(/[^a-zA-Z ]/g, '').trim())
+    //                 .filter((s) => s.length >= 5 && s.length <= 40)
+    //                 .slice(0, 8)
+    //         )
+    //     )
+    //     : ['Research', 'Academic Writing', 'Publication'];
 
     /* ── Render ── */
     return (

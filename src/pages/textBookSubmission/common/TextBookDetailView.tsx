@@ -742,7 +742,7 @@ const AuthorActionsTab: React.FC<{ submission: TextBookSubmission; onRefresh: ()
                         <DeliveryAddressForm
                             submissionId={submission.id}
                             type="textbook"
-                            onSuccess={(savedAddress) => {
+                            onSuccess={(_savedAddress) => {
                                 setShowDeliveryAddressForm(false);
                                 onRefresh();
                             }}
@@ -1516,20 +1516,20 @@ const PublicationStartModal: React.FC<{
 const WorkflowTab: React.FC<{ submission: TextBookSubmission; userRole: 'admin' | 'author' }> = ({ submission, userRole }) => {
     // Define the workflow stages
     const getWorkflowStages = () => {
-        const STATUS_ORDER = [
-            'INITIAL_SUBMITTED',
-            'PROPOSAL_UNDER_REVIEW',
-            'PROPOSAL_ACCEPTED', // Transition to acceptance/rejection
-            'REVISION_REQUESTED',
-            'REVISION_SUBMITTED',
-            'SUBMISSION_ACCEPTED',
-            'ISBN_APPLIED',
-            'ISBN_RECEIVED',
-            'AWAITING_DELIVERY_DETAILS',
-            'DELIVERY_ADDRESS_RECEIVED',
-            'PUBLICATION_IN_PROGRESS',
-            'PUBLISHED'
-        ];
+        // const STATUS_ORDER = [
+        //     'INITIAL_SUBMITTED',
+        //     'PROPOSAL_UNDER_REVIEW',
+        //     'PROPOSAL_ACCEPTED', // Transition to acceptance/rejection
+        //     'REVISION_REQUESTED',
+        //     'REVISION_SUBMITTED',
+        //     'SUBMISSION_ACCEPTED',
+        //     'ISBN_APPLIED',
+        //     'ISBN_RECEIVED',
+        //     'AWAITING_DELIVERY_DETAILS',
+        //     'DELIVERY_ADDRESS_RECEIVED',
+        //     'PUBLICATION_IN_PROGRESS',
+        //     'PUBLISHED'
+        // ];
 
         const stages = [
             {

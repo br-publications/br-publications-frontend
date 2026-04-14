@@ -397,11 +397,11 @@ const EditorActionsTab: React.FC<{
     isSubmittingIsbn: boolean;
     setIsSubmittingIsbn: (submitting: boolean) => void;
     setAlertConfig: React.Dispatch<React.SetStateAction<AlertConfig>>;
-}> = ({ submission, assignments, onAssignReviewer, onMakeDecision, onMakeFinalDecision, onUpdate, chapterTitles, resolvedBookTitle, isStartingPublication, setIsStartingPublication, isSubmittingIsbn, setIsSubmittingIsbn, setAlertConfig }) => {
+}> = ({ submission, assignments, onAssignReviewer: _onAssignReviewer, onMakeDecision, onMakeFinalDecision, onUpdate, chapterTitles, resolvedBookTitle, isStartingPublication, setIsStartingPublication, isSubmittingIsbn, setIsSubmittingIsbn, setAlertConfig }) => {
     const [showPublishModal, setShowPublishModal] = useState(false);
     const [notes, setNotes] = useState('');
     const [finalNotes, setFinalNotes] = useState('');
-    const [reassignTarget, setReassignTarget] = useState<{ id: number; name: string } | null>(null);
+    // const [reassignTarget, setReassignTarget] = useState<{ id: number; name: string } | null>(null);
     const [proofFile, setProofFile] = useState<File | null>(null);
     const [isUploadingProof, setIsUploadingProof] = useState(false);
     // Consolidated publication data
@@ -484,9 +484,9 @@ const EditorActionsTab: React.FC<{
         }
     };
 
-    const showReviewerStep = !isAbstractPending && !['APPROVED', 'PUBLISHED', 'REJECTED', 'ISBN_APPLIED', 'PUBLICATION_IN_PROGRESS'].includes(submission.status);
-    const hasDeclined = assignments.some(a => a.status === 'DECLINED' || a.status === 'REJECTED' || a.status === 'EXPIRED');
-    const needsReviewers = assignments.length < 2 || hasDeclined;
+    // const showReviewerStep = !isAbstractPending && !['APPROVED', 'PUBLISHED', 'REJECTED', 'ISBN_APPLIED', 'PUBLICATION_IN_PROGRESS'].includes(submission.status);
+    // const hasDeclined = assignments.some(a => a.status === 'DECLINED' || a.status === 'REJECTED' || a.status === 'EXPIRED');
+    // const needsReviewers = assignments.length < 2 || hasDeclined;
 
     return (
         <div className={styles.actionsTab}>

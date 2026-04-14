@@ -1,7 +1,7 @@
 // components/SubmissionCard.tsx
 
-import type { Submission } from '../../types/submissionTypes';
-import { getStatusDisplay, getStatusColor, formatDate } from '../../utils/submissionutils';
+import { mapStatusToStage, type Submission } from '../../types/submissionTypes';
+import { getStatusDisplay, getStatusColor, formatDate } from '../../utils/submissionUtils';
 
 interface SubmissionCardProps {
   submission: Submission;
@@ -52,7 +52,7 @@ export default function SubmissionCard({
 
           {/* Badges */}
           <div className="flex flex-wrap items-center gap-2">
-            {submission.isOverdue && (
+            {(submission as any).isOverdue && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -61,7 +61,7 @@ export default function SubmissionCard({
               </span>
             )}
 
-            {submission.isIncomplete && (
+            {(submission as any).isIncomplete && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -71,7 +71,7 @@ export default function SubmissionCard({
             )}
 
             <span className="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">
-              {submission.stage}
+              {mapStatusToStage(submission.status)}
             </span>
           </div>
         </div>
@@ -109,11 +109,11 @@ export default function SubmissionCard({
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
-              {submission.discussionCount > 0 && (
+              {(submission.discussionCount && submission.discussionCount > 0) ? (
                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white text-xs rounded-full flex items-center justify-center">
                   {submission.discussionCount}
                 </span>
-              )}
+              ) : null}
               {/* Tooltip */}
               <span className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 Discussions

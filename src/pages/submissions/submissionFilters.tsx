@@ -20,16 +20,18 @@ export default function SubmissionFilters({ filters, onFilterChange }: Submissio
   };
 
   const handleStageToggle = (stage: SubmissionStage) => {
-    const newStages = filters.stages.includes(stage)
-      ? filters.stages.filter(s => s !== stage)
-      : [...filters.stages, stage];
+    const currentStages = filters.stages || [];
+    const newStages = currentStages.includes(stage)
+      ? currentStages.filter(s => s !== stage)
+      : [...currentStages, stage];
     onFilterChange({ ...filters, stages: newStages });
   };
 
   const handleSectionToggle = (section: string) => {
-    const newSections = filters.sections.includes(section)
-      ? filters.sections.filter(s => s !== section)
-      : [...filters.sections, section];
+    const currentSections = filters.sections || [];
+    const newSections = currentSections.includes(section)
+      ? currentSections.filter(s => s !== section)
+      : [...currentSections, section];
     onFilterChange({ ...filters, sections: newSections });
   };
 
@@ -87,7 +89,7 @@ export default function SubmissionFilters({ filters, onFilterChange }: Submissio
             >
               <input
                 type="checkbox"
-                checked={filters.stages.includes(stage)}
+                checked={(filters.stages || []).includes(stage)}
                 onChange={() => handleStageToggle(stage)}
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
@@ -138,7 +140,7 @@ export default function SubmissionFilters({ filters, onFilterChange }: Submissio
             >
               <input
                 type="checkbox"
-                checked={filters.sections.includes(section)}
+                checked={(filters.sections || []).includes(section)}
                 onChange={() => handleSectionToggle(section)}
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />

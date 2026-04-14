@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
-import type { TextBookSubmission, PaginatedResponse } from '../pages/textBookSubmission/types/textBookTypes';
+import type { TextBookSubmission } from '../pages/textBookSubmission/types/textBookTypes';
 import { getAdminSubmissions } from '../services/textBookService';
 
 export const useAdminTextBookSubmissions = (page: number = 1, limit: number = 50, filters?: { status?: string, search?: string, isDirectSubmission?: boolean, isBulkSubmission?: boolean, showAll?: boolean }) => {

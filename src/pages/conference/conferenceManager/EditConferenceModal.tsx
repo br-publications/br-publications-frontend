@@ -78,7 +78,7 @@ const EditConferenceModal: React.FC<EditConferenceModalProps> = ({
     // ── Articles ──────────────────────────────────────────────
     const [articles, setArticles] = useState<ArticleRow[]>([]);
     const [artTotal, setArtTotal] = useState(0);
-    const [artPage, setArtPage] = useState(1);
+    // const [artPage, setArtPage] = useState(1);
     const ART_LIMIT = 20;
 
     // ── Pre-fill on open ────────────────────────────────────
@@ -118,7 +118,7 @@ const EditConferenceModal: React.FC<EditConferenceModalProps> = ({
             }));
             setArticles(rows);
             setArtTotal(data.pagination.total);
-            setArtPage(page);
+            // setArtPage(page);
         } catch {
             toast.error('Failed to load articles');
         } finally {

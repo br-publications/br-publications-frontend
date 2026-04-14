@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    PieChart, Pie, Cell, Legend,
-    LineChart, Line, AreaChart, Area
+    PieChart, Pie, Cell
 } from 'recharts';
 import AlertPopup, { type AlertType } from '../../../components/common/alertPopup';
 import statsService, { type StatsOverview, type MonthlyReportData, type ExtendedStatsData, type EngagementStatsData } from '../../../services/stats.service';
@@ -179,21 +178,21 @@ const AdminStatsDashboard: React.FC = () => {
     // Phase 2 Chart Data
     const rolePieData = extended ? toBarData(extended.userRoles).map(d => ({ ...d, name: d.name === 'developer' ? 'Default User' : d.name })) : [];
     const revActivityBarData = extended ? toBarData(extended.reviewerActivity) : [];
-    const userGrowthData = extended ? extended.userGrowth.map(m => {
-        const d = new Date(m.month);
-        return { name: d.toLocaleString('en-IN', { month: 'short', year: '2-digit' }), Users: m.count };
-    }) : [];
+    // const userGrowthData = extended ? extended.userGrowth.map(m => {
+    //     const d = new Date(m.month);
+    //     return { name: d.toLocaleString('en-IN', { month: 'short', year: '2-digit' }), Users: m.count };
+    // }) : [];
 
     // Phase 3 Chart Data
-    const geoData = engagement?.geographicDistribution.map(g => ({ name: g.country, Users: g.count })) || [];
-    const trendsData = engagement?.publishingTrends.map(t => {
-        const d = new Date(t.month);
-        return {
-            name: d.toLocaleString('en-IN', { month: 'short', year: '2-digit' }),
-            Books: t.books,
-            Chapters: t.chapters
-        };
-    }) || [];
+    // const geoData = engagement?.geographicDistribution.map(g => ({ name: g.country, Users: g.count })) || [];
+    // const trendsData = engagement?.publishingTrends.map(t => {
+    //     const d = new Date(t.month);
+    //     return {
+    //         name: d.toLocaleString('en-IN', { month: 'short', year: '2-digit' }),
+    //         Books: t.books,
+    //         Chapters: t.chapters
+    //     };
+    // }) || [];
 
     const formatTimeAgo = (ts: string) => {
         const diff = Math.floor((new Date().getTime() - new Date(ts).getTime()) / 60000);

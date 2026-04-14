@@ -4,7 +4,6 @@ import { API_BASE_URL } from '../../../services/api.config';
 import {
     ArrowLeft,
     CheckCircle2,
-    Mail,
     BookOpen,
     User,
     ChevronUp,
@@ -67,7 +66,7 @@ const EditorDetail: React.FC = () => {
         );
     }
 
-    /* ── Helpers ── */
+    /* ── Helpers ── 
     const fallbackSrc = `https://ui-avatars.com/api/?name=${encodeURIComponent(
         editor.name
     )}&background=1e5292&color=fff&size=180`;

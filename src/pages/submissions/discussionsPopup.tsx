@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { Discussion } from '../../types/submissionTypes';
-import { formatDateTime } from '../../utils/submissionutils';
+import { formatDateTime } from '../../utils/submissionUtils';
 
 interface DiscussionPopupProps {
   discussions: Discussion[];
@@ -18,7 +18,7 @@ export default function DiscussionPopup({
   onAddDiscussion 
 }: DiscussionPopupProps) {
   const [newMessage, setNewMessage] = useState('');
-  const [replyTo, setReplyTo] = useState<string | null>(null);
+  const [replyTo, setReplyTo] = useState<number | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +77,7 @@ export default function DiscussionPopup({
                     <div className="flex-shrink-0">
                       <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                         <span className="text-sm font-semibold text-blue-600">
-                          {discussion.author.charAt(0)}
+                          {discussion.userName.charAt(0)}
                         </span>
                       </div>
                     </div>
@@ -86,8 +86,8 @@ export default function DiscussionPopup({
                     <div className="flex-1 bg-gray-50 rounded-lg p-4">
                       <div className="flex items-start justify-between mb-2">
                         <div>
-                          <h4 className="font-semibold text-gray-800">{discussion.author}</h4>
-                          <p className="text-xs text-gray-500">{formatDateTime(discussion.date)}</p>
+                          <h4 className="font-semibold text-gray-800">{discussion.userName}</h4>
+                          <p className="text-xs text-gray-500">{formatDateTime(discussion.createdAt)}</p>
                         </div>
                       </div>
                       <p className="text-sm text-gray-700 whitespace-pre-wrap">{discussion.message}</p>
@@ -113,15 +113,15 @@ export default function DiscussionPopup({
                           <div className="flex-shrink-0">
                             <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
                               <span className="text-xs font-semibold text-gray-600">
-                                {reply.author.charAt(0)}
+                                {reply.userName.charAt(0)}
                               </span>
                             </div>
                           </div>
                           <div className="flex-1 bg-white border border-gray-200 rounded-lg p-4">
                             <div className="flex items-start justify-between mb-2">
                               <div>
-                                <h5 className="font-medium text-gray-700 text-sm">{reply.author}</h5>
-                                <p className="text-xs text-gray-500">{formatDateTime(reply.date)}</p>
+                                <h5 className="font-medium text-gray-700 text-sm">{reply.userName}</h5>
+                                <p className="text-xs text-gray-500">{formatDateTime(reply.createdAt)}</p>
                               </div>
                             </div>
                             <p className="text-sm text-gray-700 whitespace-pre-wrap">{reply.message}</p>
