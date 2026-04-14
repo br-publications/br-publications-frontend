@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Filter, TrendingUp } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import { useEditorAssignedSubmissions, useSubmissionFilters } from '../../../utils/bookChapterSubmission.hooks';
 import { bookChapterEditorService } from '../../../services/bookChapterSumission.service';
 import EditorSubmissionCard from './editorSubmissionCard';

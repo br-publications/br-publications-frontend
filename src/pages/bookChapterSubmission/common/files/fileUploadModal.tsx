@@ -163,21 +163,21 @@ export const FileUploadModal: React.FC<FileUploadModalProps> = ({
       }, 500);
 
       // Call the upload API
-      let response;
+      // let response;
       if (chapterInfo) {
-        response = await bookChapterService.uploadChapterManuscript(
+        await bookChapterService.uploadChapterManuscript(
           chapterInfo.chapterId,
           selectedFile,
           customFileName
         );
       } else if (isRevisionUpload) {
-        response = await bookChapterService.submitRevision(
+        await bookChapterService.submitRevision(
           submission.id,
           selectedFile,
           // Note: Add logic for responseNotes if we add a text field later
         );
       } else {
-        response = await bookChapterService.uploadFullChapter(
+        await bookChapterService.uploadFullChapter(
           submission.id,
           selectedFile,
           undefined, // no notes in this modal version

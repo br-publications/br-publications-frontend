@@ -68,12 +68,12 @@ export const EditorFilterPanel: React.FC<EditorFilterPanelProps> = ({
         onFilterChange({ ...filters, statuses: newStatuses });
     };
 
-    const handlePriorityChange = (priority: string) => {
+    const handlePriorityChange = (_priority: string) => {
         // This could be extended with actual priority filtering logic
         onFilterChange({ ...filters });
     };
 
-    const handleReviewerStatusChange = (value: string) => {
+    const handleReviewerStatusChange = (_value: string) => {
         // This could be extended to filter by reviewer assignment status
         onFilterChange({ ...filters });
     };

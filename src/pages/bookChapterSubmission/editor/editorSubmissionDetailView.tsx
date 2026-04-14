@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     X,
     ChevronLeft,
@@ -26,7 +26,7 @@ import PublishChapterModal from '../../../components/submissions/PublishChapterM
 import AlertPopup, { type AlertType } from '../../../components/common/alertPopup';
 
 
-type EditorTab = 'overview' | 'chapters' | 'workflow' | 'history' | 'discussions' | 'actions';
+type EditorTab = 'overview' | 'chapters' | 'workflow' | 'history' | 'discussions' | 'actions' | 'reviewers';
 
 interface EditorSubmissionDetailViewProps {
     submission: BookChapterSubmission;
