@@ -266,7 +266,23 @@ const BookChapterDetail: React.FC = () => {
                 <div className="book-details">
                   <h1>{book.title}</h1>
                   <p className="author-list">
-                    {book.editors && book.editors.length > 0 ? book.editors.join(', ') : ''}
+                    {book.editors && book.editors.length > 0 ? (
+                      book.editors.map((editorName, index) => {
+                        const editorDetail = book.editorDetails?.find(ed => ed.name === editorName);
+                        return (
+                          <React.Fragment key={index}>
+                            {editorDetail ? (
+                              <Link to={`/editor/${editorDetail.id}`} className="editor-link">
+                                {editorName}
+                              </Link>
+                            ) : (
+                              editorName
+                            )}
+                            {index < (book.editors?.length || 0) - 1 ? ', ' : ''}
+                          </React.Fragment>
+                        );
+                      })
+                    ) : ''}
                   </p>
 
                   <div className="meta-info">

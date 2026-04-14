@@ -71,6 +71,7 @@ const UserProjectDashboard = lazy(() => import('../pages/projectsInternshipSubmi
 const AdminProjectDashboard = lazy(() => import('../pages/projectsInternshipSubmission/AdminProjectDashboard'));
 const ProjectDetailView = lazy(() => import('../pages/projectsInternshipSubmission/ProjectDetailView'));
 const AuthorDetail = lazy(() => import('../pages/dashboard/author/AuthorDetail'));
+const EditorDetail = lazy(() => import('../pages/dashboard/editor/EditorDetail'));
 
 
 export default function AppRoutes() {
@@ -107,6 +108,7 @@ export default function AppRoutes() {
           <Route path="/forms/projects-internships/student-internship" element={<StudentInternshipForm />} />
           <Route path="/recruitment" element={<RecruitmentForm />} />
           <Route path="/author/:id" element={<AuthorDetail />} />
+          <Route path="/editor/:id" element={<EditorDetail />} />
 
         </Route>
 

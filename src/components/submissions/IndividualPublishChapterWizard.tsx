@@ -421,9 +421,9 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
             case 'content':
                 if (form.synopses.some(s => !s.trim())) return 'All synopsis paragraphs must have content.';
                 if (!form.scopeIntro.trim()) return 'Scope introduction paragraph is required.';
-                if (scopeItems.some(item => !item.trim())) return 'All scope topics must have content.';
+                // scopeItems made optional by user request
                 if (!archiveIntro.trim()) return 'Archive introduction is required.';
-                if (archiveItems.some(item => !item.trim())) return 'All archive repositories must have content.';
+                // archiveItems made optional by user request
                 break;
             case 'toc':
                 if (tocChapters.length === 0) return 'At least one chapter must be added to the Table of Contents.';
@@ -1191,7 +1191,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                                         <label className="pcw-label">Copyright <span className="req">*</span></label>
                                         <input className="pcw-input" name="copyright" value={form.copyright} onChange={handleFormChange} placeholder="e.g. © 2024 BR Publications" />
                                     </div>
-                                    <div className="pcw-field span-full">
+                                    <div className="pcw-field">
                                         <label className="pcw-label">Pricing Details <span className="req">*</span></label>
                                         <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                                             <input className="pcw-input" type="number" name="priceSoftCopy" value={form.priceSoftCopy || ''} onChange={handleFormChange} placeholder="Soft Price *" />
@@ -1264,7 +1264,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                                             onChange={(e) => setForm((p) => ({ ...p, scopeIntro: e.target.value }))}
                                             placeholder="Introduce the scope..." />
                                     </div>
-                                    <p className="pcw-section-title">Scope Topics <span className="req">*</span></p>
+                                    <p className="pcw-section-title">Scope Topics</p>
                                     {scopeItems.map((item, i) => (
                                         <div className="pcw-list-row" key={i}>
                                             <span className="pcw-list-bullet">•</span>
@@ -1287,7 +1287,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                                             onChange={(e) => setArchiveIntro(e.target.value)}
                                             placeholder="Introduce the archives..." />
                                     </div>
-                                    <p className="pcw-section-title">Archive Repositories <span className="req">*</span></p>
+                                    <p className="pcw-section-title">Archive Repositories</p>
                                     {archiveItems.map((item, i) => (
                                         <div className="pcw-list-row" key={i}>
                                             <span className="pcw-list-bullet">▪</span>

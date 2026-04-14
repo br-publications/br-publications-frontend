@@ -7,6 +7,7 @@ export interface Book {
   "co-authors"?: string;
   editors?: string[];
   primaryEditor?: string;
+  editorDetails?: PublishedEditor[];
   coverImage: string;
   category: string;
   description: string;
@@ -49,6 +50,14 @@ export interface Chapter {
 }
 
 export interface PublishedAuthor {
+  id: number;
+  name: string;
+  email?: string;
+  affiliation?: string;
+  biography?: string;
+}
+
+export interface PublishedEditor {
   id: number;
   name: string;
   email?: string;

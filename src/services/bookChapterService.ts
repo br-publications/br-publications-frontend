@@ -66,6 +66,7 @@ class BookChapterService {
             "co-authors": data.coAuthors,
             editors: data.editors,
             primaryEditor: data.primaryEditor,
+            editorDetails: data.editorDetails,
             coverImage: coverImage,
             category: data.category,
             description: data.description || '',

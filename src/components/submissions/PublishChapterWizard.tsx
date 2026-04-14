@@ -526,9 +526,9 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
             case 'content':
                 if (form.synopses.some(s => !s.trim())) return 'All synopsis paragraphs must have content.';
                 if (!form.scopeIntro.trim()) return 'Scope introduction paragraph is required.';
-                if (scopeItems.some(item => !item.trim())) return 'All scope topics must have content.';
+                // scopeItems made optional by user request
                 if (!archiveIntro.trim()) return 'Archive introduction is required.';
-                if (archiveItems.some(item => !item.trim())) return 'All archive repositories must have content.';
+                // archiveItems made optional by user request
                 break;
             case 'bio':
                 if (biographies.some(b => !b.authorName.trim() || !b.affiliation.trim() || !b.biography.trim())) {
@@ -1496,7 +1496,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                             placeholder="Briefly introduce the scope of this book..." />
                                     </div>
                                     <div className="pcw-section">
-                                        <p className="pcw-section-title">📌 Scope Topics / Bullet Points <span className="req" style={{ fontSize: '14px' }}>*</span></p>
+                                        <p className="pcw-section-title">📌 Scope Topics / Bullet Points</p>
                                         {scopeItems.map((item, i) => (
                                             <div className="pcw-list-row" key={i}>
                                                 <span className="pcw-list-bullet">•</span>
@@ -1524,7 +1524,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                             placeholder="Introduce the archive indexing of this book..." />
                                     </div>
                                     <div className="pcw-section">
-                                        <p className="pcw-section-title">📦 Archive Repositories <span className="req">*</span></p>
+                                        <p className="pcw-section-title">📦 Archive Repositories</p>
                                         {archiveItems.map((item, i) => (
                                             <div className="pcw-list-row" key={i}>
                                                 <span className="pcw-list-bullet">▪</span>
