@@ -8,7 +8,7 @@ export const defaultContactDetails: ContactDetails = {
         "+91 97900 91708"
     ],
     email: "info@brpublications.com",
-    whatsapp: "+91 98427 68170",
+    whatsapp: "+919842768170",
     instagram: "https://www.instagram.com/br_publications?igsh=MTdqdGVuaTdzM2Q5NA==",
     facebook: "",
     twitter: "",
