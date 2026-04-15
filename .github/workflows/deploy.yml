@@ -21,8 +21,8 @@ jobs:
           npm install
           npm run build
         env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_API_BASE_URL: https://api.brpublications.com
+          VITE_API_URL: https://api.brpublications.com
           VITE_CSP_POLICY: ${{ secrets.VITE_CSP_POLICY }}
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
           REACT_APP_GOOGLE_CLIENT_ID: ${{ secrets.REACT_APP_GOOGLE_CLIENT_ID }}
