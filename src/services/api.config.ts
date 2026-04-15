@@ -6,12 +6,11 @@
  */
 
 // Base URL for API
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
-  import.meta.env.REACT_APP_API_BASE_URL || 'https://api.brpublications.com';
+export const API_BASE_URL = 'https://api.brpublications.com';
 
-if (!API_BASE_URL) {
-  console.error("CRITICAL: VITE_API_BASE_URL environment variable is missing.");
-}
+// if (!API_BASE_URL) {
+//   console.error("CRITICAL: VITE_API_BASE_URL environment variable is missing.");
+// }
 
 
 // API endpoints
