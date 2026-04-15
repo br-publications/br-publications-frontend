@@ -9,9 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: Release/ui_v1_14_04_2026  # ← ADD THIS LINE
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
       - name: Install & Build
@@ -33,7 +33,7 @@ jobs:
           protocol: ftps
           port: 21
           local-dir: ./dist/
-          server-dir: /home/u349309030/domains/brpublications.com/public_html/
+          server-dir: /domains/brpublications.com/public_html/
           dangerous-clean-slate: true
           exclude: |
             **/james/**
