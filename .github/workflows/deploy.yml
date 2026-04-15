@@ -34,7 +34,6 @@ jobs:
           port: 21
           local-dir: ./dist/
           server-dir: /domains/brpublications.com/public_html/
-          dangerous-clean-slate: true
           exclude: |
             **/james/**
             **/James backup/**
