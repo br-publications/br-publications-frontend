@@ -36,6 +36,8 @@ jobs:
           server: ${{ secrets.HOSTINGER_HOST }}
           username: ${{ secrets.HOSTINGER_USERNAME }}
           password: ${{ secrets.HOSTINGER_PASSWORD }}
+          protocol: ftps  
+          port: 21 
           local-dir: ./dist/
           server-dir: /home/u349309030/domains/brpublications.com/public_html/
           dangerous-clean-slate: true
