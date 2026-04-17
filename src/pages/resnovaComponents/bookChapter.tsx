@@ -274,7 +274,7 @@ const ProductBookChapter: React.FC = () => {
                           <div className="book-info">
                             <h3>{book.title}</h3>
                             <p>
-                              {book.editors && book.editors.length > 0
+                              {Array.isArray(book.editors) && book.editors.length > 0
                                 ? `${book.editors.join(', ')}`
                                 : `${book.author}`}
                             </p>

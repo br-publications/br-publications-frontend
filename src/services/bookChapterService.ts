@@ -59,12 +59,22 @@ class BookChapterService {
             }));
         }
 
+        // Defensive mapping for arrays that might be returned as strings or null from backend
+        const safeEditors = Array.isArray(data.editors)
+            ? data.editors
+            : (typeof data.editors === 'string' ? [data.editors] : []);
+
+        const safeKeywords = Array.isArray(data.keywords)
+            ? data.keywords
+            : (typeof data.keywords === 'string' ? [data.keywords] : []);
+
         return {
             id: data.id,
             title: data.title,
             author: data.author,
             "co-authors": data.coAuthors,
-            editors: data.editors,
+            editors: safeEditors,
+            keywords: safeKeywords,
             primaryEditor: data.primaryEditor,
             editorDetails: data.editorDetails,
             coverImage: coverImage,

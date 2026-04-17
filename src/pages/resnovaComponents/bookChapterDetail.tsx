@@ -73,7 +73,7 @@ const BookChapterDetail: React.FC = () => {
             // Apply SEO after data is loaded
             const slug = generateUniqueSlug(bookData.isbn, bookData.releaseDate);
             const canonicalPath = `/bookchapter/${bookData.id}/${slug}`;
-            const editorsStr = bookData.editors && bookData.editors.length > 0
+            const editorsStr = Array.isArray(bookData.editors) && bookData.editors.length > 0
               ? `Editors: ${bookData.editors.join(', ')}.`
               : `By ${bookData.author}.`;
             const description = bookData.synopsis
@@ -265,25 +265,27 @@ const BookChapterDetail: React.FC = () => {
                 {/* Book Details */}
                 <div className="book-details">
                   <h1>{book.title}</h1>
-                  <p className="author-list">
-                    {book.editors && book.editors.length > 0 ? (
-                      book.editors.map((editorName, index) => {
-                        const editorDetail = book.editorDetails?.find(ed => ed.name === editorName);
-                        return (
-                          <React.Fragment key={index}>
-                            {editorDetail ? (
-                              <Link to={`/editor/${editorDetail.id}`} className="editor-link">
-                                {editorName}
-                              </Link>
-                            ) : (
-                              editorName
-                            )}
-                            {index < (book.editors?.length || 0) - 1 ? ', ' : ''}
-                          </React.Fragment>
-                        );
-                      })
-                    ) : ''}
-                  </p>
+                    <p className="author-list">
+                      {Array.isArray(book.editors) && book.editors.length > 0 ? (
+                        book.editors.map((editorName, index) => {
+                          const editorDetail = book.editorDetails?.find(ed => ed.name === editorName);
+                          return (
+                            <React.Fragment key={index}>
+                              {editorDetail ? (
+                                <Link to={`/editor/${editorDetail.id}`} className="editor-link">
+                                  {editorName}
+                                </Link>
+                              ) : (
+                                editorName
+                              )}
+                              {index < (book.editors?.length || 0) - 1 ? ', ' : ''}
+                            </React.Fragment>
+                          );
+                        })
+                      ) : (
+                        <span>{book.author}</span>
+                      )}
+                    </p>
 
                   <div className="meta-info">
                     {book.indexedIn && (

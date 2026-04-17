@@ -781,7 +781,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                         <label className="pcw-label">Editors (comma separated) <span className="req">*</span></label>
                                         <input
                                             className="pcw-input"
-                                            value={form.editors.join(', ')}
+                                            value={Array.isArray(form.editors) ? form.editors.join(', ') : ''}
                                             onChange={(e) => setForm(p => ({ ...p, editors: e.target.value.split(',').map(s => s.trim()) }))}
                                             placeholder="e.g. Dr. Alice Smith, Prof. Bob Johnson"
                                         />
@@ -814,7 +814,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                         <label className="pcw-label">Keywords (comma separated)</label>
                                         <input
                                             className="pcw-input"
-                                            value={form.keywords.join(', ')}
+                                            value={Array.isArray(form.keywords) ? form.keywords.join(', ') : ''}
                                             onChange={(e) => setForm(p => ({ ...p, keywords: e.target.value.split(',').map(s => s.trim()) }))}
                                             placeholder="e.g. AI, Machine Learning, Robotics"
                                         />

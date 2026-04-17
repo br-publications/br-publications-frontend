@@ -130,7 +130,7 @@ export default function BookCarousel() {
                     {book.title}
                   </h3>
                   <p className="book-author">
-                    {book.editors && book.editors.length > 0
+                    {Array.isArray(book.editors) && book.editors.length > 0
                       ? `${book.editors.join(', ')}`
                       : `${book.author}`}
                   </p>

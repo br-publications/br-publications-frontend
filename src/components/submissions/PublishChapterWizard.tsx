@@ -363,7 +363,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
         const currentNames = editorBiographies.map(b => b.editorName.trim()).filter(Boolean);
         
         setForm(prev => {
-            const currentString = prev.editors.join(', ');
+            const currentString = Array.isArray(prev.editors) ? prev.editors.join(', ') : '';
             const newString = currentNames.join(', ');
             
             if (currentString === newString) return prev;
@@ -1289,7 +1289,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                     <input
                                         className="pcw-input"
                                         style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
-                                        value={form.editors.join(', ')}
+                                        value={Array.isArray(form.editors) ? form.editors.join(', ') : ''}
                                         readOnly
                                         placeholder="Names will appear here as you fill biographies below..."
                                     />
@@ -1361,7 +1361,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                         <input
                                             className="pcw-input"
                                             style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
-                                            value={form.editors.join(', ')}
+                                            value={Array.isArray(form.editors) ? form.editors.join(', ') : ''}
                                             readOnly
                                             placeholder="Names will appear here as you fill biographies in Step 2..."
                                         />
@@ -1394,7 +1394,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                         <label className="pcw-label">Keywords (comma separated)</label>
                                         <input
                                             className="pcw-input"
-                                            value={form.keywords.join(', ')}
+                                            value={Array.isArray(form.keywords) ? form.keywords.join(', ') : ''}
                                             onChange={(e) => setForm(p => ({ ...p, keywords: e.target.value.split(',').map(s => s.trimStart()) }))}
                                             placeholder="e.g. AI, Machine Learning, Robotics"
                                         />
@@ -1839,7 +1839,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                     <div className="pcw-review-section" style={{ marginBottom: '20px' }}>
                                         <div className="pcw-review-section-title">Step 2 — Book Metadata</div>
                                         <div className="pcw-review-row"><span className="pcw-review-key">Title</span><span className="pcw-review-val">{form.title || '–'}</span></div>
-                                        <div className="pcw-review-row"><span className="pcw-review-key">Editors</span><span className="pcw-review-val">{form.editors.join(', ') || '–'}</span></div>
+                                        <div className="pcw-review-row"><span className="pcw-review-key">Editors</span><span className="pcw-review-val">{Array.isArray(form.editors) ? form.editors.join(', ') : (form.editors || '–')}</span></div>
                                         <div className="pcw-review-row"><span className="pcw-review-key">Category</span><span className="pcw-review-val">{form.category || '–'}</span></div>
                                         <div className="pcw-review-row"><span className="pcw-review-key">ISBN</span><span className={`pcw-review-val ${!form.isbn ? 'missing' : ''}`}>{form.isbn || 'Not set!'}</span></div>
                                         <div className="pcw-review-row"><span className="pcw-review-key">DOI</span><span className="pcw-review-val">{form.doi || '–'}</span></div>

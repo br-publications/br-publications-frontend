@@ -6,6 +6,7 @@ export interface Book {
   author: string;
   "co-authors"?: string;
   editors?: string[];
+  keywords?: string[];
   primaryEditor?: string;
   editorDetails?: PublishedEditor[];
   coverImage: string;
