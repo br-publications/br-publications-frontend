@@ -335,11 +335,30 @@
     text-decoration: underline;
 }
 
-.chapter-card-meta {
+.chapter-card-metadata {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 4px;
+}
+
+.metadata-item {
+    font-size: 11px;
+    color: var(--text-medium);
+    display: flex;
+    align-items: center;
+}
+
+.metadata-item strong {
+    color: var(--primary-blue);
+    margin-right: 4px;
+}
+
+.chapter-card-authors {
     font-size: 12px;
     color: #1a7a5e;
-    line-height: 1.5;
-    margin: 0;
+    margin-bottom: 4px;
+    font-weight: 600;
 }
 
 .chapter-card-abstract {

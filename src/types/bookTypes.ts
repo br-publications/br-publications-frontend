@@ -23,6 +23,7 @@ export interface Book {
   scope?: ScopeSection;
   tableContents?: TableOfContentsSection;
   authorBiographies?: AuthorBiographiesSection;
+  editorBiographies?: EditorBiographiesSection;
   archives?: ArchivesSection;
   pricing?: {
     softCopyPrice?: number;
@@ -74,22 +75,38 @@ export interface ScopeSection {
   [key: string]: string; // paragrapgh_1, list_1, list_2, etc.
 }
 
-export interface TableOfContentsSection {
-  [key: string]: string; // list_1, list_2, etc.
-}
+
 
 export interface AuthorBiography {
   authorName: string;
   biography: string;
+  affiliation?: string;
+  email?: string;
 }
 
-export interface AuthorBiographiesSection {
-  [key: string]: AuthorBiography; // author_1, author_2, etc.
+export type AuthorBiographiesSection = 
+  | { [key: string]: AuthorBiography }
+  | AuthorBiography[];
+
+export interface EditorBiography {
+  editorName: string;
+  biography: string;
+  affiliation?: string;
+  email?: string;
 }
+
+export type EditorBiographiesSection = 
+  | { [key: string]: EditorBiography }
+  | EditorBiography[];
+
+export type TableOfContentsSection = 
+  | { [key: string]: string }
+  | any[];
 
 export interface ArchivesSection {
-  [key: string]: string; // paragrapgh_1, list_1, list_2, etc.
+  [key: string]: string;
 }
+
 
 export interface BooksResponse {
   books: Book[];

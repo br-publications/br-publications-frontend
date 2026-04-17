@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { findEditors, type PublishedEditor } from '../../services/bookChapterPublishing.service';
 import type { Book } from '../../types/bookTypes';
 import bookChapterService from '../../services/bookChapterService';
 import { generateUniqueSlug } from '../../utils/stringUtils';
@@ -17,6 +18,18 @@ const ProductBookChapter: React.FC = () => {
     'Medical & Health Sciences',
     'Interdisciplinary Sciences',
   ]);
+
+  /**
+   * Helper to normalize names for reliable matching
+   */
+  const normalizeName = (name: string | null | undefined): string => {
+    if (!name) return '';
+    return name
+      .replace(/\u00A0/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+  };
   const [selectedCategory, setSelectedCategory] = useState<string>(location.state?.category || 'All');
   const [searchQuery, setSearchQuery] = useState<string>(location.state?.searchQuery || '');
   const [author, setAuthor] = useState<string>(location.state?.author || '');
@@ -24,6 +37,7 @@ const ProductBookChapter: React.FC = () => {
   const [publishedBefore, setPublishedBefore] = useState<string>(location.state?.publishedBefore || '');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [resolvedEditors, setResolvedEditors] = useState<PublishedEditor[]>([]);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -85,6 +99,49 @@ const ProductBookChapter: React.FC = () => {
 
     fetchData();
   }, [selectedCategory, searchQuery, author, publishedAfter, publishedBefore]);
+
+  /**
+   * Dynamic ID Resolution for Editors in the list
+   */
+  useEffect(() => {
+    const resolveMissingEditorIds = async () => {
+      // Get all unique editor names from the current filtered books that don't have details
+      const allEditorNames = Array.from(new Set(
+        filteredBooks.flatMap(b => b.editors || [])
+      ));
+
+      const missingNames = allEditorNames.filter(name => 
+        !resolvedEditors.some(re => re.name.trim().toLowerCase() === name.trim().toLowerCase()) &&
+        !filteredBooks.some(b => b.editorDetails?.some(ed => ed.name.trim().toLowerCase() === name.trim().toLowerCase()))
+      );
+
+      if (missingNames.length === 0) return;
+
+      // Limit to avoid hitting rate limits or flooding (resolve first 10 missing)
+      const namesToResolve = missingNames.slice(0, 10);
+
+      try {
+        const results = await Promise.all(
+          namesToResolve.map(name => findEditors({ name }))
+        );
+        
+        const newlyFound = results.flat().filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
+        
+        if (newlyFound.length > 0) {
+          setResolvedEditors(prev => {
+            const combined = [...prev, ...newlyFound];
+            return combined.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
+          });
+        }
+      } catch (err) {
+        console.error('Error resolving editor IDs in list:', err);
+      }
+    };
+
+    if (filteredBooks.length > 0) {
+      resolveMissingEditorIds();
+    }
+  }, [filteredBooks, resolvedEditors.length]);
 
   /**
    * Sync category and search query if location state changes (e.g., from header search)
@@ -273,11 +330,34 @@ const ProductBookChapter: React.FC = () => {
                           </div>
                           <div className="book-info">
                             <h3>{book.title}</h3>
-                            <p>
-                              {Array.isArray(book.editors) && book.editors.length > 0
-                                ? `${book.editors.join(', ')}`
-                                : `${book.author}`}
+                            <p className="editors-list">
+                              {Array.isArray(book.editors) && book.editors.length > 0 ? (
+                                book.editors.map((editorName, index) => {
+                                  const normalizedTarget = normalizeName(editorName);
+                                  const editorDetail = (book.editorDetails || []).find(ed => normalizeName(ed.name) === normalizedTarget) || 
+                                                       resolvedEditors.find(ed => normalizeName(ed.name) === normalizedTarget);
+                                  return (
+                                    <React.Fragment key={index}>
+                                      {editorDetail ? (
+                                        <Link
+                                          to={`/editor/${editorDetail.id}`}
+                                          className="editor-link"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          {editorName}
+                                        </Link>
+                                      ) : (
+                                        editorName
+                                      )}
+                                      {index < (book.editors?.length || 0) - 1 ? ', ' : ''}
+                                    </React.Fragment>
+                                  );
+                                })
+                              ) : (
+                                book.author
+                              )}
                             </p>
+
                           </div>
                           <div className="book-buttons">
                             <button

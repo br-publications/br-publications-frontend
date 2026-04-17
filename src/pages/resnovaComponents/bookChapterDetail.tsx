@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import type { Book, SectionContent } from '../../types/bookTypes';
 import bookChapterService from '../../services/bookChapterService';
-import { getExtraPdfUrl, incrementChapterViews } from '../../services/bookChapterPublishing.service';
+import { getExtraPdfUrl, incrementChapterViews, findEditors, type PublishedEditor } from '../../services/bookChapterPublishing.service';
 import { contactService, type ContactDetails } from '../../services/contactService';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -18,13 +18,26 @@ const BookChapterDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-
   const [book, setBook] = useState<Book | null>(null);
+
+  /**
+   * Helper to normalize names for reliable matching
+   * Handle non-breaking spaces, multi-spaces, and casing
+   */
+  const normalizeName = (name: string | null | undefined): string => {
+    if (!name) return '';
+    return name
+      .replace(/\u00A0/g, ' ') // Replace non-breaking spaces with regular spaces
+      .replace(/\s+/g, ' ')    // Collapse multiple spaces
+      .trim()
+      .toLowerCase();
+  };
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('synopsis');
   const [contactInfo, setContactInfo] = useState<ContactDetails | null>(null);
   const [tocSearchQuery, setTocSearchQuery] = useState<string>('');
+  const [resolvedEditors, setResolvedEditors] = useState<PublishedEditor[]>([]);
 
   /**
    * Helper function to parse section content into paragraphs and lists
@@ -121,6 +134,43 @@ const BookChapterDetail: React.FC = () => {
     loadBookDetails();
     return () => { resetSeo(); };
   }, [id, location.state]);
+
+  /**
+   * Dynamic ID Resolution for Editors
+   */
+  useEffect(() => {
+    const resolveEditorIds = async () => {
+      if (!book?.editors) return;
+
+      // Filter editors that don't have details in book.editorDetails
+      const missingEditors = book.editors.filter(name => {
+        const normalized = normalizeName(name);
+        return !book.editorDetails?.some(ed => normalizeName(ed.name) === normalized);
+      });
+
+      if (missingEditors.length === 0) return;
+
+      try {
+        const results = await Promise.all(
+          missingEditors.map(name => findEditors({ name }))
+        );
+
+        // Flatten and merge with unique result
+        const newlyFound = results.flat().filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
+
+        if (newlyFound.length > 0) {
+          setResolvedEditors(prev => {
+            const combined = [...prev, ...newlyFound];
+            return combined.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
+          });
+        }
+      } catch (err) {
+        console.error('Error resolving editor IDs:', err);
+      }
+    };
+
+    resolveEditorIds();
+  }, [book?.editors, book?.editorDetails]);
 
   // Fetch contact info for the pricing card hover links
   useEffect(() => {
@@ -265,27 +315,32 @@ const BookChapterDetail: React.FC = () => {
                 {/* Book Details */}
                 <div className="book-details">
                   <h1>{book.title}</h1>
-                    <p className="author-list">
-                      {Array.isArray(book.editors) && book.editors.length > 0 ? (
-                        book.editors.map((editorName, index) => {
-                          const editorDetail = book.editorDetails?.find(ed => ed.name === editorName);
-                          return (
-                            <React.Fragment key={index}>
-                              {editorDetail ? (
-                                <Link to={`/editor/${editorDetail.id}`} className="editor-link">
-                                  {editorName}
-                                </Link>
-                              ) : (
-                                editorName
-                              )}
-                              {index < (book.editors?.length || 0) - 1 ? ', ' : ''}
-                            </React.Fragment>
-                          );
-                        })
-                      ) : (
-                        <span>{book.author}</span>
-                      )}
-                    </p>
+                  <p className="author-list">
+                    {Array.isArray(book.editors) && book.editors.length > 0 ? (
+                      book.editors.map((editorName, index) => {
+                        const normalizedTarget = normalizeName(editorName);
+                        const editorDetail = book.editorDetails?.find(ed =>
+                          normalizeName(ed.name) === normalizedTarget
+                        ) || resolvedEditors.find(ed =>
+                          normalizeName(ed.name) === normalizedTarget
+                        );
+                        return (
+                          <React.Fragment key={index}>
+                            {editorDetail ? (
+                              <Link to={`/editor/${editorDetail.id}`} className="editor-link">
+                                {editorName}
+                              </Link>
+                            ) : (
+                              editorName
+                            )}
+                            {index < (book.editors?.length || 0) - 1 ? ', ' : ''}
+                          </React.Fragment>
+                        );
+                      })
+                    ) : (
+                      <span>{book.author}</span>
+                    )}
+                  </p>
 
                   <div className="meta-info">
                     {book.indexedIn && (
@@ -482,18 +537,8 @@ const BookChapterDetail: React.FC = () => {
                   >
                     Table of Contents
                   </button>
-                  <button
-                    className={`tab-btn ${activeTab === 'biographies' ? 'active' : ''}`}
-                    onClick={() => handleTabChange('biographies')}
-                  >
-                    Author Biographies
-                  </button>
-                  <button
-                    className={`tab-btn ${activeTab === 'archives' ? 'active' : ''}`}
-                    onClick={() => handleTabChange('archives')}
-                  >
-                    Archives
-                  </button>
+                  {book.authorBiographies && <button className={`tab-btn ${activeTab === 'biographies' ? 'active' : ''}`} onClick={() => setActiveTab('biographies')}>Author Biographies</button>}
+                  {book.archives && <button className={`tab-btn ${activeTab === 'archives' ? 'active' : ''}`} onClick={() => setActiveTab('archives')}>Archives</button>}
                 </div>
 
                 {/* Tab Content */}
@@ -560,7 +605,7 @@ const BookChapterDetail: React.FC = () => {
                         {/* Frontmatter Rows - Hidden when searching */}
                         {!tocSearchQuery && (
                           <>
-                            {book.frontmatterPdfs?.['Frontmatter'] && (
+                            {book.frontmatterPdfs?.['Frontmatter']?.pdfKey && (
                               <div className="toc-frontmatter-row">
                                 <span className="row-title">Frontmatter</span>
                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Frontmatter'), '_blank')}>
@@ -568,7 +613,7 @@ const BookChapterDetail: React.FC = () => {
                                 </button>
                               </div>
                             )}
-                            {book.frontmatterPdfs?.['Detailed Table of Contents'] && (
+                            {book.frontmatterPdfs?.['Detailed Table of Contents']?.pdfKey && (
                               <div className="toc-frontmatter-row">
                                 <span className="row-title">Detailed Table of Contents</span>
                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Detailed Table of Contents'), '_blank')}>
@@ -576,7 +621,7 @@ const BookChapterDetail: React.FC = () => {
                                 </button>
                               </div>
                             )}
-                            {book.frontmatterPdfs?.['Preface'] && (
+                            {book.frontmatterPdfs?.['Preface']?.pdfKey && (
                               <div className="toc-frontmatter-row">
                                 <span className="row-title">Preface</span>
                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Preface'), '_blank')}>
@@ -584,7 +629,7 @@ const BookChapterDetail: React.FC = () => {
                                 </button>
                               </div>
                             )}
-                            {book.frontmatterPdfs?.['Acknowledgment'] && (
+                            {book.frontmatterPdfs?.['Acknowledgment']?.pdfKey && (
                               <div className="toc-frontmatter-row">
                                 <span className="row-title">Acknowledgment</span>
                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Acknowledgment'), '_blank')}>
@@ -633,12 +678,14 @@ const BookChapterDetail: React.FC = () => {
                                     <p className="chapter-abstract">{chapter.abstract}</p>
                                   </div>
                                   <div className="chapters-actions-area">
-                                    <button
-                                      className="btn-view-pdf-alt"
-                                      onClick={() => handleChapterAction(chapter, 'pdf')}
-                                    >
-                                      <PictureAsPdfIcon fontSize="small" /> View PDF
-                                    </button>
+                                    {chapter.pdfUrl && (
+                                      <button
+                                        className="btn-view-pdf-alt"
+                                        onClick={() => handleChapterAction(chapter, 'pdf')}
+                                      >
+                                        <PictureAsPdfIcon fontSize="small" /> View PDF
+                                      </button>
+                                    )}
                                     <button
                                       className="btn-preview"
                                       onClick={() => handleChapterAction(chapter, 'view')}
@@ -681,7 +728,7 @@ const BookChapterDetail: React.FC = () => {
                         {/* Backmatter Rows - Hidden when searching */}
                         {!tocSearchQuery && (
                           <>
-                            {book.frontmatterPdfs?.['About the Contributors'] && (
+                            {book.frontmatterPdfs?.['About the Contributors']?.pdfKey && (
                               <div className="toc-frontmatter-row">
                                 <span className="row-title">About the Contributors</span>
                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'About the Contributors'), '_blank')}>
@@ -689,7 +736,7 @@ const BookChapterDetail: React.FC = () => {
                                 </button>
                               </div>
                             )}
-                            {book.frontmatterPdfs?.['Index'] && (
+                            {book.frontmatterPdfs?.['Index']?.pdfKey && (
                               <div className="toc-frontmatter-row">
                                 <span className="row-title">Index</span>
                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Index'), '_blank')}>
@@ -708,19 +755,22 @@ const BookChapterDetail: React.FC = () => {
                     <div className="tab-content active">
                       <h3>Author Biographies</h3>
                       {book.authorBiographies ? (
-                        Object.values(book.authorBiographies).map((author, index) => {
+                        (Array.isArray(book.authorBiographies)
+                          ? book.authorBiographies
+                          : Object.values(book.authorBiographies)
+                        ).map((author, index) => {
                           // Try to find author ID from any chapter's authorDetails
                           const linkedAuthor = book.chapters?.flatMap(c => c.authorDetails || [])
-                            .find(a => a.name === author.authorName);
+                            .find(a => a.name === (author as any).authorName || (author as any).name);
 
                           return (
                             <div key={index} className="author-bio">
                               <p>
                                 <strong>
                                   {linkedAuthor ? (
-                                    <Link to={`/author/${linkedAuthor.id}`}>{author.authorName}</Link>
-                                  ) : author.authorName}
-                                </strong> {author.biography}
+                                    <Link to={`/author/${linkedAuthor.id}`}>{(author as any).authorName || (author as any).name}</Link>
+                                  ) : ((author as any).authorName || (author as any).name)}
+                                </strong> {(author as any).biography}
                               </p>
                             </div>
                           );
@@ -730,6 +780,38 @@ const BookChapterDetail: React.FC = () => {
                       )}
                     </div>
                   )}
+
+                  {/* Editor Biographies Tab 
+                  {activeTab === 'editor_biographies' && (
+                    <div className="tab-content active">
+                      <h3>Editor Biographies</h3>
+                      {book.editorBiographies ? (
+                        (Array.isArray(book.editorBiographies)
+                          ? book.editorBiographies
+                          : Object.values(book.editorBiographies)
+                        ).map((editor, index) => {
+                          const editorName = (editor as any).editorName || (editor as any).name;
+                          const linkedEditor = (book.editorDetails || [])
+                            .concat(resolvedEditors)
+                            .find(e => e.name.trim().toLowerCase() === editorName.trim().toLowerCase());
+
+                          return (
+                            <div key={index} className="author-bio">
+                              <p>
+                                <strong>
+                                  {linkedEditor ? (
+                                    <Link to={`/editor/${linkedEditor.id}`}>{editorName}</Link>
+                                  ) : editorName}
+                                </strong> {(editor as any).biography}
+                              </p>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <p>No editor biographies available for this book.</p>
+                      )}
+                    </div>
+                  )} */}
 
                   {/* Archives Tab */}
                   {activeTab === 'archives' && (

@@ -8,7 +8,18 @@ import { generateUniqueSlug } from '../../utils/stringUtils';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import './chapterDetail.css';
 
+/**
+ * Helper to truncate text to a specific number of words
+ */
+const truncateWords = (text: string, count: number) => {
+    if (!text) return '';
+    const words = text.split(/\s+/).filter(w => w.length > 0);
+    if (words.length <= count) return text;
+    return words.slice(0, count).join(' ') + '...';
+};
+
 const ChapterDetail: React.FC = () => {
+
     const { id, chapterId } = useParams<{ id: string; chapterId: string }>();
     const navigate = useNavigate();
     const [book, setBook] = useState<Book | null>(null);
@@ -142,8 +153,9 @@ const ChapterDetail: React.FC = () => {
                     <Link to="/bookchapters">Books</Link>
                     <ChevronRight size={14} className="breadcrumb-separator" />
                     <Link to={`/bookchapter/${book.id}/${generateUniqueSlug(book.isbn, book.releaseDate)}`}>
-                        {book.title}
+                        {truncateWords(book.title, 4)}
                     </Link>
+
                     <ChevronRight size={14} className="breadcrumb-separator" />
                     <span className="current-page">{chapter.title}</span>
                 </div>
@@ -206,7 +218,7 @@ const ChapterDetail: React.FC = () => {
                                 {/* Frontmatter Rows - Hidden when searching */}
                                 {!chapterSearchQuery && (
                                     <>
-                                        {book.frontmatterPdfs?.['Dedication'] && (
+                                        {book.frontmatterPdfs?.['Dedication']?.pdfKey && (
                                             <div className="toc-frontmatter-row">
                                                 <span className="row-title">Dedication</span>
                                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Dedication'), '_blank')}>
@@ -214,7 +226,7 @@ const ChapterDetail: React.FC = () => {
                                                 </button>
                                             </div>
                                         )}
-                                        {book.frontmatterPdfs?.['Table of Contents'] && (
+                                        {book.frontmatterPdfs?.['Table of Contents']?.pdfKey && (
                                             <div className="toc-frontmatter-row">
                                                 <span className="row-title">Table of Contents</span>
                                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Table of Contents'), '_blank')}>
@@ -222,6 +234,7 @@ const ChapterDetail: React.FC = () => {
                                                 </button>
                                             </div>
                                         )}
+
                                     </>
                                 )}
 
@@ -254,13 +267,16 @@ const ChapterDetail: React.FC = () => {
                                                         <div className="ch-price-box">
                                                             <span>Download This Chapter</span>
                                                         </div>
+                                                        {ch.pdfUrl && (
+                                                            <button
+                                                                className="btn-view-pdf-alt"
+                                                                onClick={() => handleViewPdf(ch)}
+                                                            >
+                                                                <PictureAsPdfIcon fontSize="small" /> View PDF
+                                                            </button>
+                                                        )}
                                                         <button
-                                                            className="btn-view-pdf-alt"
-                                                            onClick={() => handleViewPdf(ch)}
-                                                        >
-                                                            <PictureAsPdfIcon fontSize="small" /> View PDF
-                                                        </button>
-                                                        <button
+
                                                             className="btn-preview"
                                                             onClick={() => handleViewChapter(ch)}
                                                         >
@@ -282,7 +298,7 @@ const ChapterDetail: React.FC = () => {
                                 {/* Backmatter Rows - Hidden when searching */}
                                 {!chapterSearchQuery && (
                                     <>
-                                        {book.frontmatterPdfs?.['About the Contributors'] && (
+                                        {book.frontmatterPdfs?.['About the Contributors']?.pdfKey && (
                                             <div className="toc-frontmatter-row">
                                                 <span className="row-title">About the Contributors</span>
                                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'About the Contributors'), '_blank')}>
@@ -290,7 +306,7 @@ const ChapterDetail: React.FC = () => {
                                                 </button>
                                             </div>
                                         )}
-                                        {book.frontmatterPdfs?.['Index'] && (
+                                        {book.frontmatterPdfs?.['Index']?.pdfKey && (
                                             <div className="toc-frontmatter-row">
                                                 <span className="row-title">Index</span>
                                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Index'), '_blank')}>
@@ -298,6 +314,7 @@ const ChapterDetail: React.FC = () => {
                                                 </button>
                                             </div>
                                         )}
+
                                     </>
                                 )}
                             </div>

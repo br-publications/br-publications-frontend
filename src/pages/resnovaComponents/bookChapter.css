@@ -190,6 +190,24 @@
   margin: 0;
 }
 
+.editors-list {
+  font-size: 11px !important;
+  color: var(--text-medium) !important;
+  margin-top: 5px !important;
+}
+
+.editor-link {
+  color: var(--primary-blue);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.editor-link:hover {
+  text-decoration: underline;
+  color: var(--dark-blue);
+}
+
 
 /* Responsive Design */
 @media (max-width: 1024px) {

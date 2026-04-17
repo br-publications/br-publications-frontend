@@ -15,6 +15,21 @@ import type { PublishedBookChapter } from './bookChapterPublishing.service';
  */
 class BookChapterService {
     /**
+     * Helper to safely parse JSON strings or return the data as is if already an object/array.
+     */
+    private safeJsonParse<T>(data: any, defaultValue: T): T {
+        if (typeof data === 'string' && data.trim().startsWith('{') || typeof data === 'string' && data.trim().startsWith('[')) {
+            try {
+                return JSON.parse(data) as T;
+            } catch (error) {
+                console.error('Failed to parse JSON field:', error);
+                return defaultValue;
+            }
+        }
+        return (data as T) || defaultValue;
+    }
+
+    /**
      * Helper to map backend PublishedBookChapter to frontend Book interface
      */
     private mapBookData(data: PublishedBookChapter): Book {
@@ -26,9 +41,18 @@ class BookChapterService {
             coverImage = data.coverImage;
         }
 
+        // Parse JSON fields that might be returned as strings from the backend
+        const synopsis = this.safeJsonParse(data.synopsis, {});
+        const scope = this.safeJsonParse(data.scope, {});
+        const tableContentsArray = this.safeJsonParse<any[]>(data.tableContents, []);
+        const authorBiographies = this.safeJsonParse(data.authorBiographies, []);
+        const archives = this.safeJsonParse(data.archives, {});
+        const pricing = this.safeJsonParse(data.pricing, {});
+        const frontmatterPdfs = this.safeJsonParse(data.frontmatterPdfs, {});
+        const editorBiographies = this.safeJsonParse<any>(data.editorBiographies || (data as any).editor_biographies, []);
+
         // Map chapters — Prefer relational 'chapters' if available, fallback to 'tableContents' JSONB
         let mappedChapters: Chapter[] = [];
-
 
         if (data.chapters && data.chapters.length > 0) {
             mappedChapters = data.chapters.map((ch, index: number) => ({
@@ -45,7 +69,7 @@ class BookChapterService {
                 authorDetails: ch.authorDetails
             }));
         } else {
-            mappedChapters = (data.tableContents || []).map((toc, index: number) => ({
+            mappedChapters = tableContentsArray.map((toc: any, index: number) => ({
                 id: `chapter-${index + 1}`,
                 chapterNumber: toc.chapterNumber || `Chapter ${index + 1}`,
                 title: toc.title || '',
@@ -60,23 +84,46 @@ class BookChapterService {
         }
 
         // Defensive mapping for arrays that might be returned as strings or null from backend
-        const safeEditors = Array.isArray(data.editors)
-            ? data.editors
-            : (typeof data.editors === 'string' ? [data.editors] : []);
+        const editorsRaw = data.editors;
+        let safeEditors: string[] = [];
+        if (Array.isArray(editorsRaw)) {
+            safeEditors = editorsRaw;
+        } else if (typeof editorsRaw === 'string') {
+            const parsed = this.safeJsonParse<any>(editorsRaw, null);
+            if (Array.isArray(parsed)) {
+                safeEditors = parsed;
+            } else {
+                // Not a JSON array, split by comma and trim
+                safeEditors = (editorsRaw as string).split(',').map(s => s.trim()).filter(Boolean);
+            }
+        }
 
-        const safeKeywords = Array.isArray(data.keywords)
-            ? data.keywords
-            : (typeof data.keywords === 'string' ? [data.keywords] : []);
+        const keywordsRaw = data.keywords;
+        const safeKeywords = Array.isArray(keywordsRaw)
+            ? keywordsRaw
+            : (typeof keywordsRaw === 'string' ? this.safeJsonParse(keywordsRaw, [keywordsRaw]) : []);
+
+        // Also check biographies for editor names if safeEditors is empty
+        if (safeEditors.length === 0 && (editorBiographies as any)) {
+            if (Array.isArray(editorBiographies)) {
+                safeEditors = (editorBiographies as any).map((eb: any) => eb.editorName || eb.name);
+            } else if (typeof editorBiographies === 'object' && editorBiographies !== null) {
+                safeEditors = Object.values(editorBiographies).map((eb: any) => eb.editorName || eb.name);
+            }
+        }
+
+        // Distinct names
+        safeEditors = [...new Set(safeEditors)];
 
         return {
             id: data.id,
             title: data.title,
             author: data.author,
             "co-authors": data.coAuthors,
-            editors: safeEditors,
-            keywords: safeKeywords,
+            editors: Array.isArray(safeEditors) ? safeEditors : [safeEditors],
+            keywords: Array.isArray(safeKeywords) ? safeKeywords : [safeKeywords],
             primaryEditor: data.primaryEditor,
-            editorDetails: data.editorDetails,
+            editorDetails: this.safeJsonParse(data.editorDetails || (data as any).editor_details || (data as any).publishedEditors, []),
             coverImage: coverImage,
             category: data.category,
             description: data.description || '',
@@ -87,18 +134,20 @@ class BookChapterService {
             isbn: data.isbn,
             publishedDate: data.publishedDate,
             pages: data.pages,
-            synopsis: data.synopsis,
-            scope: data.scope,
-            tableContents: data.tableContents as any, // Raw toc
-            authorBiographies: data.authorBiographies as any,
-            archives: data.archives,
-            pricing: data.pricing,
+            synopsis,
+            scope,
+            tableContents: tableContentsArray as any, // Raw toc
+            authorBiographies,
+            editorBiographies,
+            archives,
+            pricing,
             chapters: mappedChapters,
             googleLink: data.googleLink,
             flipkartLink: data.flipkartLink,
             amazonLink: data.amazonLink,
-            frontmatterPdfs: data.frontmatterPdfs
+            frontmatterPdfs
         };
+
     }
 
     /**

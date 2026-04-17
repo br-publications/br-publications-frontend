@@ -9,6 +9,7 @@ import {
     ChevronUp,
 } from 'lucide-react';
 import { getEditorById, type PublishedEditor } from '../../../services/bookChapterPublishing.service';
+import { generateUniqueSlug } from '../../../utils/stringUtils';
 import './editorDetail.css';
 
 const EditorDetail: React.FC = () => {
@@ -154,9 +155,6 @@ const EditorDetail: React.FC = () => {
                     </div>
                 </div>
 
-                {/* ══════════════════════════════════
-                    CHAPTERS & PUBLICATIONS SECTION
-                ═══════════════════════════════════ */}
                 <div className="section-block">
                     <div className="section-heading">
                         <BookOpen size={14} />
@@ -169,33 +167,33 @@ const EditorDetail: React.FC = () => {
                                 <div
                                     key={book.id}
                                     className="chapter-card"
-                                    onClick={() => navigate(`/bookchapter/${book.id}`)}
+                                    onClick={() => navigate(`/bookchapter/${book.id}/${generateUniqueSlug(book.isbn, (book as any).publishedDate || (book as any).releaseDate)}`)}
                                 >
-                                    {/* Book cover thumbnail */}
                                     <div className="chapter-cover">
                                         <img
-                                            src={`${API_BASE_URL}/api/book-chapter-publishing/${book.id}/cover/thumbnail`}
+                                            src={`${API_BASE_URL}/api/book-chapter-publishing/${book.id}/cover/thumbnail?width=64&height=88`}
                                             alt={book.title}
                                             onError={(e) => {
-                                                (e.target as HTMLImageElement).src =
-                                                    'https://via.placeholder.com/64x88/1e5292/ffffff?text=BR';
+                                                (e.target as HTMLImageElement).src = '/assets/books/placeholder.png';
                                             }}
                                         />
                                     </div>
-
-                                    {/* Book text */}
                                     <div className="chapter-body">
-                                        <h3 className="chapter-card-title">{book.title}</h3>
-                                        <p className="chapter-card-meta">
-                                            {book.author
-                                                ? `${book.author}. `
-                                                : ''}
-                                            {book.isbn
-                                                ? ` — ISBN: ${book.isbn}`
-                                                : ''}
-                                            {book.publishedDate
-                                                ? `. Published: ${book.publishedDate}`
-                                                : ''}
+                                        <h4 className="chapter-card-title">{book.title}</h4>
+                                        <div className="chapter-card-metadata">
+                                            {book.isbn && (
+                                                <div className="metadata-item">
+                                                    <strong>ISBN:</strong> {book.isbn}
+                                                </div>
+                                            )}
+                                            {(book as any).publishedDate && (
+                                                <div className="metadata-item">
+                                                    <strong>Published:</strong> {(book as any).publishedDate}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <p className="chapter-card-authors">
+                                            {book.author ? `Author: ${book.author}` : 'Associated Publication'}
                                         </p>
                                         <p className="chapter-card-abstract">
                                             {book.description ||

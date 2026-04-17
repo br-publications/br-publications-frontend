@@ -11,7 +11,7 @@ interface ApiResponse<T> {
 const notificationService = {
     getUserNotifications: async (page = 1, limit = 20): Promise<ApiResponse<NotificationResponse>> => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/notifications?page=${page}&limit=${limit}`, {
+            const response = await fetch(`${API_BASE_URL}/api/notifications/?page=${page}&limit=${limit}`, {
                 method: 'GET',
                 headers: getAuthHeaders(),
             });
