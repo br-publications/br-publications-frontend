@@ -55,38 +55,41 @@ export async function publishBooksSequentially(
         const bookStartTime = Date.now();
 
         try {
+            const processedMainAuthor = {
+                title: 'Mr/Ms.',
+                firstName: entry.mainAuthor.firstName,
+                lastName: entry.mainAuthor.lastName || '',
+                email: entry.mainAuthor.email || 'N/A',
+                phoneNumber: entry.mainAuthor.phoneNumber || 'N/A',
+                instituteName: entry.mainAuthor.institute || 'N/A',
+                designation: 'Author',
+                departmentName: 'N/A',
+                city: entry.mainAuthor.city || 'N/A',
+                state: entry.mainAuthor.state || 'N/A',
+                country: entry.mainAuthor.country || 'N/A',
+                isCorrespondingAuthor: true
+            };
+
+            const processedCoAuthors = entry.coAuthors.length > 0 ? entry.coAuthors.map(ca => ({
+                title: 'Mr/Ms.',
+                firstName: ca.firstName,
+                lastName: ca.lastName || '',
+                email: ca.email || 'N/A',
+                phoneNumber: ca.phoneNumber || 'N/A',
+                instituteName: ca.institute || 'N/A',
+                designation: 'Co-Author',
+                departmentName: 'N/A',
+                city: 'N/A',
+                state: 'N/A',
+                country: 'N/A',
+                isCorrespondingAuthor: false
+            })) : [];
+
             // Step 1: Submit textbook
             const submissionData: SubmitTextBookRequest = {
-                // ... same as before but explicitly add flag
                 bookTitle: entry.bookTitle,
-                mainAuthor: {
-                    title: 'Mr/Ms.',
-                    firstName: entry.mainAuthor.firstName,
-                    lastName: entry.mainAuthor.lastName,
-                    email: entry.mainAuthor.email,
-                    phoneNumber: 'N/A',
-                    instituteName: entry.mainAuthor.institute,
-                    designation: 'Author',
-                    departmentName: 'N/A',
-                    city: entry.mainAuthor.city || 'N/A',
-                    state: entry.mainAuthor.state || 'N/A',
-                    country: entry.mainAuthor.country || 'N/A',
-                    isCorrespondingAuthor: true
-                } as any,
-                coAuthors: entry.coAuthors.length > 0 ? entry.coAuthors.map(ca => ({
-                    title: 'Mr/Ms.',
-                    firstName: ca.firstName,
-                    lastName: ca.lastName,
-                    email: ca.email,
-                    phoneNumber: 'N/A',
-                    instituteName: ca.institute,
-                    designation: 'Co-Author',
-                    departmentName: 'N/A',
-                    city: 'N/A',
-                    state: 'N/A',
-                    country: 'N/A',
-                    isCorrespondingAuthor: false
-                } as any)) : null,
+                mainAuthor: processedMainAuthor as any,
+                coAuthors: processedCoAuthors.length > 0 ? processedCoAuthors as any : null,
                 contentFile: undefined,
                 fullTextFile: undefined,
                 isBulkSubmission: true,
@@ -113,8 +116,14 @@ export async function publishBooksSequentially(
             }
 
             const publicationDetails = {
-                isbnNumber: entry.isbn,
-                doiNumber: entry.doi,
+                bookTitle: entry.bookTitle,
+                author: `${processedMainAuthor.firstName} ${processedMainAuthor.lastName}`.trim(),
+                mainAuthor: processedMainAuthor,
+                coAuthors: processedCoAuthors,
+                isbn: entry.isbn,
+                isbnNumber: entry.isbn, // Pass both for compatibility
+                doi: entry.doi,
+                doiNumber: entry.doi,   // Pass both for compatibility
                 pages: entry.pages,
                 copyright: entry.copyright,
                 releaseDate: entry.releaseDate,

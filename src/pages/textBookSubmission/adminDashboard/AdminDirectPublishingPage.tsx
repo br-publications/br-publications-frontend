@@ -29,42 +29,43 @@ const AdminDirectPublishingPage: React.FC = () => {
                 return { title: '', firstName: '', lastName: '', email: '', phoneNumber: '', institute: '', city: '', state: '', country: '' };
             });
 
+            const processedMainAuthor = {
+                ...mainAuthor,
+                title: mainAuthor.title || 'Mr/Ms.',
+                firstName: mainAuthor.firstName,
+                lastName: mainAuthor.lastName || '',
+                email: mainAuthor.email || 'N/A',
+                phoneNumber: mainAuthor.phoneNumber || 'N/A',
+                instituteName: mainAuthor.institute || 'N/A',
+                designation: 'Author',
+                departmentName: 'N/A',
+                city: mainAuthor.city || 'N/A',
+                state: mainAuthor.state || 'N/A',
+                country: mainAuthor.country || 'N/A',
+                isCorrespondingAuthor: true
+            };
+
+            const processedCoAuthors = coAuthors.length > 0 ? coAuthors.map((ca: any) => ({
+                ...ca,
+                title: ca.title || 'Mr/Ms.',
+                firstName: ca.firstName,
+                lastName: ca.lastName || '',
+                email: ca.email || 'N/A',
+                phoneNumber: ca.phoneNumber || 'N/A',
+                instituteName: ca.institute || 'N/A',
+                designation: 'Co-Author',
+                departmentName: 'N/A',
+                city: ca.city || 'N/A',
+                state: ca.state || 'N/A',
+                country: ca.country || 'N/A',
+                isCorrespondingAuthor: false
+            })) : [];
+
             // Construct SubmitTextBookRequest
-            // Note: casting to any for Author fields as the API might expect slightly different structure than our form
-            // ideally we should map strictly to the Author type
             const submissionData: SubmitTextBookRequest = {
                 bookTitle: formData.bookTitle,
-                mainAuthor: {
-                    ...mainAuthor,
-                    // Ensure required fields for creation are present
-                    title: mainAuthor.title || 'Mr/Ms.',
-                    firstName: mainAuthor.firstName,
-                    lastName: mainAuthor.lastName || '',
-                    email: mainAuthor.email || 'N/A',
-                    phoneNumber: mainAuthor.phoneNumber || 'N/A',
-                    instituteName: mainAuthor.institute || 'N/A',
-                    designation: 'Author',
-                    departmentName: 'N/A',
-                    city: mainAuthor.city || 'N/A',
-                    state: mainAuthor.state || 'N/A',
-                    country: mainAuthor.country || 'N/A',
-                    isCorrespondingAuthor: true
-                } as any,
-                coAuthors: coAuthors.length > 0 ? coAuthors.map((ca: any) => ({
-                    ...ca,
-                    title: ca.title || 'Mr/Ms.',
-                    firstName: ca.firstName,
-                    lastName: ca.lastName || '',
-                    email: ca.email || 'N/A',
-                    phoneNumber: ca.phoneNumber || 'N/A',
-                    instituteName: ca.institute || 'N/A',
-                    designation: 'Co-Author',
-                    departmentName: 'N/A',
-                    city: ca.city || 'N/A',
-                    state: ca.state || 'N/A',
-                    country: ca.country || 'N/A',
-                    isCorrespondingAuthor: false
-                } as any)) : null,
+                mainAuthor: processedMainAuthor as any,
+                coAuthors: processedCoAuthors.length > 0 ? processedCoAuthors as any : null,
                 contentFile: formData.contentFile || undefined,
                 fullTextFile: formData.fullTextFile || undefined,
                 isDirectSubmission: true
@@ -86,8 +87,14 @@ const AdminDirectPublishingPage: React.FC = () => {
             const coverImageFile = formData.croppedCoverImage ? new File([formData.croppedCoverImage], "cover.png", { type: "image/png" }) : (formData.coverImage || undefined);
 
             const publicationDetails = {
-                isbnNumber: formData.isbn,
-                doiNumber: formData.doi,
+                bookTitle: formData.bookTitle,
+                author: `${processedMainAuthor.firstName} ${processedMainAuthor.lastName}`.trim(),
+                mainAuthor: processedMainAuthor,
+                coAuthors: processedCoAuthors,
+                isbn: formData.isbn,
+                isbnNumber: formData.isbn, // Pass both for compatibility
+                doi: formData.doi,
+                doiNumber: formData.doi,   // Pass both for compatibility
                 pages: formData.pages,
                 copyright: formData.copyright,
                 releaseDate: formData.releaseDate,
