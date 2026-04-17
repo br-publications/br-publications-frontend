@@ -17,7 +17,6 @@ import AlertPopup, { type AlertType } from '../../../components/common/alertPopu
 import PhoneNumberInput from '../../../components/common/PhoneNumberInput';
 import { isValidPhoneNumber } from '../../../utils/phoneValidation';
 import { isValidEmail } from '../../../utils/emailValidation';
-import { isValidUrl } from '../../../utils/urlValidation';
 import '../../../components/submissions/individualPublishChapterWizard.css';
 import '../../textBookSubmission/publishing/imageCropper.css';
 
@@ -889,7 +888,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                     </div>
                                     <div className="pcw-field span-full">
                                         <label className="pcw-label">Editors (comma separated) <span className="req">*</span></label>
-                                         <input
+                                        <input
                                             className="pcw-input"
                                             value={Array.isArray(form.editors) ? form.editors.join(', ') : ''}
                                             onChange={(e) => setForm(p => ({ ...p, editors: e.target.value.split(',').map(s => s.trim()) }))}
