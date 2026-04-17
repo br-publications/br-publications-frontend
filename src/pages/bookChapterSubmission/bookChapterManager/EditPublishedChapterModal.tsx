@@ -8,14 +8,16 @@ import { DESIGNATIONS } from '../../../types/bookChapterManuscriptTypes';
 import {
     uploadDirectTempPdf,
     getCoverUrl,
-    getPublishedChapterById
+    getPublishedChapterById,
+    findAuthors
 } from '../../../services/bookChapterPublishing.service';
-import type { TocChapterPayload, AuthorBiographyPayload } from '../../../services/bookChapterPublishing.service';
+import type { TocChapterPayload, AuthorBiographyPayload, EditorBiographyPayload } from '../../../services/bookChapterPublishing.service';
 import AuthorMultiSelect from '../../../components/common/AuthorMultiSelect';
 import AlertPopup, { type AlertType } from '../../../components/common/alertPopup';
 import PhoneNumberInput from '../../../components/common/PhoneNumberInput';
 import { isValidPhoneNumber } from '../../../utils/phoneValidation';
 import { isValidEmail } from '../../../utils/emailValidation';
+import { isValidUrl } from '../../../utils/urlValidation';
 import '../../../components/submissions/individualPublishChapterWizard.css';
 import '../../textBookSubmission/publishing/imageCropper.css';
 
@@ -30,7 +32,7 @@ interface EditPublishedChapterModalProps {
     onSave: (id: number, data: any) => Promise<void>;
 }
 
-type TabType = 'author' | 'metadata' | 'content' | 'toc' | 'bio' | 'review';
+type TabType = 'author' | 'editorBio' | 'metadata' | 'content' | 'toc' | 'bio' | 'review';
 
 interface TabDef {
     id: TabType;
@@ -40,11 +42,12 @@ interface TabDef {
 
 const TABS: TabDef[] = [
     { id: 'author', label: 'Authors', num: 1 },
-    { id: 'metadata', label: 'Book Metadata', num: 2 },
-    { id: 'content', label: 'Content', num: 3 },
-    { id: 'toc', label: 'TOC & Assets', num: 4 },
-    { id: 'bio', label: 'Biographies', num: 5 },
-    { id: 'review', label: 'Cover & Review', num: 6 },
+    { id: 'editorBio', label: 'Editor Biography', num: 2 },
+    { id: 'metadata', label: 'Book Metadata', num: 3 },
+    { id: 'content', label: 'Content', num: 4 },
+    { id: 'toc', label: 'TOC & Assets', num: 5 },
+    { id: 'bio', label: 'Biographies', num: 6 },
+    { id: 'review', label: 'Cover & Review', num: 7 },
 ];
 
 interface CoAuthorWithId extends Author {
@@ -58,6 +61,8 @@ interface FormState {
     title: string;
     category: string;
     description: string;
+    editors: string[];
+    primaryEditor?: string;
     isbn: string;
     publishedDate: string;
     pages: number;
@@ -75,7 +80,6 @@ interface FormState {
     scopeIntro: string;
     coverImage: string;
     keywords: string[];
-    editors: string[];
     frontmatterPdfs: Record<string, { pdfKey?: string; mimeType?: string; name?: string }>;
 }
 
@@ -144,6 +148,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
         coverImage: '',
         keywords: [],
         editors: [],
+        primaryEditor: '',
         frontmatterPdfs: {},
     });
 
@@ -157,6 +162,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
     const [biographies, setBiographies] = useState<AuthorBiographyPayload[]>([]);
     const [archiveIntro, setArchiveIntro] = useState('');
     const [archiveItems, setArchiveItems] = useState<string[]>(['']);
+    const [editorBiographies, setEditorBiographies] = useState<EditorBiographyPayload[]>([]);
 
     const [originalImage, setOriginalImage] = useState('');
     const [showCropper, setShowCropper] = useState(false);
@@ -168,6 +174,29 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
     const extraPdfInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
     // Data Pre-filling Logic
+    useEffect(() => {
+        if (!isOpen || !book) return;
+
+        // Auto-sync editor names from biographies to form.editors
+        const currentNames = editorBiographies.map(b => b.editorName.trim()).filter(Boolean);
+        setForm(prev => {
+            const currentString = Array.isArray(prev.editors) ? prev.editors.join(', ') : '';
+            if (currentString === currentNames.join(', ')) return prev;
+            const updated = { ...prev, editors: currentNames };
+            if (prev.primaryEditor && !currentNames.includes(prev.primaryEditor)) {
+                updated.primaryEditor = '';
+            }
+            return updated;
+        });
+    }, [editorBiographies, isOpen]);
+
+    useEffect(() => {
+        const mainAuthorName = `${form.mainAuthor.firstName} ${form.mainAuthor.lastName}`.trim();
+        if (mainAuthorName && Array.isArray(biographies) && biographies.length > 0 && biographies[0].authorName === '') {
+            setBiographies(prev => prev.map((b, i) => i === 0 ? { ...b, authorName: mainAuthorName } : b));
+        }
+    }, [form.mainAuthor.firstName, form.mainAuthor.lastName]);
+
     useEffect(() => {
         if (!isOpen || !book) return;
 
@@ -270,14 +299,27 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                 coverImage: bookData.coverImage || prev.coverImage || '',
                 keywords: bookData.keywords || prev.keywords || [],
                 editors: Array.isArray(bookData.editors) ? bookData.editors : (typeof bookData.editors === 'string' ? bookData.editors.split(',').map((s: string) => s.trim()) : prev.editors),
+                primaryEditor: bookData.primaryEditor || prev.primaryEditor || '',
                 frontmatterPdfs: parseJson(bookData.frontmatterPdfs) || prev.frontmatterPdfs || {},
             }));
 
             if (scItems.length > 0) setScopeItems(scItems);
             if (archIntro) setArchiveIntro(archIntro);
             if (archItems.length > 0) setArchiveItems(archItems);
-            if (bookData.tableContents) setTocChapters(bookData.tableContents);
-            if (bookData.authorBiographies) setBiographies(bookData.authorBiographies);
+            const tocData = parseJson(bookData.tableContents);
+            if (tocData && Array.isArray(tocData)) {
+                setTocChapters(tocData);
+            }
+
+            const bioData = parseJson(bookData.authorBiographies);
+            if (bioData && Array.isArray(bioData)) {
+                setBiographies(bioData);
+            }
+
+            const editorBioData = parseJson(bookData.editorBiographies);
+            if (editorBioData && Array.isArray(editorBioData)) {
+                setEditorBiographies(editorBioData);
+            }
         };
 
         const loadData = async () => {
@@ -290,7 +332,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                 // Step 2: Fetch full details (TOC, Biographies, etc.)
                 console.log("EditModal: Fetching full details for ID:", book.id);
                 const fullBookData = await getPublishedChapterById(book.id);
-                
+
                 if (!isMounted) return;
 
                 if (fullBookData) {
@@ -359,19 +401,50 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
         }));
     };
 
+    const addEditorBio = () => setEditorBiographies((p) => [...p, { editorName: '', affiliation: '', email: '', biography: '' }]);
+    const removeEditorBio = (i: number) => setEditorBiographies((p) => p.filter((_, idx) => idx !== i));
+    const updateEditorBio = (i: number, field: keyof EditorBiographyPayload, val: string) =>
+        setEditorBiographies((p) => p.map((b, idx) => (idx === i ? { ...b, [field]: val } : b)));
+
+    const handleEditorSearch = async (i: number) => {
+        const bio = editorBiographies[i];
+        if (!bio.editorName.trim()) return;
+        try {
+            const results = await findAuthors({ name: bio.editorName });
+            if (results && results.length > 0) {
+                const match = results[0];
+                setEditorBiographies(prev => prev.map((b, idx) => idx === i ? {
+                    ...b,
+                    editorName: match.name,
+                    affiliation: match.affiliation || b.affiliation,
+                    email: match.email || b.email,
+                    biography: match.biography || b.biography
+                } : b));
+            }
+        } catch (err) { console.error('Error searching editor details', err); }
+    };
+
     const validateTab = (tab: TabType): string => {
         switch (tab) {
             case 'author':
-                if (!form.mainAuthor.firstName.trim() || !form.mainAuthor.lastName.trim()) return 'Main Author first and last name are required.';
+                // if (!form.mainAuthor.firstName.trim() || !form.mainAuthor.lastName.trim()) return 'Main Author first and last name are required.';
                 if (form.mainAuthor.phoneNumber && !isValidPhoneNumber(form.mainAuthor.phoneNumber)) return 'Main Author: Phone number must be at least 10 digits.';
                 for (const ca of form.coAuthors) {
                     if (ca.phoneNumber && !isValidPhoneNumber(ca.phoneNumber)) return `Co-Author: ${ca.firstName} ${ca.lastName}'s phone number must be at least 10 digits.`;
                 }
                 break;
+            case 'editorBio':
+                if (form.editors.filter(e => e.trim()).length === 0) return 'At least one Editor is required.';
+                if (editorBiographies.some(b => !b.editorName.trim() || !b.biography.trim())) {
+                    return 'All editor biographies must have a name and biography text.';
+                }
+                break;
             case 'metadata':
                 if (!form.title.trim()) return 'Book title is required.';
-                if (form.editors.length === 0) return 'At least one editor is required.';
                 if (!form.isbn.trim()) return 'ISBN is required.';
+                if (form.priceSoftCopy === undefined || form.priceSoftCopy <= 0) return 'Soft Copy Price is required and must be positive.';
+                if (form.priceHardCopy === undefined || form.priceHardCopy <= 0) return 'Hard Copy Price is required and must be positive.';
+                if (form.priceCombined === undefined || form.priceCombined <= 0) return 'Soft + Hard Price is required and must be positive.';
                 break;
             case 'content':
                 if (form.synopses.some(s => !s.trim())) return 'All synopsis paragraphs must have content.';
@@ -395,7 +468,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
     };
 
     const handleNextTab = () => {
-        const order: TabType[] = ['author', 'metadata', 'content', 'toc', 'bio', 'review']; // Added 'bio'
+        const order: TabType[] = ['author', 'editorBio', 'metadata', 'content', 'toc', 'bio', 'review'];
         const err = validateTab(activeTab);
         if (err) {
             setErrors(err);
@@ -410,7 +483,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
     };
 
     const handlePrevTab = () => {
-        const order: TabType[] = ['author', 'metadata', 'content', 'toc', 'bio', 'review']; // Added 'bio'
+        const order: TabType[] = ['author', 'editorBio', 'metadata', 'content', 'toc', 'bio', 'review'];
         setErrors('');
         const idx = order.indexOf(activeTab);
         if (idx > 0) setActiveTab(order[idx - 1]);
@@ -536,6 +609,12 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
             const archives: Record<string, string> = { paragraph_1: archiveIntro };
             archiveItems.forEach((v, i) => { if (v.trim()) archives[`list_${i + 1}`] = v; });
 
+            const formatAffiliation = (aff: string | undefined) => {
+                if (!aff?.trim()) return aff;
+                const trimmed = aff.trim();
+                return (trimmed.startsWith('(') && trimmed.endsWith(')')) ? trimmed : `(${trimmed})`;
+            };
+
             const payload = {
                 title: form.title,
                 author: `${form.mainAuthor.firstName} ${form.mainAuthor.lastName}`.trim(),
@@ -566,9 +645,17 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                 }, {} as Record<string, string>),
                 scope,
                 tableContents: tocChapters.filter((c) => c.title.trim()),
-                authorBiographies: biographies.filter((b) => b.authorName.trim() || b.biography.trim()),
+                authorBiographies: biographies.filter((b) => b.authorName.trim() || b.biography.trim()).map(b => ({
+                    ...b,
+                    affiliation: formatAffiliation(b.affiliation)
+                })),
+                editorBiographies: editorBiographies.filter((b) => b.editorName.trim() || b.biography.trim()).map(b => ({
+                    ...b,
+                    affiliation: formatAffiliation(b.affiliation)
+                })),
                 archives,
                 editors: form.editors,
+                primaryEditor: form.primaryEditor || undefined,
                 keywords: form.keywords,
                 frontmatterPdfs: form.frontmatterPdfs,
             };
@@ -621,7 +708,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                             <div className="tab-pane active slide-in-bottom">
                                 <p className="pcw-step-title">Author Details</p>
                                 <div className="pcw-section-title">
-                                    <span>Main Author <span className="req">*</span></span>
+                                    <span>Main Author</span>
                                     {form.mainAuthor.isCorrespondingAuthor && (
                                         <span style={{ fontSize: '12px', background: '#e0e7ff', color: '#4338ca', padding: '2px 8px', borderRadius: '12px', fontWeight: 500, marginLeft: '8px' }}>
                                             Corresponding Author
@@ -630,11 +717,11 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                 </div>
                                 <div className="pcw-field-grid">
                                     <div className="pcw-field">
-                                        <label className="pcw-label">First Name <span className="req">*</span></label>
+                                        <label className="pcw-label">First Name</label>
                                         <input className="pcw-input" value={form.mainAuthor.firstName} onChange={(e) => handleMainAuthorChange('firstName', e.target.value)} placeholder="e.g. John" />
                                     </div>
                                     <div className="pcw-field">
-                                        <label className="pcw-label">Last Name <span className="req">*</span></label>
+                                        <label className="pcw-label">Last Name</label>
                                         <input className="pcw-input" value={form.mainAuthor.lastName} onChange={(e) => handleMainAuthorChange('lastName', e.target.value)} placeholder="e.g. Doe" />
                                     </div>
                                     <div className="pcw-field">
@@ -707,11 +794,11 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                         </div>
                                         <div className="pcw-field-grid">
                                             <div className="pcw-field">
-                                                <label className="pcw-label">First Name <span className="req">*</span></label>
+                                                <label className="pcw-label">First Name</label>
                                                 <input className="pcw-input" value={ca.firstName} placeholder="e.g. Jane" onChange={(e) => handleCoAuthorChange(ca.tempId, 'firstName', e.target.value)} />
                                             </div>
                                             <div className="pcw-field">
-                                                <label className="pcw-label">Last Name <span className="req">*</span></label>
+                                                <label className="pcw-label">Last Name</label>
                                                 <input className="pcw-input" value={ca.lastName} placeholder="e.g. Smith" onChange={(e) => handleCoAuthorChange(ca.tempId, 'lastName', e.target.value)} />
                                             </div>
                                             <div className="pcw-field">
@@ -769,6 +856,29 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                             </div>
                         )}
 
+                        {activeTab === 'editorBio' && (
+                            <div className="tab-pane active slide-in-bottom">
+                                <p className="pcw-step-title">Editor Biographies</p>
+                                <p className="pcw-step-desc">Add biographies for editors. These names will automatically sync with the Book Metadata tab.</p>
+                                {Array.isArray(editorBiographies) && editorBiographies.map((bio, i) => (
+                                    <div className="pcw-bio-card" key={i}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: 4 }}>
+                                            <div style={{ position: 'relative' }}>
+                                                <input className="pcw-input" value={bio.editorName} onChange={(e) => updateEditorBio(i, 'editorName', e.target.value)} onBlur={() => handleEditorSearch(i)} placeholder="Editor Name *" />
+                                            </div>
+                                            <input className="pcw-input" value={bio.affiliation || ''} onChange={(e) => updateEditorBio(i, 'affiliation', e.target.value)} placeholder="Affiliation" />
+                                            <div style={{ display: 'flex', gap: '4px' }}>
+                                                <input className="pcw-input" value={bio.email || ''} onChange={(e) => updateEditorBio(i, 'email', e.target.value)} placeholder="Email ID" style={{ fontSize: '11px' }} />
+                                                <button type="button" className="pcw-remove-btn" onClick={() => removeEditorBio(i)}>✕</button>
+                                            </div>
+                                        </div>
+                                        <textarea className="pcw-textarea" rows={3} value={bio.biography} onChange={(e) => updateEditorBio(i, 'biography', e.target.value)} placeholder="Biography text... *" />
+                                    </div>
+                                ))}
+                                <button type="button" className="pcw-add-btn" onClick={addEditorBio}>+ Add Editor Bio</button>
+                            </div>
+                        )}
+
                         {activeTab === 'metadata' && (
                             <div className="tab-pane active slide-in-bottom">
                                 <p className="pcw-step-title">Book Metadata</p>
@@ -779,12 +889,30 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                     </div>
                                     <div className="pcw-field span-full">
                                         <label className="pcw-label">Editors (comma separated) <span className="req">*</span></label>
-                                        <input
+                                         <input
                                             className="pcw-input"
                                             value={Array.isArray(form.editors) ? form.editors.join(', ') : ''}
                                             onChange={(e) => setForm(p => ({ ...p, editors: e.target.value.split(',').map(s => s.trim()) }))}
-                                            placeholder="e.g. Dr. Alice Smith, Prof. Bob Johnson"
+                                            placeholder="Names will sync from Editor Biographies tab"
+                                            disabled
                                         />
+                                        <p style={{ fontSize: '10px', color: '#64748b', marginTop: '4px' }}>
+                                            Note: Edit names in the "Editor Biography" tab to update this list.
+                                        </p>
+                                    </div>
+                                    <div className="pcw-field span-full">
+                                        <label className="pcw-label">Primary Editor (Optional)</label>
+                                        <select
+                                            className="pcw-select"
+                                            name="primaryEditor"
+                                            value={form.primaryEditor || ''}
+                                            onChange={handleFormChange}
+                                        >
+                                            <option value="">Select Primary Editor</option>
+                                            {form.editors.filter(Boolean).map(name => (
+                                                <option key={name} value={name}>{name}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                     <div className="pcw-field">
                                         <label className="pcw-label">Category <span className="req">*</span></label>
@@ -830,10 +958,6 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                     <div className="pcw-field span-full">
                                         <label className="pcw-label">Copyright</label>
                                         <input className="pcw-input" name="copyright" value={form.copyright} onChange={handleFormChange} placeholder="e.g. © 2024 BR Publications" />
-                                    </div>
-                                    <div className="pcw-field">
-                                        <label className="pcw-label">Submission ID</label>
-                                        <input className="pcw-input" style={{ background: '#f1f5f9' }} value={form.submissionId} readOnly />
                                     </div>
                                     <div className="pcw-field span-full">
                                         <label className="pcw-label">Pricing Details (Soft / Hard / Combined)</label>
@@ -902,7 +1026,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                         {activeTab === 'toc' && (
                             <div className="tab-pane active slide-in-bottom">
                                 <p className="pcw-step-title">Table of Contents</p>
-                                {tocChapters.map((ch, i) => (
+                                {Array.isArray(tocChapters) && tocChapters.map((ch, i) => (
                                     <div className="pcw-toc-row" key={i}>
                                         <div className="pcw-toc-row-header">
                                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -913,7 +1037,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                         </div>
                                         <div className="pcw-field-grid">
                                             <AuthorMultiSelect
-                                                authorOptions={biographies.map(b => b.authorName)}
+                                                authorOptions={Array.isArray(biographies) ? biographies.map(b => b.authorName) : []}
                                                 selectedNames={ch.authors || ''}
                                                 onChange={(val) => updateTocField(i, 'authors', val)}
                                                 placeholder="Author(s) *"
@@ -998,10 +1122,12 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                         {activeTab === 'bio' && (
                             <div className="tab-pane active slide-in-bottom">
                                 <p className="pcw-step-title">Author Biographies</p>
-                                {biographies.map((bio, i) => (
+                                {Array.isArray(biographies) && biographies.map((bio, i) => (
                                     <div className="pcw-bio-card" key={i}>
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: 4 }}>
-                                            <input className="pcw-input" value={bio.authorName} onChange={(e) => updateBio(i, 'authorName', e.target.value)} placeholder="Full Name *" />
+                                            <div style={{ position: 'relative' }}>
+                                                <input className="pcw-input" value={bio.authorName} onChange={(e) => updateBio(i, 'authorName', e.target.value)} placeholder="Full Name *" />
+                                            </div>
                                             <input className="pcw-input" value={bio.affiliation || ''} onChange={(e) => updateBio(i, 'affiliation', e.target.value)} placeholder="Affiliation *" />
                                             <div style={{ display: 'flex', gap: '4px' }}>
                                                 <input className="pcw-input" value={bio.email || ''} onChange={(e) => updateBio(i, 'email', e.target.value)} placeholder="Email ID" style={{ fontSize: '11px' }} />
