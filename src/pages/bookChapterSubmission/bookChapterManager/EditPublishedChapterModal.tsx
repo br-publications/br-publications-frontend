@@ -1052,12 +1052,12 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                             <input className="pcw-input" type="number" value={ch.priceCombined || ''} onChange={(e) => updateTocField(i, 'priceCombined', e.target.value)} placeholder="₹ Both" />
                                         </div>
                                         <div className="pcw-toc-flex-row" style={{ marginTop: '4px' }}>
-                                            <button type="button" className={`pcw-pdf-upload-btn ${ch.pdfKey ? 'has-pdf' : ''}`} onClick={() => pdfInputRefs.current[i]?.click()}>
+                                            <button type="button" className={`pcw-pdf-upload-btn ${(ch.pdfKey || (ch as any).publishedFileId) ? 'has-pdf' : ''}`} onClick={() => pdfInputRefs.current[i]?.click()}>
                                                 {pdfUploading[i] !== undefined ? `${pdfUploading[i]}%` :
-                                                    ch.pdfKey ? '✔ PDF Linked' : '⬆ Upload PDF'}
+                                                    (ch.pdfKey || (ch as any).publishedFileId) ? '✔ PDF Stored' : '⬆ Upload PDF'}
                                             </button>
                                             <input type="file" accept="application/pdf" className="pcw-hidden-input" style={{ display: 'none' }} ref={(el) => { pdfInputRefs.current[i] = el; }} onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePdfUpload(i, f); }} />
-                                            {ch.pdfKey && <button type="button" className="pcw-remove-btn" onClick={() => updateTocField(i, 'pdfKey', '')} title="Clear PDF">✕</button>}
+                                            {(ch.pdfKey || (ch as any).publishedFileId) && <button type="button" className="pcw-remove-btn" onClick={() => { setTocChapters(p => p.map((c, idx) => idx === i ? { ...c, pdfKey: undefined, pdfName: undefined, pdfMimeType: undefined, publishedFileId: undefined } : c)); }} title="Clear PDF">✕</button>}
                                             {(ch.pdfKey || (ch as any).publishedFileId) && (
                                                 <a
                                                     href={getChapterPdfUrl(book.id, i, ch.pdfKey)}
@@ -1085,12 +1085,12 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                                 <div className="pcw-toc-flex-row">
                                                     <button
                                                         type="button"
-                                                        className={`pcw-pdf-upload-btn ${form.frontmatterPdfs[type]?.pdfKey ? 'has-pdf' : ''}`}
+                                                        className={`pcw-pdf-upload-btn ${(form.frontmatterPdfs[type]?.pdfKey || (form.frontmatterPdfs[type] as any)?.publishedFileId) ? 'has-pdf' : ''}`}
                                                         onClick={() => extraPdfInputRefs.current[type]?.click()}
                                                     >
                                                         {pdfUploading[type] !== undefined
                                                             ? `${pdfUploading[type]}%`
-                                                            : (form.frontmatterPdfs[type]?.pdfKey ? '✔ Linked' : '⬆ Upload')}
+                                                            : ((form.frontmatterPdfs[type]?.pdfKey || (form.frontmatterPdfs[type] as any)?.publishedFileId) ? '✔ Stored' : '⬆ Upload')}
                                                     </button>
                                                     <input
                                                         type="file"
@@ -1103,7 +1103,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                                             if (f) handleExtraPdfUpload(type, f);
                                                         }}
                                                     />
-                                                    {form.frontmatterPdfs[type]?.pdfKey && (
+                                                    {(form.frontmatterPdfs[type]?.pdfKey || (form.frontmatterPdfs[type] as any)?.publishedFileId) && (
                                                         <button
                                                             type="button"
                                                             className="pcw-remove-btn"
