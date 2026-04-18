@@ -1060,7 +1060,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                             {(ch.pdfKey || (ch as any).publishedFileId) && <button type="button" className="pcw-remove-btn" onClick={() => { setTocChapters(p => p.map((c, idx) => idx === i ? { ...c, pdfKey: undefined, pdfName: undefined, pdfMimeType: undefined, publishedFileId: undefined } : c)); }} title="Clear PDF">✕</button>}
                                             {(ch.pdfKey || (ch as any).publishedFileId) && (
                                                 <a
-                                                    href={getChapterPdfUrl(book.id, i, ch.pdfKey)}
+                                                    href={getChapterPdfUrl(book.id, i, ch.pdfKey, (ch as any).publishedFileId)}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="pcw-view-btn"

@@ -268,19 +268,19 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
     useEffect(() => {
         if (!isOpen) return;
         const currentNames = editorBiographies.map(b => b.editorName.trim()).filter(Boolean);
-        
+
         setForm(prev => {
             const currentString = Array.isArray(prev.editors) ? prev.editors.join(', ') : '';
             const newString = currentNames.join(', ');
-            
+
             if (currentString === newString) return prev;
 
             const updated: FormState = { ...prev, editors: currentNames };
-            
+
             if (prev.primaryEditor && !currentNames.includes(prev.primaryEditor)) {
                 updated.primaryEditor = '';
             }
-            
+
             return updated;
         });
     }, [editorBiographies, isOpen]);
@@ -1090,7 +1090,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                             <div className="tab-pane active slide-in-bottom">
                                 <p className="pcw-step-title">Editor Biography</p>
                                 <p className="pcw-step-desc">List the editors and provide their professional biographies.</p>
-                                
+
                                 <div className="pcw-field span-full" style={{ marginBottom: '24px' }}>
                                     <label className="pcw-label">Editors <span className="req">*</span></label>
                                     <input
@@ -1576,7 +1576,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                                                         <span key={i} style={{ background: '#eff6ff', color: '#1d4ed8', borderRadius: '4px', padding: '3px 10px', fontSize: '14px' }}>• {s}</span>
                                                     ))}
                                                 </div>
-                                                : <span className="pcw-review-tag warn">⚠️ No scope topics added</span>
+                                                : <span className="pcw-review-tag warn"></span>
                                             }
                                         </div>
 
@@ -1595,7 +1595,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                                                         <span key={i} style={{ background: '#f0fdf4', color: '#15803d', borderRadius: '4px', padding: '3px 10px', fontSize: '14px' }}>• {s}</span>
                                                     ))}
                                                 </div>
-                                                : <span className="pcw-review-tag warn">⚠️ No archive repositories added</span>
+                                                : <span className="pcw-review-tag warn"></span>
                                             }
                                         </div>
                                     </div>

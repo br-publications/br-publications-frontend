@@ -127,7 +127,8 @@ export interface PublishedIndividualChapter {
     pagesTo: string | null;
     pdfKey: string | null;
     pdfName: string | null;
-    publishedFileId?: number | null;
+    publishedFileId?: string | null;
+
     pdfData?: string | null;
     abstract: string | null;
     views: number;
@@ -442,8 +443,13 @@ export const getCoverUrl = (id: number, t?: string | number) =>
     `${API_BASE}/${id}/cover${t ? `?t=${t}` : ''}`;
 export const getCoverThumbnailUrl = (id: number, w = 200, h = 280, t?: string | number) =>
     `${API_BASE}/${id}/cover/thumbnail?width=${w}&height=${h}${t ? `&t=${t}` : ''}`;
-export const getChapterPdfUrl = (bookId: number, chapterIndex: number, tempKey?: string) =>
-    `${API_BASE}/${bookId}/toc/${chapterIndex}/pdf${tempKey ? `?tempKey=${tempKey}` : ''}`;
+export const getChapterPdfUrl = (bookId: number, chapterIndex: number, tempKey?: string | null, publishedFileId?: string | null) => {
+    const params = new URLSearchParams();
+    if (tempKey) params.set('tempKey', tempKey);
+    if (publishedFileId) params.set('fileId', publishedFileId);
+    const qs = params.toString();
+    return `${API_BASE}/${bookId}/toc/${chapterIndex}/pdf${qs ? `?${qs}` : ''}`;
+};
 export const getExtraPdfUrl = (bookId: number, type: string) =>
     `${API_BASE}/${bookId}/extra-pdf/${type}`;
 

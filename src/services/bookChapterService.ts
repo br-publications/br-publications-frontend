@@ -64,7 +64,8 @@ class BookChapterService {
                 price: 0, // Relational chapters don't have individual prices in the current model
                 pages: (ch.pagesFrom && ch.pagesTo) ? `${ch.pagesFrom}-${ch.pagesTo}` : '',
                 pdfKey: ch.pdfKey,
-                pdfUrl: (ch.pdfKey || ch.publishedFileId || ch.pdfName) ? getChapterPdfUrl(data.id, index) : (ch.pdfData || undefined),
+                pdfUrl: (ch.pdfKey || ch.publishedFileId || ch.pdfName) ? getChapterPdfUrl(data.id, index, ch.pdfKey, ch.publishedFileId) : (ch.pdfData || undefined),
+
                 views: ch.views || 0,
                 authorDetails: ch.authorDetails
             }));
