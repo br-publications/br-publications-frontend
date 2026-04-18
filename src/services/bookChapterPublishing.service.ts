@@ -442,10 +442,14 @@ export const getCoverUrl = (id: number, t?: string | number) =>
     `${API_BASE}/${id}/cover${t ? `?t=${t}` : ''}`;
 export const getCoverThumbnailUrl = (id: number, w = 200, h = 280, t?: string | number) =>
     `${API_BASE}/${id}/cover/thumbnail?width=${w}&height=${h}${t ? `&t=${t}` : ''}`;
-export const getChapterPdfUrl = (bookId: number, chapterIndex: number) =>
-    `${API_BASE}/${bookId}/toc/${chapterIndex}/pdf`;
+export const getChapterPdfUrl = (bookId: number, chapterIndex: number, tempKey?: string) =>
+    `${API_BASE}/${bookId}/toc/${chapterIndex}/pdf${tempKey ? `?tempKey=${tempKey}` : ''}`;
 export const getExtraPdfUrl = (bookId: number, type: string) =>
     `${API_BASE}/${bookId}/extra-pdf/${type}`;
+
+/** Get a universal download URL for a file (saved or unsaved) */
+export const getUniversalDownloadUrl = (fileId: string | number) =>
+    `${API_BASE}/download/${fileId}`;
 
 /**
  * GET /api/book-chapter-publishing/categories

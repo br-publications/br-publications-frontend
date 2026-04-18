@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { toast } from 'react-hot-toast';
 import type { BookChapterSubmission, Author } from '../../types/submissionTypes';
 import { DESIGNATIONS } from '../../types/bookChapterManuscriptTypes';
-import { publishBookChapter, uploadTempPdf, findAuthors, deletePublishedChapter } from '../../services/bookChapterPublishing.service';
+import { publishBookChapter, uploadTempPdf, findAuthors, deletePublishedChapter, checkBookChapterIsbnAvailability } from '../../services/bookChapterPublishing.service';
 import type { TocChapterPayload, AuthorBiographyPayload, EditorBiographyPayload } from '../../services/bookChapterPublishing.service';
 import { useNavigate } from 'react-router-dom';
 import { bookChapterAdminService } from '../../services/bookChapterSumission.service';
@@ -552,7 +552,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
         return '';
     };
 
-    const handleNextTab = () => {
+    const handleNextTab = async () => {
         const order: TabType[] = ['author', 'editorBio', 'metadata', 'content', 'bio', 'toc', 'review'];
         const err = validateTab(activeTab);
         if (err) {
@@ -566,6 +566,29 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
             return;
         }
         setErrors('');
+        
+        // ISBN Availability Check for Metadata Tab
+        if (activeTab === 'metadata' && form.isbn.trim()) {
+            setLoading(true);
+            try {
+                const existing = await checkBookChapterIsbnAvailability([form.isbn.trim()]);
+                if (existing && existing.length > 0) {
+                    setAlertConfig({
+                        isOpen: true,
+                        type: 'error',
+                        title: 'ISBN Duplicate Found',
+                        message: `The ISBN "${form.isbn}" is already associated with an existing publication. Please enter a unique ISBN for this book.`
+                    });
+                    setLoading(false);
+                    return;
+                }
+            } catch (err) {
+                console.error('ISBN check failed:', err);
+            } finally {
+                setLoading(false);
+            }
+        }
+
         const idx = order.indexOf(activeTab);
         if (idx < order.length - 1) {
             const next = order[idx + 1];

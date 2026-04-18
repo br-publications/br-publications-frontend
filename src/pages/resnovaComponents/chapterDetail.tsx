@@ -42,11 +42,6 @@ const ChapterDetail: React.FC = () => {
                 {/* keep name + affiliation together so they never break mid-name */}
                 <span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>
                     <Link to={`/author/${auth.id}`} className="author-link">{auth.name}</Link>
-                    {auth.affiliation && (
-                        <span className="author-affiliation">
-                            {' '}{auth.affiliation.trim().startsWith('(') ? auth.affiliation : `(${auth.affiliation})`}
-                        </span>
-                    )}
                 </span>
             </React.Fragment>
         ));

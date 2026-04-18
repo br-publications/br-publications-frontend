@@ -9,7 +9,9 @@ import {
     uploadDirectTempPdf,
     getCoverUrl,
     getPublishedChapterById,
-    findAuthors
+    findAuthors,
+    getChapterPdfUrl,
+    getUniversalDownloadUrl
 } from '../../../services/bookChapterPublishing.service';
 import type { TocChapterPayload, AuthorBiographyPayload, EditorBiographyPayload } from '../../../services/bookChapterPublishing.service';
 import AuthorMultiSelect from '../../../components/common/AuthorMultiSelect';
@@ -325,17 +327,14 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
             setLoading(true);
             try {
                 // Step 1: Populate with available 'book' data immediately for zero-lag UI
-                console.log("EditModal: Initializing with prop data:", book);
                 processData(book);
 
                 // Step 2: Fetch full details (TOC, Biographies, etc.)
-                console.log("EditModal: Fetching full details for ID:", book.id);
                 const fullBookData = await getPublishedChapterById(book.id);
 
                 if (!isMounted) return;
 
                 if (fullBookData) {
-                    console.log("EditModal: Received fullBookData, merging...", fullBookData);
                     processData(fullBookData);
                 } else {
                     console.warn("EditModal: API returned empty data for ID:", book.id);
@@ -1059,7 +1058,19 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                             </button>
                                             <input type="file" accept="application/pdf" className="pcw-hidden-input" style={{ display: 'none' }} ref={(el) => { pdfInputRefs.current[i] = el; }} onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePdfUpload(i, f); }} />
                                             {ch.pdfKey && <button type="button" className="pcw-remove-btn" onClick={() => updateTocField(i, 'pdfKey', '')} title="Clear PDF">✕</button>}
-                                            {ch.pdfName && <span style={{ fontSize: '10px' }}>{ch.pdfName}</span>}
+                                            {(ch.pdfKey || (ch as any).publishedFileId) && (
+                                                <a
+                                                    href={getChapterPdfUrl(book.id, i, ch.pdfKey)}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="pcw-view-btn"
+                                                    title="View PDF"
+                                                    style={{ textDecoration: 'none', marginLeft: '4px' }}
+                                                >
+                                                    👁️
+                                                </a>
+                                            )}
+                                            {ch.pdfName && <span style={{ fontSize: '10px', marginLeft: '4px' }}>{ch.pdfName}</span>}
                                         </div>
                                     </div>
                                 ))}
@@ -1105,8 +1116,20 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                                             ✕
                                                         </button>
                                                     )}
+                                                    {(form.frontmatterPdfs[type]?.pdfKey || (form.frontmatterPdfs[type] as any)?.publishedFileId) && (
+                                                        <a
+                                                            href={getUniversalDownloadUrl(form.frontmatterPdfs[type]?.pdfKey || (form.frontmatterPdfs[type] as any)?.publishedFileId)}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="pcw-view-btn"
+                                                            title="View PDF"
+                                                            style={{ textDecoration: 'none', marginLeft: '4px' }}
+                                                        >
+                                                            👁️
+                                                        </a>
+                                                    )}
                                                     {form.frontmatterPdfs[type]?.name && (
-                                                        <span style={{ fontSize: '10px', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                        <span style={{ fontSize: '10px', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginLeft: '4px' }}>
                                                             {form.frontmatterPdfs[type].name}
                                                         </span>
                                                     )}
