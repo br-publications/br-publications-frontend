@@ -213,7 +213,7 @@ const ChapterDetail: React.FC = () => {
                                 {/* Frontmatter Rows - Hidden when searching */}
                                 {!chapterSearchQuery && (
                                     <>
-                                        {book.frontmatterPdfs?.['Dedication']?.pdfKey && (
+                                        {(book.frontmatterPdfs?.['Dedication']?.pdfKey || (book.frontmatterPdfs?.['Dedication'] as any)?.publishedFileId) && (
                                             <div className="toc-frontmatter-row">
                                                 <span className="row-title">Dedication</span>
                                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Dedication'), '_blank')}>
@@ -221,10 +221,10 @@ const ChapterDetail: React.FC = () => {
                                                 </button>
                                             </div>
                                         )}
-                                        {book.frontmatterPdfs?.['Table of Contents']?.pdfKey && (
+                                        {(book.frontmatterPdfs?.['Detailed Table of Contents']?.pdfKey || (book.frontmatterPdfs?.['Detailed Table of Contents'] as any)?.publishedFileId) && (
                                             <div className="toc-frontmatter-row">
-                                                <span className="row-title">Table of Contents</span>
-                                                <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Table of Contents'), '_blank')}>
+                                                <span className="row-title">Detailed Table of Contents</span>
+                                                <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Detailed Table of Contents'), '_blank')}>
                                                     <PictureAsPdfIcon fontSize="small" /> View PDF
                                                 </button>
                                             </div>
@@ -293,7 +293,7 @@ const ChapterDetail: React.FC = () => {
                                 {/* Backmatter Rows - Hidden when searching */}
                                 {!chapterSearchQuery && (
                                     <>
-                                        {book.frontmatterPdfs?.['About the Contributors']?.pdfKey && (
+                                        {(book.frontmatterPdfs?.['About the Contributors']?.pdfKey || (book.frontmatterPdfs?.['About the Contributors'] as any)?.publishedFileId) && (
                                             <div className="toc-frontmatter-row">
                                                 <span className="row-title">About the Contributors</span>
                                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'About the Contributors'), '_blank')}>
@@ -301,7 +301,7 @@ const ChapterDetail: React.FC = () => {
                                                 </button>
                                             </div>
                                         )}
-                                        {book.frontmatterPdfs?.['Index']?.pdfKey && (
+                                        {(book.frontmatterPdfs?.['Index']?.pdfKey || (book.frontmatterPdfs?.['Index'] as any)?.publishedFileId) && (
                                             <div className="toc-frontmatter-row">
                                                 <span className="row-title">Index</span>
                                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Index'), '_blank')}>

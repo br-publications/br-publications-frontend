@@ -605,7 +605,7 @@ const BookChapterDetail: React.FC = () => {
                         {/* Frontmatter Rows - Hidden when searching */}
                         {!tocSearchQuery && (
                           <>
-                            {book.frontmatterPdfs?.['Frontmatter']?.pdfKey && (
+                            {(book.frontmatterPdfs?.['Frontmatter']?.pdfKey || (book.frontmatterPdfs?.['Frontmatter'] as any)?.publishedFileId) && (
                               <div className="toc-frontmatter-row">
                                 <span className="row-title">Frontmatter</span>
                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Frontmatter'), '_blank')}>
@@ -613,7 +613,7 @@ const BookChapterDetail: React.FC = () => {
                                 </button>
                               </div>
                             )}
-                            {book.frontmatterPdfs?.['Detailed Table of Contents']?.pdfKey && (
+                            {(book.frontmatterPdfs?.['Detailed Table of Contents']?.pdfKey || (book.frontmatterPdfs?.['Detailed Table of Contents'] as any)?.publishedFileId) && (
                               <div className="toc-frontmatter-row">
                                 <span className="row-title">Detailed Table of Contents</span>
                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Detailed Table of Contents'), '_blank')}>
@@ -621,7 +621,7 @@ const BookChapterDetail: React.FC = () => {
                                 </button>
                               </div>
                             )}
-                            {book.frontmatterPdfs?.['Preface']?.pdfKey && (
+                            {(book.frontmatterPdfs?.['Preface']?.pdfKey || (book.frontmatterPdfs?.['Preface'] as any)?.publishedFileId) && (
                               <div className="toc-frontmatter-row">
                                 <span className="row-title">Preface</span>
                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Preface'), '_blank')}>
@@ -629,7 +629,7 @@ const BookChapterDetail: React.FC = () => {
                                 </button>
                               </div>
                             )}
-                            {book.frontmatterPdfs?.['Acknowledgment']?.pdfKey && (
+                            {(book.frontmatterPdfs?.['Acknowledgment']?.pdfKey || (book.frontmatterPdfs?.['Acknowledgment'] as any)?.publishedFileId) && (
                               <div className="toc-frontmatter-row">
                                 <span className="row-title">Acknowledgment</span>
                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Acknowledgment'), '_blank')}>
@@ -728,7 +728,7 @@ const BookChapterDetail: React.FC = () => {
                         {/* Backmatter Rows - Hidden when searching */}
                         {!tocSearchQuery && (
                           <>
-                            {book.frontmatterPdfs?.['About the Contributors']?.pdfKey && (
+                            {(book.frontmatterPdfs?.['About the Contributors']?.pdfKey || (book.frontmatterPdfs?.['About the Contributors'] as any)?.publishedFileId) && (
                               <div className="toc-frontmatter-row">
                                 <span className="row-title">About the Contributors</span>
                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'About the Contributors'), '_blank')}>
@@ -736,7 +736,7 @@ const BookChapterDetail: React.FC = () => {
                                 </button>
                               </div>
                             )}
-                            {book.frontmatterPdfs?.['Index']?.pdfKey && (
+                            {(book.frontmatterPdfs?.['Index']?.pdfKey || (book.frontmatterPdfs?.['Index'] as any)?.publishedFileId) && (
                               <div className="toc-frontmatter-row">
                                 <span className="row-title">Index</span>
                                 <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Index'), '_blank')}>
