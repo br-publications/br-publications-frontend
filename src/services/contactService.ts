@@ -38,6 +38,16 @@ export const contactService = {
                 return { success: true, data: defaultContactDetails };
             }
 
+            // Standardize phoneNumbers to be an array
+            if (result.success && result.data && typeof result.data.phoneNumbers === 'string') {
+                try {
+                    result.data.phoneNumbers = JSON.parse(result.data.phoneNumbers);
+                } catch (e) {
+                    console.error('Error parsing phoneNumbers string:', e);
+                    result.data.phoneNumbers = [];
+                }
+            }
+
             return result;
         } catch (error) {
             console.error('Error fetching contact details, using fallback:', error);

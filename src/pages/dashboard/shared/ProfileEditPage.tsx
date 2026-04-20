@@ -281,12 +281,12 @@ export default function ProfileEditPage() {
                             {uploadingImage ? (
                                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                             ) : avatarPreview ? (
-                                <img 
-                                    src={avatarPreview.startsWith('http') || avatarPreview.startsWith('data:') 
-                                        ? avatarPreview 
-                                        : `${API_BASE_URL}${avatarPreview}`} 
-                                    alt="avatar" 
-                                    className="w-full h-full object-cover" 
+                                <img
+                                    src={avatarPreview.startsWith('http') || avatarPreview.startsWith('data:')
+                                        ? avatarPreview
+                                        : `${API_BASE_URL}${avatarPreview}`}
+                                    alt="avatar"
+                                    className="w-full h-full object-cover"
                                 />
                             ) : (
                                 <span className="text-2xl font-bold opacity-60">{initials}</span>
@@ -331,7 +331,7 @@ export default function ProfileEditPage() {
                                 type="button"
                                 onClick={() => setActiveTab(tab.id as any)}
                                 className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium transition-all w-full ${activeTab === tab.id
-                                    ? 'bg-primary-600 text-white shadow-sm'
+                                    ? 'bg-primary-600 shadow-sm'
                                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
                             >
                                 {tab.icon}

@@ -36,12 +36,17 @@ const ChapterDetail: React.FC = () => {
                 {/* separator: ", and " before last, ", " between others, nothing before first */}
                 {idx > 0 && (
                     idx === details.length - 1
-                        ? <span style={{ color: '#555', fontWeight: 'normal' }}>{', and '}</span>
+                        ? <span style={{ color: '#555', fontWeight: 'normal' }}>{' and '}</span>
                         : ', '
                 )}
                 {/* keep name + affiliation together so they never break mid-name */}
                 <span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>
                     <Link to={`/author/${auth.id}`} className="author-link">{auth.name}</Link>
+                    {auth.affiliation && (
+                        <span className="author-affiliation">
+                            {' '}{auth.affiliation.trim().startsWith('(') ? auth.affiliation : `(${auth.affiliation})`}
+                        </span>
+                    )}
                 </span>
             </React.Fragment>
         ));
@@ -60,7 +65,11 @@ const ChapterDetail: React.FC = () => {
                 setBook(fetchedBook);
 
                 if (fetchedBook && fetchedBook.chapters) {
-                    const foundChapter = fetchedBook.chapters.find(c => String(c.id) === String(chapterId));
+                    const normalizedParam = String(chapterId).toLowerCase().trim();
+                    const foundChapter = fetchedBook.chapters.find(c =>
+                        String(c.chapterNumber).toLowerCase().trim() === normalizedParam
+                    );
+
                     if (foundChapter) {
                         setChapter(foundChapter);
                     } else {
@@ -93,7 +102,7 @@ const ChapterDetail: React.FC = () => {
             // Still update state locally to show the click was registered
             setChapter(prev => prev ? { ...prev, views: (prev.views || 0) + 1 } : null);
         }
-        navigate(`/book/${book?.id}/chapter/${chap.id}`);
+        navigate(`/book/${book?.id}/chapter/${chap.chapterNumber}`);
     };
 
     const handleViewPdf = async (chap: Chapter) => {
@@ -131,7 +140,6 @@ const ChapterDetail: React.FC = () => {
             <div className="error-container">
                 <div className="error-message">
                     <i className="fas fa-exclamation-circle"></i>
-                    <h3>Oops! Something went wrong</h3>
                     <p>{error || 'Chapter details could not be found.'}</p>
                     <button onClick={() => navigate(-1)} className="back-button">
                         Go Back
@@ -177,7 +185,7 @@ const ChapterDetail: React.FC = () => {
                                     <p className="main-chapter-authors">{renderAuthors(chapter.authors, chapter.authorDetails)}</p>
 
                                     <div className="meta-details-grid">
-                                        <div className="meta-info-item"><strong>Source Title:</strong> <span>{book.title}</span></div>
+                                        <div className="meta-info-item clickable"><strong>Source Title:</strong> <span onClick={() => navigate(-1)}>{book.title}</span></div>
                                         <div className="meta-info-item"><strong>Copyright:</strong> <span>{book.copyright || 'N/A'}</span></div>
                                         <div className="meta-info-item"><strong>DOI:</strong> <span>{book.doi || 'N/A'}</span></div>
                                         <div className="meta-info-item"><strong>Pages:</strong> <span>{chapter.pages || 'N/A'}</span></div>
@@ -255,7 +263,7 @@ const ChapterDetail: React.FC = () => {
                                                             <span className="chapter-link-span" onClick={() => handleViewChapter(ch)}>{ch.title}</span>
                                                             {ch.pages && <span className="chapter-pages"> (pages {ch.pages})</span>}
                                                         </h4>
-                                                        <p className="chapter-authors">{renderAuthors(ch.authors, ch.authorDetails)}</p>
+                                                        <p className="chapter-authors">{renderAuthors(ch.authors)}</p>
                                                         <p className="chapter-abstract">{ch.abstract}</p>
                                                     </div>
                                                     <div className="chapters-actions-area">

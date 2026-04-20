@@ -176,7 +176,7 @@ export default function ContactUs() {
     if (userDataStr) {
       try {
         const user: UserData = JSON.parse(userDataStr);
-        if (user.role === 'admin') {
+        if (user.role === 'admin' || user.role === 'developer') {
           setIsAdmin(true);
         }
       } catch (e) {
@@ -527,7 +527,7 @@ export default function ContactUs() {
         }}>
           <div className="modal_content" style={{
             backgroundColor: 'white', padding: '30px', borderRadius: '8px',
-            width: '90%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto'
+            width: '90%', maxWidth: '600px', maxHeight: '75vh', overflowY: 'auto'
           }}>
             <h2 style={{ marginBottom: '20px' }}>Edit Contact Details</h2>
             <form onSubmit={handleEditSubmit}>

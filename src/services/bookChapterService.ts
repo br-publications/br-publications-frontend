@@ -57,7 +57,7 @@ class BookChapterService {
         if (data.chapters && data.chapters.length > 0) {
             mappedChapters = data.chapters.map((ch, index: number) => ({
                 id: ch.id,
-                chapterNumber: ch.chapterNumber || '',
+                chapterNumber: ch.chapterNumber || String(index + 1).padStart(2, '0'),
                 title: ch.title || '',
                 authors: ch.authors || '',
                 abstract: ch.abstract || '',

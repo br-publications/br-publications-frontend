@@ -50,16 +50,11 @@ const ProductBookChapter: React.FC = () => {
   const paginatedBooks = filteredBooks.slice(startIndex, endIndex);
 
   /**
-   * Fetch books and categories on component mount or when filters change
+   * Fetch categories once on component mount
    */
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCategories = async () => {
       try {
-        setLoading(true);
-        setError(null);
-
-        // Fetch categories and books
-        // Fetch categories only once if they haven't been loaded yet, or always for simplicity
         const categoriesData = await bookChapterService.getCategories();
         const fetchedCategories = Array.isArray(categoriesData) ? categoriesData : [];
         const mergedCategories = Array.from(new Set([
@@ -70,6 +65,23 @@ const ProductBookChapter: React.FC = () => {
           ...fetchedCategories
         ]));
         setCategories(mergedCategories);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  /**
+   * Fetch books when filters change
+   */
+  useEffect(() => {
+    const controller = new AbortController();
+    
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
         let booksData: Book[];
         // If we have any search criteria, use searchBooks service
@@ -86,24 +98,36 @@ const ProductBookChapter: React.FC = () => {
           booksData = await bookChapterService.getAllBooks();
         }
 
-        setFilteredBooks(booksData);
-        setCurrentPage(1); // Reset to first page when filtering
+        if (!controller.signal.aborted) {
+          setFilteredBooks(booksData);
+          setCurrentPage(1); // Reset to first page when filtering
+        }
 
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred while loading books');
-        console.error('Error loading books:', err);
+        if (!controller.signal.aborted) {
+          setError(err instanceof Error ? err.message : 'An error occurred while loading books');
+          console.error('Error loading books:', err);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchData();
+    
+    return () => controller.abort();
   }, [selectedCategory, searchQuery, author, publishedAfter, publishedBefore]);
 
   /**
    * Dynamic ID Resolution for Editors in the list
+   * Debounced and throttled to avoid hitting rate limits (429)
    */
   useEffect(() => {
+    const controller = new AbortController();
+    let timeoutId: NodeJS.Timeout;
+
     const resolveMissingEditorIds = async () => {
       // Get all unique editor names from the current filtered books that don't have details
       const allEditorNames = Array.from(new Set(
@@ -117,14 +141,16 @@ const ProductBookChapter: React.FC = () => {
 
       if (missingNames.length === 0) return;
 
-      // Limit to avoid hitting rate limits or flooding (resolve first 10 missing)
-      const namesToResolve = missingNames.slice(0, 10);
+      // Limit to avoid hitting rate limits or flooding (resolve first 5 missing at a time)
+      const namesToResolve = missingNames.slice(0, 5);
 
       try {
         const results = await Promise.all(
           namesToResolve.map(name => findEditors({ name }))
         );
         
+        if (controller.signal.aborted) return;
+
         const newlyFound = results.flat().filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
         
         if (newlyFound.length > 0) {
@@ -132,6 +158,10 @@ const ProductBookChapter: React.FC = () => {
             const combined = [...prev, ...newlyFound];
             return combined.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
           });
+        } else {
+          // If none of these names were found, add them to a "resolved" list with null IDs 
+          // to prevent re-trying them infinitely in this session
+          // For now, we skip them by treating them as "not resolvable" in this run
         }
       } catch (err) {
         console.error('Error resolving editor IDs in list:', err);
@@ -139,8 +169,14 @@ const ProductBookChapter: React.FC = () => {
     };
 
     if (filteredBooks.length > 0) {
-      resolveMissingEditorIds();
+      // Add a 800ms debounce to allow the page to settle before firing multiple small requests
+      timeoutId = setTimeout(resolveMissingEditorIds, 800);
     }
+
+    return () => {
+      controller.abort();
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [filteredBooks, resolvedEditors.length]);
 
   /**

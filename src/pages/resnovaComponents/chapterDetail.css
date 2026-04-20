@@ -140,6 +140,10 @@
     color: var(--dark-blue);
 }
 
+.clickable:hover {
+    cursor: pointer;
+}
+
 .abstract-content h3 {
     font-size: 14px;
     color: var(--dark-blue);
@@ -154,6 +158,43 @@
     font-size: 12px;
     margin-bottom: 10px;
     text-align: justify;
+}
+
+/* TOC Frontmatter */
+.toc-frontmatter-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+
+.toc-frontmatter-row .row-title {
+    font-weight: 600;
+    color: var(--dark-blue, #1e3a5f);
+    font-size: 15px;
+}
+
+.btn-view-pdf {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #1e3a5f;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-view-pdf:hover {
+    opacity: 0.9;
 }
 
 /* Complete Chapter List */
@@ -289,7 +330,7 @@
 }
 
 .ch-price-box {
-    text-align: right;
+    text-align: center;
     margin-bottom: 5px;
 }
 
@@ -495,4 +536,41 @@
         text-align: left;
         margin-bottom: 15px;
     }
+}
+
+/* Error Container & Back Button Styles */
+
+.error-message {
+    text-align: center;
+    padding: 30px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.error-message i {
+    font-size: 40px;
+    color: #e74c3c;
+    margin-bottom: 15px;
+}
+
+.back-button {
+    background-color: var(--primary-blue, #1e5292);
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    margin-top: 15px;
+}
+
+.back-button:hover {
+    background-color: var(--primary-hover, #153c6d);
+}
+
+.back-button:active {
+    transform: translateY(1px);
 }

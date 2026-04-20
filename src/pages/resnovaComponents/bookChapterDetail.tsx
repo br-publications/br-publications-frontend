@@ -7,6 +7,7 @@ import { contactService, type ContactDetails } from '../../services/contactServi
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import PhoneIcon from '@mui/icons-material/Phone';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import { ArrowLeft } from 'lucide-react';
 import './bookChapterDetail.css';
 import { sanitizeUrl } from '../../utils/urlValidation';
 import { setPageTitle, setMetaDescription, setOpenGraph, setCanonicalUrl, setJsonLd, resetSeo } from '../../utils/seoUtils';
@@ -218,7 +219,7 @@ const BookChapterDetail: React.FC = () => {
     }
 
     if (action === 'view') {
-      navigate(`/book/${book?.id}/chapter/${chap.id}`);
+      navigate(`/book/${book?.id}/chapter/${chap.chapterNumber}`);
     } else {
       if (chap.pdfUrl) {
         window.open(chap.pdfUrl, '_blank');
@@ -287,9 +288,9 @@ const BookChapterDetail: React.FC = () => {
         {/* Hero Section */}
         <section className="product-hero">
           <div className="hero-content">
-            <button onClick={handleBackClick} className="back-btn">
-              <i className="fas fa-arrow-left"></i> Back to Books List
-            </button>
+            <Link to="/bookchapters" className="simple-back-link">
+              <ArrowLeft size={16} />Back
+            </Link>
             <h1>Book Details</h1>
           </div>
         </section>
@@ -314,7 +315,7 @@ const BookChapterDetail: React.FC = () => {
 
                 {/* Book Details */}
                 <div className="book-details">
-                  <h1>{book.title}</h1>
+                  <h1 className="book-chapter-title">{book.title}</h1>
                   <p className="author-list">
                     {Array.isArray(book.editors) && book.editors.length > 0 ? (
                       book.editors.map((editorName, index) => {
@@ -327,9 +328,14 @@ const BookChapterDetail: React.FC = () => {
                         return (
                           <React.Fragment key={index}>
                             {editorDetail ? (
-                              <Link to={`/editor/${editorDetail.id}`} className="editor-link">
-                                {editorName}
-                              </Link>
+                              <>
+                                <Link to={`/editor/${editorDetail.id}`} className="editor-link">
+                                  {editorName}
+                                </Link>
+                                {editorDetail.affiliation && (
+                                  <span className="editor-affiliation"> {editorDetail.affiliation}</span>
+                                )}
+                              </>
                             ) : (
                               editorName
                             )}

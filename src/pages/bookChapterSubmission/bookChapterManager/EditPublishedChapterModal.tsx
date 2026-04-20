@@ -596,6 +596,11 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
         }
     };
 
+    const handleSkipCrop = () => {
+        setForm(p => ({ ...p, coverImage: originalImage }));
+        setShowCropper(false);
+    };
+
     // ── Submit ───────────────────────────────────────────────
 
     const handleSubmit = async () => {
@@ -1212,8 +1217,22 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                 <Cropper image={originalImage} crop={cropPos} zoom={zoom} aspect={COVER_ASPECT_RATIO} onCropChange={setCropPos} onZoomChange={setZoom} onCropComplete={onCropComplete} />
                             </div>
                             <div className="pcw-cropper-actions">
-                                <button onClick={() => setShowCropper(false)}>Cancel</button>
-                                <button className="pcw-btn pcw-btn-primary" onClick={applyCrop}>Apply Crop</button>
+                                <button type="button" onClick={() => setShowCropper(false)}>Cancel</button>
+                                <button
+                                    type="button"
+                                    onClick={handleSkipCrop}
+                                    style={{
+                                        background: '#f1f5f9',
+                                        color: '#475569',
+                                        border: '1px solid #e2e8f0',
+                                        padding: '5px 12px',
+                                        borderRadius: '4px',
+                                        fontWeight: 600,
+                                        fontSize: '11px',
+                                        cursor: 'pointer'
+                                    }}
+                                >Skip & Use Original</button>
+                                <button type="button" className="pcw-btn pcw-btn-primary" onClick={applyCrop}>Apply Crop</button>
                             </div>
                         </div>
                     </div>,
