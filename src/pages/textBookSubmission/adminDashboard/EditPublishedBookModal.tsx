@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { PublishedBook } from '../../../services/publishedBookService';
+import { checkIsbnAvailability } from '../../../services/textBookService';
 import AlertPopup from '../../../components/common/alertPopup';
 import PhoneNumberInput from '../../../components/common/PhoneNumberInput';
 import { isValidPhoneNumber } from '../../../utils/phoneValidation';
@@ -40,6 +41,7 @@ const EditPublishedBookModal: React.FC<EditPublishedBookModalProps> = ({ book, i
     });
 
     const [loading, setLoading] = useState(false);
+    const [isbnError, setIsbnError] = useState<string | null>(null);
 
     // Alert State
     const [alertConfig, setAlertConfig] = useState<{
@@ -153,6 +155,32 @@ const EditPublishedBookModal: React.FC<EditPublishedBookModalProps> = ({ book, i
         handleInputChange('indexedIn', newIndexedIn);
     };
 
+    const handleIsbnBlur = async () => {
+        const isbn = formData.isbn.trim();
+        if (!isbn) {
+            setIsbnError(null);
+            return;
+        }
+
+        // If the ISBN hasn't changed from the original book ISBN, don't check for availability
+        if (isbn === book?.isbn) {
+            setIsbnError(null);
+            return;
+        }
+
+        try {
+            const existingIsbns = await checkIsbnAvailability([isbn]);
+            if (existingIsbns.length > 0) {
+                setIsbnError('ISBN already exists in the system');
+            } else {
+                setIsbnError(null);
+            }
+        } catch (error) {
+            console.error('Failed to check ISBN:', error);
+            // We don't block the user on API failure, but log it
+        }
+    };
+
     const validateForm = (): boolean => {
         const { title, pricing, pages, copyright, releaseDate, category } = formData;
 
@@ -186,6 +214,11 @@ const EditPublishedBookModal: React.FC<EditPublishedBookModalProps> = ({ book, i
         }
         if (!pricing.bundlePrice || pricing.bundlePrice <= 0) {
             setAlertConfig({ isOpen: true, type: 'warning', title: 'Invalid Price', message: 'Bundle Price is mandatory and must be greater than 0' });
+            return false;
+        }
+
+        if (isbnError) {
+            setAlertConfig({ isOpen: true, type: 'warning', title: 'ISBN Conflict', message: isbnError });
             return false;
         }
 
@@ -413,9 +446,12 @@ const EditPublishedBookModal: React.FC<EditPublishedBookModalProps> = ({ book, i
                                         type="text"
                                         value={formData.isbn}
                                         onChange={e => handleInputChange('isbn', e.target.value)}
+                                        onBlur={handleIsbnBlur}
+                                        className={isbnError ? 'input-error' : ''}
                                         placeholder="978-93-89876-01-2"
                                         required
                                     />
+                                    {isbnError && <p className="error-text">{isbnError}</p>}
                                 </div>
                                 <div className="form-group">
                                     <label>DOI Number</label>

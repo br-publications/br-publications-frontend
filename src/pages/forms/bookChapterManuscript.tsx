@@ -8,7 +8,7 @@ import { COUNTRIES as PHONE_COUNTRIES } from '../../utils/countries';
 import './bookChapterManuscript.css';
 import { bookChapterService } from '../../services/bookChapterSumission.service';
 import { authService } from '../../services/auth.service';
-import { setStoredUser } from '../../services/api.config';
+import { getAuthToken, getStoredUser, setStoredUser } from '../../services/api.config';
 import bookManagementService from '../../services/bookManagement.service';
 
 interface CoAuthorWithId extends Author {
@@ -132,13 +132,10 @@ const BookChapterManuscript: React.FC = () => {
   }, []);
 
   const checkAuthentication = () => {
+    const token = getAuthToken();
+    const userData = getStoredUser();
 
-
-    const token = localStorage.getItem('authToken');
-    const userDataStr = localStorage.getItem('user');
-
-    if (!token || !userDataStr) {
-
+    if (!token || !userData) {
       setIsAuthenticated(false);
       setIsCheckingAuth(false);
       showAlert('error', 'Authentication Required', 'Please login to submit a manuscript.');
@@ -149,7 +146,6 @@ const BookChapterManuscript: React.FC = () => {
     }
 
     try {
-      const userData = JSON.parse(userDataStr);
 
 
       const allowedRoles = ['user', 'author'];

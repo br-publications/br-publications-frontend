@@ -29,10 +29,10 @@ const ProductFinder: React.FC = () => {
                 // Try finding in Textbooks first using the original ISBN string (to match DB formatting)
                 const textbooks = await productBooksService.searchBooks({ query: isbn });
                 if (textbooks.length > 0) {
-                    const exactMatch = textbooks.find(b => 
+                    const exactMatch = textbooks.find(b =>
                         b.isbn === isbn || (b.isbn && b.isbn.replace(/[\s-]/g, '') === cleanIsbn)
                     ) || textbooks[0];
-                    
+
                     const slug = generateUniqueSlug(exactMatch.isbn, exactMatch.releaseDate);
                     navigate(`/book/${exactMatch.id}/${slug}`, { replace: true, state: { book: exactMatch } });
                     return;
@@ -41,10 +41,10 @@ const ProductFinder: React.FC = () => {
                 // If not found, try Book Chapters
                 const chapters = await bookChapterService.searchBooks({ query: isbn });
                 if (chapters.length > 0) {
-                    const exactMatch = chapters.find(c => 
+                    const exactMatch = chapters.find(c =>
                         c.isbn === isbn || (c.isbn && c.isbn.replace(/[\s-]/g, '') === cleanIsbn)
                     ) || chapters[0];
-                    
+
                     const slug = generateUniqueSlug(exactMatch.isbn, exactMatch.releaseDate);
                     navigate(`/bookchapter/${exactMatch.id}/${slug}`, { replace: true, state: { book: exactMatch } });
                     return;
@@ -85,7 +85,7 @@ const ProductFinder: React.FC = () => {
                             onClick={() => navigate('/')}
                             className="bg-[#1e5292] hover:bg-[#163e70] text-white font-bold py-3 px-6 rounded-lg transition-all shadow-md flex items-center justify-center gap-2"
                         >
-                            <Search className="w-4 h-4" /> Go to Home Search
+                            <Search className="w-4 h-4" /> Go to Home
                         </button>
                         <button
                             onClick={() => navigate(-1)}

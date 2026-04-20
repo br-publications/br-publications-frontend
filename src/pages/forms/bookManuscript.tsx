@@ -5,7 +5,7 @@ import { CircularProgress } from '@mui/material';
 import type { SubmitTextBookRequest } from '../../pages/textBookSubmission/types/textBookTypes';
 import { submitTextBook } from '../../services/textBookService';
 import { authService } from '../../services/auth.service';
-import { setStoredUser } from '../../services/api.config';
+import { getStoredUser, setStoredUser } from '../../services/api.config';
 import AlertPopup, { type AlertType } from '../../components/common/alertPopup';
 import { COUNTRIES, type Country } from '../../utils/countries';
 import './bookManuscript.css';
@@ -95,14 +95,13 @@ const BookManuscript: React.FC = () => {
 
   // Auth and Role check
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
+    const user = getStoredUser();
+    if (!user) {
       navigate('/login');
       return;
     }
 
     try {
-      const user = JSON.parse(storedUser);
       const allowedRoles = ['user', 'author'];
 
       if (!allowedRoles.includes(user.role)) {

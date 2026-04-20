@@ -61,10 +61,19 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
     // Prefill form data from submission
     useEffect(() => {
         if (submission) {
-            const mainAuthorName = `${submission.mainAuthor.firstName} ${submission.mainAuthor.lastName}`;
-            const coAuthorNames = submission.coAuthors?.map(
-                (author) => `${author.firstName} ${author.lastName}`
-            ) || [];
+            // Robustly parse authors (they can arrive as JSON strings from the backend)
+            const mainAuthor: any = typeof submission.mainAuthor === 'string'
+                ? JSON.parse(submission.mainAuthor)
+                : submission.mainAuthor;
+
+            const coAuthors: any[] = typeof submission.coAuthors === 'string'
+                ? JSON.parse(submission.coAuthors)
+                : submission.coAuthors || [];
+
+            const mainAuthorName = `${mainAuthor.firstName || ''} ${mainAuthor.lastName || ''}`.trim();
+            const coAuthorNames = Array.isArray(coAuthors) ? coAuthors.map(
+                (author) => `${author.firstName || ''} ${author.lastName || ''}`.trim()
+            ) : [];
 
             setFormData((prev) => ({
                 ...prev,

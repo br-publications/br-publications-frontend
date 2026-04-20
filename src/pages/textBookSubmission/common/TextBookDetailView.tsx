@@ -14,6 +14,7 @@ import {
     Building,
     Clock,
     Eye,
+    Loader2,
 } from 'lucide-react';
 import type { TextBookSubmission } from '../types/textBookTypes';
 import { STATUS_COLORS, STATUS_LABELS, formatDate, formatDateTime } from '../types/textBookTypes';
@@ -48,8 +49,10 @@ export const TextBookDetailView: React.FC<TextBookDetailViewProps> = ({
     const [alert, setAlert] = useState<{ isOpen: boolean; type: AlertType; title: string; message: string }>({
         isOpen: false, type: 'info', title: '', message: ''
     });
+    const [fileLoading, setFileLoading] = useState<Record<number, 'preview' | 'download' | null>>({});
 
     const handlePreview = async (fileId: number, fileName: string, mimeType: string) => {
+        setFileLoading(prev => ({ ...prev, [fileId]: 'preview' }));
         try {
             const { url, type } = await textBookService.previewFile(submission.id, fileId);
             setPreviewUrl(url);
@@ -59,14 +62,19 @@ export const TextBookDetailView: React.FC<TextBookDetailViewProps> = ({
             setIsPreviewOpen(true);
         } catch {
             setAlert({ isOpen: true, type: 'error', title: 'Error', message: 'Failed to load file preview.' });
+        } finally {
+            setFileLoading(prev => ({ ...prev, [fileId]: null }));
         }
     };
 
     const handleDownload = async (fileId: number, fileName: string) => {
+        setFileLoading(prev => ({ ...prev, [fileId]: 'download' }));
         try {
             await textBookService.downloadFile(submission.id, fileId, fileName);
         } catch {
             setAlert({ isOpen: true, type: 'error', title: 'Error', message: 'Failed to download file.' });
+        } finally {
+            setFileLoading(prev => ({ ...prev, [fileId]: null }));
         }
     };
 
@@ -110,7 +118,8 @@ export const TextBookDetailView: React.FC<TextBookDetailViewProps> = ({
         groupedFiles,
         sortedKeys,
         handlePreview,
-        handleDownload
+        handleDownload,
+        fileLoading
     };
 
     return createPortal(
@@ -240,10 +249,20 @@ type SharedFileProps = {
     sortedKeys: string[];
     handlePreview: (fileId: number, fileName: string, mimeType: string) => Promise<void>;
     handleDownload: (fileId: number, fileName: string) => Promise<void>;
+    fileLoading: Record<number, 'preview' | 'download' | null>;
 };
 
 // Overview Tab
-const OverviewTab: React.FC<SharedFileProps> = ({ submission, groupedFiles, sortedKeys, handlePreview, handleDownload }) => {
+const OverviewTab: React.FC<SharedFileProps> = ({ submission, groupedFiles, sortedKeys, handlePreview, handleDownload, fileLoading }) => {
+    // Robustly parse authors (they can arrive as JSON strings from some API endpoints)
+    const mainAuthor: any = typeof submission.mainAuthor === 'string'
+        ? JSON.parse(submission.mainAuthor)
+        : submission.mainAuthor;
+
+    const coAuthors: any[] = typeof submission.coAuthors === 'string'
+        ? JSON.parse(submission.coAuthors)
+        : submission.coAuthors;
+
     return (
         <div className={styles.overviewTab}>
             {/* Author Information */}
@@ -252,49 +271,49 @@ const OverviewTab: React.FC<SharedFileProps> = ({ submission, groupedFiles, sort
                 <div className={styles.authorCard}>
                     <div className={styles.authorDetail}>
                         <User size={16} />
-                        <span>{submission.mainAuthor.title} {submission.mainAuthor.firstName} {submission.mainAuthor.lastName}</span>
+                        <span>{mainAuthor.title} {mainAuthor.firstName} {mainAuthor.lastName}</span>
                     </div>
                     <div className={styles.authorDetail}>
                         <Mail size={16} />
-                        <span>{submission.mainAuthor.email}</span>
+                        <span>{mainAuthor.email}</span>
                     </div>
-                    {submission.mainAuthor.phoneNumber && (
+                    {mainAuthor.phoneNumber && (
                         <div className={styles.authorDetail}>
                             <span className={styles.label}>Phone:</span>
-                            <span>{submission.mainAuthor.phoneNumber}</span>
+                            <span>{mainAuthor.phoneNumber}</span>
                         </div>
                     )}
                     <div className={styles.authorDetail}>
                         <Building size={16} />
-                        <span>{submission.mainAuthor.institute || submission.mainAuthor.instituteName}</span>
+                        <span>{mainAuthor.institute || mainAuthor.instituteName}</span>
                     </div>
-                    {(submission.mainAuthor.city || submission.mainAuthor.state || submission.mainAuthor.country) && (
+                    {(mainAuthor.city || mainAuthor.state || mainAuthor.country) && (
                         <div className={styles.authorDetail}>
                             <span className={styles.label}>Location:</span>
                             <span>
                                 {[
-                                    submission.mainAuthor.city,
-                                    submission.mainAuthor.state,
-                                    submission.mainAuthor.country
+                                    mainAuthor.city,
+                                    mainAuthor.state,
+                                    mainAuthor.country
                                 ].filter(Boolean).join(', ')}
                             </span>
                         </div>
                     )}
-                    {submission.mainAuthor.biography && (
+                    {mainAuthor.biography && (
                         <div className={styles.authorDetail} style={{ marginTop: '8px', alignItems: 'flex-start' }}>
                             <span className={styles.label}>Biography:</span>
-                            <p style={{ margin: 0, fontSize: '12px', lineHeight: '1.5', color: '#4b5563' }}>{submission.mainAuthor.biography}</p>
+                            <p style={{ margin: 0, fontSize: '12px', lineHeight: '1.5', color: '#4b5563' }}>{mainAuthor.biography}</p>
                         </div>
                     )}
                 </div>
             </div>
 
             {/* Co-Authors */}
-            {submission.coAuthors && submission.coAuthors.length > 0 && (
+            {coAuthors && coAuthors.length > 0 && (
                 <div className={styles.section}>
-                    <h3 className={styles.sectionTitle}>Co-Authors ({submission.coAuthors.length})</h3>
+                    <h3 className={styles.sectionTitle}>Co-Authors ({coAuthors.length})</h3>
                     <div className={styles.coAuthorsListDetailed}>
-                        {submission.coAuthors.map((author, index) => (
+                        {coAuthors.map((author, index) => (
                             <div key={index} className={styles.coAuthorCardDetailed}>
                                 <div className={styles.coAuthorName}>
                                     {author.title} {author.firstName} {author.lastName}
@@ -427,17 +446,21 @@ const OverviewTab: React.FC<SharedFileProps> = ({ submission, groupedFiles, sort
                                             <div className={styles.fileActions} style={{ display: 'flex', gap: '8px' }}>
                                                 <button
                                                     className={styles.previewBtn}
-                                                    style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', fontSize: '12px', borderRadius: '4px', border: '1px solid #e5e7eb', backgroundColor: 'white', color: '#374151', cursor: 'pointer' }}
+                                                    style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', fontSize: '12px', borderRadius: '4px', border: '1px solid #e5e7eb', backgroundColor: 'white', color: '#374151', cursor: fileLoading[file.id] ? 'not-allowed' : 'pointer' }}
                                                     onClick={() => handlePreview(file.id, file.fileName, file.fileType || 'application/pdf')}
+                                                    disabled={!!fileLoading[file.id]}
                                                 >
-                                                    <Eye size={12} /> Preview
+                                                    {fileLoading[file.id] === 'preview' ? <Loader2 size={12} className={styles.spinner} /> : <Eye size={12} />}
+                                                    {fileLoading[file.id] === 'preview' ? 'Loading...' : 'Preview'}
                                                 </button>
                                                 <button
                                                     className={styles.downloadBtn}
-                                                    style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', fontSize: '12px', borderRadius: '4px', border: 'none', backgroundColor: '#3b82f6', color: 'white', cursor: 'pointer' }}
+                                                    style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', fontSize: '12px', borderRadius: '4px', border: 'none', backgroundColor: fileLoading[file.id] ? '#93c5fd' : '#3b82f6', color: 'white', cursor: fileLoading[file.id] ? 'not-allowed' : 'pointer' }}
                                                     onClick={() => handleDownload(file.id, file.fileName)}
+                                                    disabled={!!fileLoading[file.id]}
                                                 >
-                                                    <Download size={12} /> Download
+                                                    {fileLoading[file.id] === 'download' ? <Loader2 size={12} className={styles.spinner} /> : <Download size={12} />}
+                                                    {fileLoading[file.id] === 'download' ? 'Downloading...' : 'Download'}
                                                 </button>
                                             </div>
                                         </div>
@@ -458,7 +481,7 @@ const OverviewTab: React.FC<SharedFileProps> = ({ submission, groupedFiles, sort
 };
 
 // Files Tab
-const FilesTab: React.FC<SharedFileProps> = ({ groupedFiles, sortedKeys, handlePreview, handleDownload }) => {
+const FilesTab: React.FC<SharedFileProps> = ({ groupedFiles, sortedKeys, handlePreview, handleDownload, fileLoading }) => {
     return (
         <div className={styles.filesTab}>
             {sortedKeys.length > 0 ? (
@@ -486,17 +509,21 @@ const FilesTab: React.FC<SharedFileProps> = ({ groupedFiles, sortedKeys, handleP
                                     <div className={styles.fileActions} style={{ display: 'flex', gap: '8px' }}>
                                         <button
                                             className={styles.previewBtn}
-                                            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', fontSize: '12px', borderRadius: '4px', border: '1px solid #e5e7eb', backgroundColor: 'white', color: '#374151', cursor: 'pointer' }}
+                                            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', fontSize: '12px', borderRadius: '4px', border: '1px solid #e5e7eb', backgroundColor: 'white', color: '#374151', cursor: fileLoading[file.id] ? 'not-allowed' : 'pointer' }}
                                             onClick={() => handlePreview(file.id, file.fileName, file.fileType || 'application/pdf')}
+                                            disabled={!!fileLoading[file.id]}
                                         >
-                                            <Eye size={12} /> Preview
+                                            {fileLoading[file.id] === 'preview' ? <Loader2 size={12} className={styles.spinner} /> : <Eye size={12} />}
+                                            {fileLoading[file.id] === 'preview' ? 'Loading...' : 'Preview'}
                                         </button>
                                         <button
                                             className={styles.downloadBtn}
-                                            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', fontSize: '12px', borderRadius: '4px', border: 'none', backgroundColor: '#3b82f6', color: 'white', cursor: 'pointer' }}
+                                            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', fontSize: '12px', borderRadius: '4px', border: 'none', backgroundColor: fileLoading[file.id] ? '#93c5fd' : '#3b82f6', color: 'white', cursor: fileLoading[file.id] ? 'not-allowed' : 'pointer' }}
                                             onClick={() => handleDownload(file.id, file.fileName)}
+                                            disabled={!!fileLoading[file.id]}
                                         >
-                                            <Download size={12} /> Download
+                                            {fileLoading[file.id] === 'download' ? <Loader2 size={12} className={styles.spinner} /> : <Download size={12} />}
+                                            {fileLoading[file.id] === 'download' ? 'Downloading...' : 'Download'}
                                         </button>
                                     </div>
                                 </div>

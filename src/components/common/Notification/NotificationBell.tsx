@@ -5,6 +5,7 @@ import notificationService from '../../../services/notification.service';
 import { type Notification } from '../../../types/notificationTypes';
 import NotificationItem from './NotificationItem';
 import { useNavigate } from 'react-router-dom';
+import { authService } from '../../../services/auth.service';
 
 export default function NotificationBell() {
     const [isOpen, setIsOpen] = useState(false);
@@ -17,18 +18,10 @@ export default function NotificationBell() {
     const dropdownRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
 
-    // Get user role from localStorage
+    // Get user role from auth helper
     const getUserRole = (): string => {
-        try {
-            const userStr = localStorage.getItem('user');
-            if (userStr) {
-                const user = JSON.parse(userStr);
-                return user.role?.toLowerCase() || ''; // 'admin', 'editor', 'author', 'reviewer'
-            }
-        } catch (e) {
-            console.error('Error parsing user role', e);
-        }
-        return '';
+        const user = authService.getUser();
+        return user?.role?.toLowerCase() || ''; // 'admin', 'editor', 'author', 'reviewer'
     };
 
     // Load initial notifications
