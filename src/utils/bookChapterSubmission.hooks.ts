@@ -13,7 +13,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import type { BookChapterSubmission, FilterOptions } from '../types/submissionTypes';
 import bookChapterService from '../services/bookChapterSumission.service';
-import { resolveSubmissionBookTitles } from './submissionUtils';
+import { resolveSubmissionBookTitles, normalizeSubmission } from './submissionUtils';
 import * as utils from './bookChapterSubmission.utils';
 
 /**
@@ -36,7 +36,8 @@ export const useSubmissions = (page: number = 1, limit: number = 20) => {
       const response = await bookChapterService.getMySubmissions({ page, limit });
       if (response.data) {
         // ✅ CORRECT: API returns items in response.data
-        setSubmissions((response.data as any).items || response.data.submissions || []);
+        const items = (response.data as any).items || response.data.submissions || [];
+        setSubmissions(items.map((s: any) => normalizeSubmission(s)));
         setPagination((response.data as any).pagination || {
           currentPage: page,
           totalPages: 0,
@@ -55,13 +56,14 @@ export const useSubmissions = (page: number = 1, limit: number = 20) => {
     fetchSubmissions();
   }, [fetchSubmissions]);
 
-  const addSubmission = useCallback((submission: BookChapterSubmission) => {
-    setSubmissions(prev => [submission, ...prev]);
+  const addSubmission = useCallback((submission: any) => {
+    setSubmissions(prev => [normalizeSubmission(submission), ...prev]);
   }, []);
 
-  const updateSubmission = useCallback((updated: BookChapterSubmission) => {
+  const updateSubmission = useCallback((updated: any) => {
+    const normalized = normalizeSubmission(updated);
     setSubmissions(prev =>
-      prev.map(s => (s.id === updated.id ? updated : s))
+      prev.map(s => (s.id === normalized.id ? normalized : s))
     );
   }, []);
 
@@ -240,13 +242,13 @@ export const useReviewerAssignments = (page: number = 1, limit: number = 20, sta
         // We need to flatten this for the frontend
         const rawAssignments = Array.isArray(response.data)
           ? response.data
-          : (response.data as any).assignments || [];
+          : (response.data as any)?.assignments || (response.data as any)?.items || [];
 
         const mappedAssignments = rawAssignments.map((assignment: any) => {
           // Handle Chapter Level Assignment (New)
           if (assignment.chapter && assignment.chapter.submission) {
-            const submission = assignment.chapter.submission;
-            const chapter = assignment.chapter;
+            const submission = normalizeSubmission(assignment.chapter?.submission);
+            const chapter = assignment.chapter || {};
 
             // Collect chapter-specific files
             const chapterFiles = [];
@@ -287,45 +289,55 @@ export const useReviewerAssignments = (page: number = 1, limit: number = 20, sta
               });
             }
 
+            // safeSubmission: normalizeSubmission can return null/undefined if input is falsy
+            const safeSubmission: any = submission || {};
+
             return {
-              ...submission,
-              // Critical: Show the specific chapter title
-              bookChapterTitles: [chapter.chapterTitle],
-              chapters: [chapter.chapterTitle],
-              // Populate individualChapters so we can access chapterId in the view
-              individualChapters: [chapter],
-
-              // Override files with chapter-specific ones for reviewer
-              files: chapterFiles,
-
-              assignmentId: assignment.id, // Crucial for reviewer actions
-              reviewerId: assignment.reviewerId, // Added for reviewer identification
-              assignmentStatus: assignment.status === 'IN_PROGRESS'
+              ...safeSubmission,
+              id: assignment.id,
+              assignmentId: assignment.id,
+              reviewerId: assignment.reviewerId,
+              // Explicitly set key display fields so they are never sourced from the raw spread
+              bookTitle: safeSubmission.bookTitle || chapter.submission?.bookTitle || 'Untitled',
+              mainAuthor: safeSubmission.mainAuthor || null,
+              coAuthors: Array.isArray(safeSubmission.coAuthors) ? safeSubmission.coAuthors : [],
+              assignmentStatus: (assignment.status === 'IN_PROGRESS'
                 ? 'accepted'
-                : assignment.status.toLowerCase(),
-              assignmentDate: new Date(assignment.assignedDate),
+                : assignment.status?.toLowerCase()) || 'pending',
+              assignmentDate: new Date(assignment.assignedDate || Date.now()),
               dueDate: assignment.deadline ? new Date(assignment.deadline) : null,
               reviewStatus: getReviewStatus(assignment.status),
+              // CRITICAL: backend submission has no 'chapters' array — build it explicitly
+              bookChapterTitles: [chapter.chapterTitle || 'Untitled Chapter'],
+              chapters: [chapter.chapterTitle || 'Untitled Chapter'],
+              individualChapters: [chapter],
+              files: Array.isArray(chapterFiles) ? chapterFiles : [],
             };
           }
 
-          // Handle Book Level Assignment (Legacy)
-          const submission = assignment.submission;
+          const submission = normalizeSubmission(assignment?.submission);
+          // Fallback if both chapter and submission are missing but assignment exists
+          const safeSubmission = submission || {};
+
           return {
-            ...submission,
-            assignmentId: assignment.id, // Crucial for reviewer actions
-            reviewerId: assignment.reviewerId, // Added for reviewer identification
-            assignmentStatus: assignment.status === 'IN_PROGRESS'
+            ...safeSubmission,
+            id: assignment.id,
+            assignmentId: assignment.id,
+            reviewerId: assignment.reviewerId,
+            assignmentStatus: (assignment.status === 'IN_PROGRESS'
               ? 'accepted'
-              : assignment.status.toLowerCase(), // Map backend PENDING -> pending, IN_PROGRESS -> accepted
-            assignmentDate: new Date(assignment.assignedDate),
+              : assignment.status?.toLowerCase()) || 'pending',
+            assignmentDate: new Date(assignment.assignedDate || Date.now()),
             dueDate: assignment.deadline ? new Date(assignment.deadline) : null,
             reviewStatus: getReviewStatus(assignment.status),
-            // Ensure proper mapping of nested objects if needed
-            assignedEditor: submission.assignedEditor,
-            reviewer: assignment.reviewer
+            assignedEditor: safeSubmission?.assignedEditor,
+            reviewer: assignment.reviewer,
+            // Ensure array properties exist even for book-level assignments
+            chapters: (safeSubmission as any).chapters || [],
+            individualChapters: (safeSubmission as any).individualChapters || [],
+            files: (safeSubmission as any).files || [],
           };
-        });
+        }).filter(Boolean); // Remote skipped null entries
 
         setAssignments(mappedAssignments);
 
@@ -379,7 +391,8 @@ export const useSubmissionDetail = (submissionId: number | null) => {
     try {
       const response = await bookChapterService.getSubmissionById(submissionId);
       if (response.data) {
-        setSubmission((response.data as any).submission || response.data);
+        const sub = (response.data as any).submission || response.data;
+        setSubmission(normalizeSubmission(sub));
       }
     } catch (err) {
       const message = utils.parseErrorMessage(err);
@@ -393,8 +406,8 @@ export const useSubmissionDetail = (submissionId: number | null) => {
     fetchSubmission();
   }, [fetchSubmission]);
 
-  const updateSubmission = useCallback((updated: BookChapterSubmission) => {
-    setSubmission(updated);
+  const updateSubmission = useCallback((updated: any) => {
+    setSubmission(normalizeSubmission(updated));
   }, []);
 
   return {

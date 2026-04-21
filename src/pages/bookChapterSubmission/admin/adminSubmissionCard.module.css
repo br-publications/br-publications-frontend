@@ -2,7 +2,7 @@
   background: white;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
-  overflow: hidden;
+  /* overflow: hidden; removed to prevent clipping dropdown menus */
   transition: all 0.3s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
@@ -73,8 +73,8 @@
 /* Action Menu */
 .actionMenu {
   position: absolute;
-  right: 16px;
-  top: 50px;
+  right: 12px;
+  top: 40px;
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 8px;

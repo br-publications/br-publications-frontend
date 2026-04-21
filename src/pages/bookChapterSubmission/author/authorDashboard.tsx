@@ -98,8 +98,8 @@ export default function AuthorDashboard() {
       const matchesChapters = submission.chapters?.some(title =>
         title.toLowerCase().includes(query)
       ) || false;
-      const matchesAuthor = submission.mainAuthor.firstName.toLowerCase().includes(query) ||
-        submission.mainAuthor.lastName.toLowerCase().includes(query);
+      const matchesAuthor = (submission.mainAuthor.firstName?.toLowerCase().includes(query) || false) ||
+        (submission.mainAuthor.lastName?.toLowerCase().includes(query) || false);
 
       if (!matchesTitle && !matchesChapters && !matchesAuthor) {
         return false;

@@ -36,18 +36,20 @@ export const ReviewerAssignmentCard: React.FC<ReviewerAssignmentCardProps> = ({
 
   useClickOutside(menuRef, () => setShowActions(false), buttonRef);
 
-  const status = statusConfig[assignment.assignmentStatus];
+  const status = statusConfig[assignment.assignmentStatus || 'pending'] || statusConfig.pending;
 
-  const mainAuthorName = `${assignment.mainAuthor.firstName} ${assignment.mainAuthor.lastName} `;
-  const daysUntilDue = assignment.dueDate
+  const mainAuthorName = `${assignment.mainAuthor?.firstName || 'Unknown'} ${assignment.mainAuthor?.lastName || 'Author'} `;
+  const daysUntilDue = (assignment?.dueDate && !isNaN(assignment.dueDate.getTime()))
     ? Math.ceil((assignment.dueDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : null;
-  const daysAssigned = Math.floor((new Date().getTime() - assignment.assignmentDate.getTime()) / (1000 * 60 * 60 * 24));
+  const daysAssigned = (assignment?.assignmentDate && !isNaN(assignment.assignmentDate.getTime()))
+    ? Math.floor((new Date().getTime() - assignment.assignmentDate.getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
 
   // Show chapter title instead of book title if available
-  const displayTitle = (assignment.chapters && assignment.chapters.length > 0)
+  const displayTitle = (Array.isArray(assignment.chapters) && assignment.chapters.length > 0)
     ? assignment.chapters[0]
-    : assignment.bookTitle;
+    : assignment.bookTitle || 'Untitled Submission';
 
   return (
     <div className={styles.card}>
@@ -131,7 +133,7 @@ export const ReviewerAssignmentCard: React.FC<ReviewerAssignmentCardProps> = ({
         <div className={styles.authorInfo}>
           <div className={styles.author}>
             <div className={styles.authorAvatar}>
-              {assignment.mainAuthor.firstName[0]}{assignment.mainAuthor.lastName[0]}
+              {(assignment.mainAuthor?.firstName?.[0] || 'U')}{(assignment.mainAuthor?.lastName?.[0] || 'A')}
             </div>
             <div>
               <p className={styles.authorName}>{mainAuthorName}</p>

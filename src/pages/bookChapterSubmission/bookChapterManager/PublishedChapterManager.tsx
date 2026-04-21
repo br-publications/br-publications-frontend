@@ -310,7 +310,7 @@ const PublishedChapterManager: React.FC = () => {
                                                         <span>ISBN: {chapter.isbn || 'N/A'}</span>
                                                         {chapter.doi && <span>DOI: {chapter.doi}</span>}
                                                     </div>
-                                                    {chapter.keywords && chapter.keywords.length > 0 && (
+                                                    {Array.isArray(chapter.keywords) && chapter.keywords.length > 0 && (
                                                         <div className="flex flex-wrap gap-1 mt-1.5">
                                                             {chapter.keywords.map((kw: string, i: number) => (
                                                                 <span key={i} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded text-[9px] border border-gray-200">

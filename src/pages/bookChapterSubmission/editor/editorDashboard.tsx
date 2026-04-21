@@ -92,9 +92,9 @@ export const EditorDashboard: React.FC = () => {
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             filtered = filtered.filter(s =>
-                s.bookTitle.toLowerCase().includes(query) ||
-                s.mainAuthor.firstName.toLowerCase().includes(query) ||
-                s.mainAuthor.lastName.toLowerCase().includes(query)
+                (s.bookTitle || '').toLowerCase().includes(query) ||
+                (s.mainAuthor?.firstName || '').toLowerCase().includes(query) ||
+                (s.mainAuthor?.lastName || '').toLowerCase().includes(query)
             );
         }
 

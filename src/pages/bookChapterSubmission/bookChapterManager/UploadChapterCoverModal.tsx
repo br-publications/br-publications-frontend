@@ -222,6 +222,25 @@ const UploadChapterCoverModal: React.FC<UploadChapterCoverModalProps> = ({ book,
                         >
                             Cancel
                         </button>
+                        {previewUrl && (
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    if (!selectedFile || !book) return;
+                                    setLoading(true);
+                                    try {
+                                        await onSave(chapterIdToInt(book.id), selectedFile);
+                                        onClose();
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }}
+                                disabled={loading}
+                                className="px-3 py-1.5 bg-gray-100 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-200 disabled:opacity-50 text-[12px] font-medium"
+                            >
+                                Skip & Use Original
+                            </button>
+                        )}
                         <button
                             type="submit"
                             disabled={!selectedFile || loading}

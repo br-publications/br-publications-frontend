@@ -71,7 +71,7 @@ export default function EditorAssignmentManager({ bookTitle, addToast, onBack }:
 
     const fetchAvailable = async () => {
         try {
-            const r = await userService.getAllUsers({ role: 'editor', page: 1, limit: 200 });
+            const r = await userService.getAllUsers({ role: 'editor', isActive: true, page: 1, limit: 200 });
             if (r.success && r.data?.users) setAvailable(r.data.users);
         } catch { /* silent */ }
     };

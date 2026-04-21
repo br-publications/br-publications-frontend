@@ -229,7 +229,7 @@ export const ReviewerAssignmentDetailView: React.FC<ReviewerAssignmentDetailView
             <ChevronLeft size={20} />
           </button>
           <div className={styles.headerContent}>
-            <h1 className={styles.title}>{assignment.bookTitle}</h1>
+            <h1 className={styles.title}>{assignment.bookTitle || 'Untitled Submission'}</h1>
             <p className={styles.submittedInfo}>
               {daysUntilDue !== null
                 ? `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`
@@ -244,7 +244,7 @@ export const ReviewerAssignmentDetailView: React.FC<ReviewerAssignmentDetailView
         <div className={styles.infoItem}>
           <p className={styles.infoLabel}>Submitted by</p>
           <p className={styles.infoValue}>
-            {assignment.mainAuthor.firstName} {assignment.mainAuthor.lastName}
+            {assignment.mainAuthor?.firstName || 'Unknown'} {assignment.mainAuthor?.lastName || 'Author'}
           </p>
         </div>
         <div className={styles.infoItem}>
@@ -327,7 +327,7 @@ export const ReviewerAssignmentDetailView: React.FC<ReviewerAssignmentDetailView
       {/* Content */}
       <div className={styles.content}>
         {activeTab === 'workflow' && (
-          assignment.individualChapters && assignment.individualChapters.length > 0 ? (
+          (assignment.individualChapters && assignment.individualChapters.length > 0) ? (
             <ChapterWorkflow chapter={assignment.individualChapters[0]} />
           ) : (
             <div className={styles.emptyState}>
@@ -349,8 +349,8 @@ export const ReviewerAssignmentDetailView: React.FC<ReviewerAssignmentDetailView
         {activeTab === 'discussions' && assignment.reviewStatus !== 'completed' && assignment.assignmentStatus !== 'completed' && (
           <DiscussionPanel
             currentUserRole="reviewer"
-            submissionId={assignment.individualChapters?.[0]?.id || assignment.id}
-            submissionStatus={assignment.individualChapters?.[0]?.status || assignment.status}
+            submissionId={assignment.individualChapters?.[0]?.id || assignment.assignmentId || assignment.id}
+            submissionStatus={assignment.individualChapters?.[0]?.status || assignment.assignmentStatus || assignment.status}
             isChapterDiscussion={!!assignment.individualChapters?.[0]}
           />
         )}

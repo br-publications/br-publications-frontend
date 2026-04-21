@@ -644,6 +644,12 @@
     background: #fee2e2 !important;
 }
 
+.pcw-delete-draft-btn:hover {
+    background: #fee2e2 !important;
+    border-color: #f87171 !important;
+    transform: scale(1.05) !important;
+}
+
 /* ─────────────────────────────────────────
    BIO CARDS
  ───────────────────────────────────────── */

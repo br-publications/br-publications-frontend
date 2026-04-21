@@ -298,8 +298,8 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                 synopses: synopses.length > 0 ? synopses : prev.synopses,
                 scopeIntro: scIntro || prev.scopeIntro,
                 coverImage: bookData.coverImage || prev.coverImage || '',
-                keywords: bookData.keywords || prev.keywords || [],
-                editors: Array.isArray(bookData.editors) ? bookData.editors : (typeof bookData.editors === 'string' ? bookData.editors.split(',').map((s: string) => s.trim()) : prev.editors),
+                keywords: parseJson(bookData.keywords) || (typeof bookData.keywords === 'string' ? bookData.keywords.split(',').map((s: string) => s.trim()) : (Array.isArray(bookData.keywords) ? bookData.keywords : [])),
+                editors: Array.isArray(bookData.editors) ? bookData.editors : (typeof bookData.editors === 'string' ? parseJson(bookData.editors) || bookData.editors.split(',').map((s: string) => s.trim()) : prev.editors),
                 primaryEditor: bookData.primaryEditor || prev.primaryEditor || '',
                 frontmatterPdfs: parseJson(bookData.frontmatterPdfs) || prev.frontmatterPdfs || {},
             }));

@@ -109,7 +109,7 @@ export const AuthorSubmissionCard: React.FC<AuthorSubmissionCardProps> = ({
         <div className={styles.infoRow}>
           <div className={styles.authorInfo}>
             <div className={styles.authorAvatar}>
-              {submission.mainAuthor.firstName[0]}{submission.mainAuthor.lastName[0]}
+              {(submission.mainAuthor.firstName?.[0] || '?').toUpperCase()}{(submission.mainAuthor.lastName?.[0] || '?').toUpperCase()}
             </div>
             <div className={styles.authorDetails}>
               <span className={styles.authorName}>{mainAuthorName}</span>

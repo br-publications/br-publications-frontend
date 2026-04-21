@@ -154,6 +154,18 @@ export interface PublishedBookChapter extends PublishBookChapterPayload {
 // ============================================================
 
 /**
+ * GET /api/book-chapter-publishing/:id/validate-publish
+ * Validates if the submission (and its siblings) can be published.
+ */
+export const validateBeforePublish = async (submissionId: number): Promise<any> => {
+    const response = await fetch(`${API_BASE}/${submissionId}/validate-publish`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+};
+
+/**
  * POST /api/book-chapter-publishing/:submissionId/publish
  * Publish an APPROVED book chapter submission.
  * Body: full wizard payload — PDFs referenced by pdfKey (pre-uploaded).

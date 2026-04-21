@@ -119,7 +119,7 @@ export const AdminSubmissionCard: React.FC<AdminSubmissionCardProps> = ({
         <div className={styles.authorInfo}>
           <div className={styles.author}>
             <div className={styles.authorAvatar}>
-              {submission.mainAuthor.firstName[0]}{submission.mainAuthor.lastName[0]}
+              {(submission.mainAuthor.firstName?.[0] || '?').toUpperCase()}{(submission.mainAuthor.lastName?.[0] || '?').toUpperCase()}
             </div>
             <div>
               <p className={styles.authorName}>{mainAuthorName}</p>
@@ -137,8 +137,8 @@ export const AdminSubmissionCard: React.FC<AdminSubmissionCardProps> = ({
           <div className={styles.infoItem}>
             <FileText size={14} />
             <span>
-              {submission.chapters?.length || 0} chapter
-              {submission.chapters?.length !== 1 ? 's' : ''}
+              {(Array.isArray(submission.chapters) ? submission.chapters.length : 0)} chapter
+              {(Array.isArray(submission.chapters) ? submission.chapters.length : 0) !== 1 ? 's' : ''}
             </span>
           </div>
           {discussionCount > 0 && (

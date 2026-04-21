@@ -89,7 +89,7 @@ export default function BookTitleManager({ addToast, onManageChapters, onManageE
 
     const fetchEditors = async () => {
         try {
-            const r = await userService.getAllUsers({ role: 'editor', page: 1, limit: 200 });
+            const r = await userService.getAllUsers({ role: 'editor', isActive: true, page: 1, limit: 200 });
             if (r.success && r.data?.users) setAvailableEditors(r.data.users);
         } catch { /* silent */ }
     };

@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { toast } from 'react-hot-toast';
 import type { BookChapterSubmission, Author } from '../../types/submissionTypes';
 import { DESIGNATIONS } from '../../types/bookChapterManuscriptTypes';
-import { publishBookChapter, uploadTempPdf, findAuthors, deletePublishedChapter, checkBookChapterIsbnAvailability } from '../../services/bookChapterPublishing.service';
+import { publishBookChapter, validateBeforePublish, uploadTempPdf, findAuthors, checkBookChapterIsbnAvailability } from '../../services/bookChapterPublishing.service';
 import type { TocChapterPayload, AuthorBiographyPayload, EditorBiographyPayload } from '../../services/bookChapterPublishing.service';
 import { useNavigate } from 'react-router-dom';
 import { bookChapterAdminService } from '../../services/bookChapterSumission.service';
@@ -17,6 +17,7 @@ import PhoneNumberInput from '../common/PhoneNumberInput';
 import { isValidPhoneNumber } from '../../utils/phoneValidation';
 import { isValidUrl } from '../../utils/urlValidation';
 import { isValidEmail } from '../../utils/emailValidation';
+import { usePublishingDraft } from '../../hooks/usePublishingDraft';
 import './publishChapterWizard.css';
 import '../../pages/textBookSubmission/publishing/imageCropper.css';
 
@@ -111,6 +112,63 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
             pcwBodyRef.current.scrollTop = 0;
         }
     }, [activeTab]);
+
+    /**
+     * DRAFT Persistence Hook
+     */
+    const {
+        isSaving,
+        lastSavedAt,
+        hasDraft,
+        isRestoring,
+        restoreDraft,
+        updateState,
+        saveDraft,
+        deleteDraft
+    } = usePublishingDraft({
+        submissionId: submission.id,
+        wizardType: 'CHAPTER',
+        enabled: isOpen,
+        onDraftLoaded: (payload) => {
+            if (payload.form) {
+                // Ensure editors and coAuthors are handled correctly if they were stringified
+                const parsedForm = { ...payload.form };
+                if (typeof parsedForm.editors === 'string') {
+                    try { parsedForm.editors = JSON.parse(parsedForm.editors); } catch (e) { parsedForm.editors = []; }
+                }
+                if (typeof parsedForm.coAuthors === 'string') {
+                    try { parsedForm.coAuthors = JSON.parse(parsedForm.coAuthors); } catch (e) { parsedForm.coAuthors = []; }
+                }
+                setForm(parsedForm);
+            }
+            if (payload.scopeItems) setScopeItems(payload.scopeItems);
+            if (payload.tocChapters) setTocChapters(payload.tocChapters);
+            if (payload.biographies) setBiographies(payload.biographies);
+            if (payload.editorBiographies) setEditorBiographies(payload.editorBiographies);
+            if (payload.archiveIntro) setArchiveIntro(payload.archiveIntro);
+            if (payload.archiveItems) setArchiveItems(payload.archiveItems);
+            if (payload.originalImage) setOriginalImage(payload.originalImage);
+            toast.success('Draft restored successfully!');
+        }
+    });
+
+    const handleDeleteSubmissionDraft = () => {
+        setAlertConfig({
+            isOpen: true,
+            type: 'warning',
+            title: 'Delete Draft',
+            message: 'Are you sure you want to delete this draft?',
+            confirmText: 'Delete',
+            showCancel: true,
+            cancelText: 'Cancel',
+            onConfirm: async () => {
+                await deleteDraft();
+                setAlertConfig(p => ({ ...p, isOpen: false }));
+                toast.success('Draft deleted');
+            }
+        });
+    };
+
     const [touchedTabs, setTouchedTabs] = useState<Set<TabType>>(new Set(['author']));
     const [errors, setErrors] = useState<string>('');
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -127,6 +185,8 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
         title: string;
         message: string;
         confirmText?: string;
+        showCancel?: boolean;
+        cancelText?: string;
         onConfirm?: () => void;
     }>({
         isOpen: false,
@@ -201,6 +261,22 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
     const pdfInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
     const extraPdfInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
+    /**
+     * Keep draft state in sync
+     */
+    useEffect(() => {
+        updateState({
+            form,
+            scopeItems,
+            tocChapters,
+            biographies,
+            editorBiographies,
+            archiveIntro,
+            archiveItems,
+            originalImage
+        });
+    }, [form, scopeItems, tocChapters, biographies, editorBiographies, archiveIntro, archiveItems, originalImage, updateState]);
+
     // Reset state ONLY when the modal is newly opened or opened for a DIFFERENT submission.
     // Do NOT depend on the `submission` object reference — the parent polls every 30s, creating
     // new object references that would otherwise reset the wizard mid-session.
@@ -211,7 +287,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
             return;
         }
         // Already initialized for this exact submission — don't reset
-        if (initializedForRef.current === submission.id) return;
+        if (initializedForRef.current === submission.id || isRestoring) return;
         initializedForRef.current = submission.id;
 
         setActiveTab('author');
@@ -846,6 +922,13 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
         }
     };
 
+    const handleSkipCrop = () => {
+        if (originalImage) {
+            setForm((p) => ({ ...p, coverImage: originalImage }));
+            setShowCropper(false);
+        }
+    };
+
     // ── Submit ───────────────────────────────────────────────
 
     const handleSubmit = async () => {
@@ -951,13 +1034,43 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
             const publishQueue = relatedSubmissions.length > 0 ? relatedSubmissions : [submission];
             const uniqueQueue = Array.from(new Map(publishQueue.map(s => [s.id, s])).values());
 
-            const successfulPubIds: number[] = [];
-            const failures: { subId: number; error: string }[] = [];
+            // 2.5 Pre-check using the FIRST submission's ID
+            const checkId = uniqueQueue[0]?.id || submission.id;
+            try {
+                const check = await validateBeforePublish(checkId);
+                if (!check.canProceed) {
+                    const msg = check.message || 'Validation failed. Please ensure all chapters are ready.';
+                    toast.error(msg);
+                    setErrors(msg);
+                    setAlertConfig({
+                        isOpen: true,
+                        type: 'error',
+                        title: 'Cannot Publish Yet',
+                        message: msg,
+                    });
+                    setLoading(false);
+                    return; // Stop publication
+                }
+            } catch (err: any) {
+                const msg = err?.message || 'Failed to validate submissions for publishing.';
+                toast.error(msg);
+                setErrors(msg);
+                setAlertConfig({
+                    isOpen: true,
+                    type: 'error',
+                    title: 'Validation Error',
+                    message: msg,
+                });
+                setLoading(false);
+                return;
+            }
+
+            const errors: string[] = [];
             let primaryResultId: number | null = null;
 
-            // 3. Batch Publication
-            // We only call the main 'publishBookChapter' for the primary submission to create ONE public entry.
-            // For other submissions in the same book, we call the admin status-update endpoint.
+            // 3. Batch Publication (Sequential)
+            // We call the main 'publishBookChapter' sequentially. The backend handles cascading
+            // the 'PUBLISHED' status to siblings and returns early if already cascaded.
             for (const sub of uniqueQueue) {
                 // Construct submission-specific author data
                 const finalPayload = {
@@ -979,36 +1092,21 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                 };
 
                 try {
-                    if (sub.id === submission.id) {
-                        // Primary submission: Create the actual public book record
-                        const result = await publishBookChapter(sub.id, finalPayload as any);
-                        if (result && result.id) {
-                            primaryResultId = result.id;
-                            successfulPubIds.push(result.id);
-                        }
-                    } else {
-                        // Related submissions: Just mark them as published to move them out of the pending flow
-                        await bookChapterAdminService.publishChapter(sub.id);
+                    const result = await publishBookChapter(sub.id, finalPayload as any);
+                    if (result && result.publishedChapter?.id) {
+                        if (!primaryResultId) primaryResultId = result.publishedChapter.id;
+                    } else if (result && result.id) {
+                        if (!primaryResultId) primaryResultId = result.id;
                     }
                 } catch (err: any) {
-                    failures.push({
-                        subId: sub.id,
-                        error: err?.message || 'Network error or internal server failure'
-                    });
+                    errors.push(`Sub #${sub.id}: ${err?.message || 'Failed'}`);
+                    break; // Stop on first failure — don't partially publish
                 }
             }
 
-            // 4. Verification and Rollback
-            if (failures.length > 0) {
-                // If any part of the bulk operation failed, roll back the successful ones
-                if (successfulPubIds.length > 0) {
-                    await Promise.allSettled(successfulPubIds.map(pubId => deletePublishedChapter(pubId)));
-                }
-
-                const failedSummary = failures.map(f => `Sub #${f.subId}: ${f.error}`).join('; ');
-                throw new Error(
-                    `Bulk publication failed. To ensure data consistency, the operation was rolled back. \nDetails: ${failedSummary}`
-                );
+            // 4. Verification
+            if (errors.length > 0) {
+                throw new Error(`Publication failed: ${errors.join('; ')}`);
             }
 
             // 4.5 Deactivate Book Title in Registry
@@ -1023,6 +1121,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
 
             // 5. Final Success Alert
             toast.success(`🎉 ${uniqueQueue.length} chapter(s) published successfully!`);
+            deleteDraft(); // Clear draft on success
             setAlertConfig({
                 isOpen: true,
                 type: 'success',
@@ -1081,6 +1180,32 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                         </div>
                         <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '16px', cursor: 'pointer', color: '#6b7280' }}>&times;</button>
                     </div>
+
+                    {/* Draft Recovery Prompt */}
+                    {hasDraft && (
+                        <div style={{ padding: '12px 20px', background: '#fffbeb', borderBottom: '1px solid #fef3c7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderRadius: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ fontSize: '18px' }}>📝</span>
+                                <span style={{ fontSize: '14px', color: '#92400e', fontWeight: 500 }}>You have an unfinished draft for this submission.</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <button
+                                    onClick={handleDeleteSubmissionDraft}
+                                    style={{ padding: '6px 12px', background: '#fee2e2', color: '#b91c1c', border: '1px solid #fca5a5', borderRadius: '4px', fontSize: '13px', cursor: 'pointer' }}
+                                    title="Delete Draft"
+                                >
+                                    🗑️ Delete
+                                </button>
+                                <button
+                                    onClick={() => restoreDraft()}
+                                    className="pcw-btn"
+                                    style={{ padding: '6px 12px', background: '#f59e0b', color: 'white', border: 'none', borderRadius: '4px', fontSize: '13px', cursor: 'pointer' }}
+                                >
+                                    Resume Draft
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Tabs */}
                     <div className="form-tabs" style={{ display: 'flex', gap: '8px', marginBottom: '16px', borderBottom: '2px solid #e5e7eb', paddingBottom: '14px', overflowX: 'auto', flexShrink: 0 }}>
@@ -2046,7 +2171,25 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                 Cancel
                             </button>
                         </div>
+
+                        <div className="pcw-footer-center" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6b7280' }}>
+                            {isSaving ? (
+                                <span>⏳ Saving draft...</span>
+                            ) : lastSavedAt ? (
+                                <span>✔ Draft saved at {lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            ) : null}
+                        </div>
+
                         <div className="pcw-footer-right" style={{ display: 'flex', gap: '12px' }}>
+                            <button
+                                type="button"
+                                className="pcw-btn pcw-btn-secondary"
+                                onClick={() => saveDraft()}
+                                disabled={isSaving}
+                                style={{ padding: '14px 16px', background: 'white', border: '1px solid #d1d5db', borderRadius: '4px', cursor: isSaving ? 'not-allowed' : 'pointer' }}
+                            >
+                                {isSaving ? 'Saving...' : '💾 Save Draft'}
+                            </button>
                             {activeTab !== 'author' && (
                                 <button type="button" className="pcw-btn pcw-btn-secondary" onClick={handlePrevTab} style={{ padding: '14px 16px', background: 'white', border: '1px solid #d1d5db', borderRadius: '4px', cursor: 'pointer' }}>
                                     ← Previous
@@ -2114,6 +2257,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                             </div>
                             <div className="cropper-footer" style={{ padding: '16px 24px', borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
                                 <button className="btn-cancel" onClick={() => setShowCropper(false)} style={{ padding: '8px 16px', background: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
+                                <button className="btn-skip" onClick={handleSkipCrop} style={{ padding: '8px 16px', background: '#4b5563', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Skip & Use Original</button>
                                 <button className="btn-save" onClick={applyCrop} style={{ padding: '8px 16px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Save Cropped Image</button>
                             </div>
                         </div>
@@ -2127,6 +2271,10 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                 type={alertConfig.type}
                 title={alertConfig.title}
                 message={alertConfig.message}
+                confirmText={alertConfig.confirmText}
+                showCancel={alertConfig.showCancel}
+                cancelText={alertConfig.cancelText}
+                onConfirm={alertConfig.onConfirm}
                 onClose={() => setAlertConfig(p => ({ ...p, isOpen: false }))}
             />
         </div>

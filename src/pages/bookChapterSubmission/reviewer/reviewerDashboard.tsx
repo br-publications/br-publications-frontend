@@ -87,10 +87,10 @@ export const ReviewerDashboard: React.FC = () => {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(s =>
-        s.bookTitle.toLowerCase().includes(query) ||
-        (s.chapters && s.chapters.some(c => c.toLowerCase().includes(query))) ||
-        s.mainAuthor.firstName.toLowerCase().includes(query) ||
-        s.mainAuthor.lastName.toLowerCase().includes(query)
+        (s.bookTitle || '').toLowerCase().includes(query) ||
+        (Array.isArray(s.chapters) && s.chapters.some(c => (c || '').toLowerCase().includes(query))) ||
+        (s.mainAuthor?.firstName || '').toLowerCase().includes(query) ||
+        (s.mainAuthor?.lastName || '').toLowerCase().includes(query)
       );
     }
 
@@ -102,11 +102,12 @@ export const ReviewerDashboard: React.FC = () => {
    * Memoized to avoid recalculating on every render
    */
   const stats = useMemo(() => {
+    const validAssignments = Array.isArray(reviewerAssignments) ? reviewerAssignments : [];
     return {
-      pending: reviewerAssignments.filter(s => s.assignmentStatus === 'pending').length,
-      accepted: reviewerAssignments.filter(s => s.assignmentStatus === 'accepted').length,
-      completed: reviewerAssignments.filter(s => s.assignmentStatus === 'completed').length,
-      rejected: reviewerAssignments.filter(s => s.assignmentStatus === 'rejected').length,
+      pending: validAssignments.filter(s => s?.assignmentStatus === 'pending').length,
+      accepted: validAssignments.filter(s => s?.assignmentStatus === 'accepted').length,
+      completed: validAssignments.filter(s => s?.assignmentStatus === 'completed').length,
+      rejected: validAssignments.filter(s => s?.assignmentStatus === 'rejected').length,
     };
   }, [reviewerAssignments]);
 
@@ -232,12 +233,12 @@ export const ReviewerDashboard: React.FC = () => {
 
       {/* Deadlines Alert */}
       <div className={styles.urgentSection}>
-        {reviewerAssignments
-          .filter(a => a.assignmentStatus === 'accepted' && a.dueDate && getDeadlineStatus(a.dueDate) !== 'normal')
+        {(reviewerAssignments || [])
+          .filter(a => a?.assignmentStatus === 'accepted' && a?.dueDate && getDeadlineStatus(a.dueDate) !== 'normal')
           .slice(0, 3)
-          .map(assignment => (
+          .map((assignment, idx) => (
             <div
-              key={assignment.id}
+              key={`${assignment.assignmentId || assignment.id}-urgent-${idx}`}
               className={`${styles.deadlineAlert} ${styles[getDeadlineStatus(assignment.dueDate as Date)]}`}
             >
               <AlertCircle size={14} />
@@ -245,7 +246,7 @@ export const ReviewerDashboard: React.FC = () => {
                 <p className={styles.alertTitle}>{assignment.bookTitle}</p>
                 <p className={styles.alertMessage}>
                   Due in{' '}
-                  {assignment.dueDate && Math.ceil(
+                  {assignment.dueDate && !isNaN(assignment.dueDate.getTime()) && Math.ceil(
                     (assignment.dueDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
                   )}{' '}
                   days
@@ -277,9 +278,9 @@ export const ReviewerDashboard: React.FC = () => {
             <span>Check back later or adjust your filters</span>
           </div>
         ) : (
-          filteredAssignments.map(assignment => (
+          filteredAssignments.map((assignment, idx) => (
             <ReviewerAssignmentCard
-              key={assignment.id}
+              key={`${assignment.assignmentId || assignment.id}-${idx}`}
               assignment={assignment}
               onView={(assign, tab) => handleViewDetails(assign, tab as any)}
               onRespond={handleRespondToAssignment}

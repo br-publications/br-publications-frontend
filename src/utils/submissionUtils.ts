@@ -82,6 +82,71 @@ export const getRelativeTime = (dateInput: string | Date): string => {
   }
 };
 
+/**
+ * Normalizes a submission object by parsing stringified JSON fields
+ * frequently returned by the backend.
+ * @param submission - Raw submission object from API
+ * @returns Normalized submission with parsed objects/arrays
+ */
+export function normalizeSubmission(submission: any): BookChapterSubmission {
+  if (!submission) return submission;
+
+  const normalized = { ...submission };
+
+  // 1. Parse mainAuthor if it's a string
+  if (typeof normalized.mainAuthor === 'string') {
+    try {
+      normalized.mainAuthor = JSON.parse(normalized.mainAuthor);
+    } catch (e) {
+      console.error('Error parsing mainAuthor:', e);
+    }
+  }
+
+  // 2. Parse coAuthors if it's a string
+  if (typeof normalized.coAuthors === 'string') {
+    try {
+      normalized.coAuthors = JSON.parse(normalized.coAuthors);
+    } catch (e) {
+      console.error('Error parsing coAuthors:', e);
+    }
+  }
+
+  // 3. Parse bookChapterTitles and chapters if strings
+  if (typeof normalized.bookChapterTitles === 'string') {
+    try {
+      normalized.bookChapterTitles = JSON.parse(normalized.bookChapterTitles);
+    } catch (e) {
+      console.error('Error parsing bookChapterTitles:', e);
+    }
+  }
+  
+  if (typeof normalized.chapters === 'string') {
+    try {
+      normalized.chapters = JSON.parse(normalized.chapters);
+    } catch (e) {
+      console.error('Error parsing chapters:', e);
+    }
+  }
+
+  // Sync chapters with bookChapterTitles (aliasing)
+  if (!normalized.chapters && normalized.bookChapterTitles) {
+    normalized.chapters = normalized.bookChapterTitles;
+  } else if (!normalized.bookChapterTitles && normalized.chapters) {
+    normalized.bookChapterTitles = normalized.chapters;
+  }
+
+  // 4. Parse keywords if string
+  if (typeof normalized.keywords === 'string') {
+    try {
+      normalized.keywords = JSON.parse(normalized.keywords);
+    } catch (e) {
+      console.error('Error parsing keywords:', e);
+    }
+  }
+
+  return normalized as BookChapterSubmission;
+}
+
 // Book Title Resolution Functions
 
 import { bookTitleService } from '../services/bookManagement.service';
@@ -125,19 +190,22 @@ export async function resolveBookTitle(bookIdOrTitle: string): Promise<string> {
 export async function resolveSubmissionBookTitles(
   submissions: BookChapterSubmission[]
 ): Promise<BookChapterSubmission[]> {
+  // Always normalize first to handle stringified JSON fields
+  const normalizedSubmissions = submissions.map(s => normalizeSubmission(s));
+
   // Check if any submission has a numeric book title
-  const hasNumericTitles = submissions.some(s => !isNaN(Number(s.bookTitle)));
+  const hasNumericTitles = normalizedSubmissions.some(s => !isNaN(Number(s.bookTitle)));
 
   if (!hasNumericTitles) {
-    // All titles are already strings, return as-is
-    return submissions;
+    // All titles are already strings, return normalized ones
+    return normalizedSubmissions;
   }
 
   try {
     // Fetch all book titles once
     const response = await bookTitleService.getAllBookTitles({ activeOnly: true });
     if (!response.success || !response.data?.bookTitles) {
-      return submissions;
+      return normalizedSubmissions;
     }
 
     const bookTitlesMap = new Map<number, string>();
@@ -146,7 +214,7 @@ export async function resolveSubmissionBookTitles(
     });
 
     // Resolve each submission's book title
-    return submissions.map(submission => {
+    return normalizedSubmissions.map(submission => {
       const parsedId = parseInt(submission.bookTitle);
       if (!isNaN(parsedId) && submission.bookTitle.trim() === parsedId.toString()) {
         const resolvedTitle = bookTitlesMap.get(parsedId);
@@ -161,6 +229,6 @@ export async function resolveSubmissionBookTitles(
     });
   } catch (error) {
     console.error('Error resolving submission book titles:', error);
-    return submissions;
+    return normalizedSubmissions;
   }
 }

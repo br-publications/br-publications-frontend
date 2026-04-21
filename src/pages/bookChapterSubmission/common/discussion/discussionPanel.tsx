@@ -139,7 +139,7 @@ export const DiscussionPanel: React.FC<DiscussionPanelProps> = ({
 
   const canPostMessage =
     submissionStatus !== 'PUBLISHED' &&
-    submissionStatus !== 'REJECTED' && submissionStatus !== 'APPROVED';
+    submissionStatus !== 'REJECTED';
 
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
@@ -315,7 +315,9 @@ export const DiscussionPanel: React.FC<DiscussionPanelProps> = ({
           <span>
             {submissionStatus === 'PUBLISHED'
               ? 'This submission has been published. Discussions are closed.'
-              : 'This submission has been rejected. Discussions are closed.'}
+              : submissionStatus === 'APPROVED'
+                ? 'This submission has been approved. Discussions are closed.'
+                : 'This submission has been rejected. Discussions are closed.'}
           </span>
         </div>
       )}

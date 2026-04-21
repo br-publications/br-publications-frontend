@@ -13,6 +13,7 @@ import {
 import type { BookChapterSubmission } from '../../../types/submissionTypes';
 import { bookChapterService, bookChapterEditorService } from '../../../services/bookChapterSumission.service';
 import bookManagementService from '../../../services/bookManagement.service';
+import { normalizeSubmission } from '../../../utils/submissionUtils';
 
 import SubmissionOverview from '../common/Overview/submissionOverview';
 import DiscussionPanel from '../common/discussion/discussionPanel';
@@ -88,10 +89,10 @@ export const AdminSubmissionDetailView: React.FC<AdminSubmissionDetailViewProps>
               }));
               setTimeout(() => window.location.reload(), 2000);
             }
-            return fetchedSub;
+            return normalizeSubmission(fetchedSub);
           });
 
-          if (onUpdate && isInitialFetch) onUpdate(fetchedSub);
+          if (onUpdate && isInitialFetch) onUpdate(normalizeSubmission(fetchedSub));
           isInitialFetch = false;
         }
       } catch (error) {
@@ -210,7 +211,7 @@ export const AdminSubmissionDetailView: React.FC<AdminSubmissionDetailViewProps>
           });
 
           if (response.success && onUpdate && response.data) {
-            onUpdate(response.data);
+            onUpdate(normalizeSubmission(response.data));
             setAlert({
               isOpen: true,
               type: 'success',
@@ -254,7 +255,7 @@ export const AdminSubmissionDetailView: React.FC<AdminSubmissionDetailViewProps>
       // 1. Fetch all submissions for the same book title
       const subResp = await bookChapterService.getSubmissionsByBookTitle(bookTitleValue);
       if (subResp.success && subResp.data?.submissions) {
-        setPublishAllSubmissions(subResp.data.submissions as BookChapterSubmission[]);
+        setPublishAllSubmissions((subResp.data.submissions as any[]).map(s => normalizeSubmission(s)));
       } else {
         setPublishAllSubmissions([currentSubmission]);
       }
@@ -615,12 +616,12 @@ const ActionsTab: React.FC<{
                     Chapter Titles ({submission.individualChapters?.length || submission.chapters?.length || submission.bookChapterTitles?.length || 0})
                   </h5>
                   <ul className={styles.chapterList}>
-                    {submission.individualChapters && submission.individualChapters.length > 0 ? (
+                    {Array.isArray(submission.individualChapters) && submission.individualChapters.length > 0 ? (
                       submission.individualChapters.map((chapter: any, index: number) => (
                         <li key={index}>{chapter.chapterTitle}</li>
                       ))
                     ) : (
-                      (submission.chapters || submission.bookChapterTitles)?.map((chapterId, index) => (
+                      (Array.isArray(submission.chapters) ? submission.chapters : (Array.isArray(submission.bookChapterTitles) ? submission.bookChapterTitles : []))?.map((chapterId, index) => (
                         <li key={index}>{chapterTitles[chapterId] || chapterId}</li>
                       ))
                     )}
@@ -637,7 +638,7 @@ const ActionsTab: React.FC<{
                 <div className={styles.abstractSection}>
                   <h5 className={styles.sectionTitle}>Keywords</h5>
                   <div className={styles.keywordTags}>
-                    {submission.keywords.map((keyword, index) => (
+                    {Array.isArray(submission.keywords) && submission.keywords.map((keyword, index) => (
                       <span key={index} className={styles.keywordTag}>{keyword}</span>
                     ))}
                   </div>
@@ -656,9 +657,9 @@ const ActionsTab: React.FC<{
                         </span>
                       )}
                     </p>
-                    <p style={{ fontSize: '0.9em', color: '#4b5563', margin: '2px 0' }}><strong>Name:</strong> {submission.mainAuthor.firstName} {submission.mainAuthor.lastName}</p>
-                    <p style={{ fontSize: '0.9em', color: '#4b5563', margin: '2px 0' }}><strong>Institution:</strong> {submission.mainAuthor.instituteName}</p>
-                    <p style={{ fontSize: '0.9em', color: '#4b5563', margin: '2px 0' }}><strong>Email:</strong> {submission.mainAuthor.email}</p>
+                    <p style={{ fontSize: '0.9em', color: '#4b5563', margin: '2px 0' }}><strong>Name:</strong> {(submission.mainAuthor?.firstName || '').toString()} {(submission.mainAuthor?.lastName || '').toString()}</p>
+                    <p style={{ fontSize: '0.9em', color: '#4b5563', margin: '2px 0' }}><strong>Institution:</strong> {(submission.mainAuthor?.instituteName || '').toString()}</p>
+                    <p style={{ fontSize: '0.9em', color: '#4b5563', margin: '2px 0' }}><strong>Email:</strong> {(submission.mainAuthor?.email || '').toString()}</p>
                   </div>
 
                   {submission.coAuthors && submission.coAuthors.length > 0 && (

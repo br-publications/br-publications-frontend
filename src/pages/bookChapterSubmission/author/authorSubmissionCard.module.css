@@ -2,7 +2,7 @@
   background: white;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
-  overflow: hidden;
+  /* overflow: hidden; removed to prevent clipping dropdown menus */
   /* Restored - mainContent handles dropdown positioning */
   transition: all 0.2s ease;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -224,13 +224,13 @@
 /* Action Menu */
 .actionMenu {
   position: absolute;
-  right: 16px;
-  top: 48px;
+  right: 12px;
+  top: 40px;
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  z-index: 10;
+  z-index: 1000;
   min-width: 160px;
   padding: 4px;
 }

@@ -133,8 +133,8 @@ const SubmissionOverview: React.FC<SubmissionOverviewProps> = ({
                     <User size={16} /> Main Author
                 </h3>
                 {(() => {
-                    const mainAuthor = submission.mainAuthor;
-                    const isMainCorresponding = mainAuthor.isCorrespondingAuthor === true || String(mainAuthor.isCorrespondingAuthor) === 'true';
+                    const mainAuthor = submission?.mainAuthor;
+                    const isMainCorresponding = mainAuthor?.isCorrespondingAuthor === true || String(mainAuthor?.isCorrespondingAuthor) === 'true';
                     const otherAuthors = submission.coAuthors || [];
 
                     return (
@@ -142,11 +142,11 @@ const SubmissionOverview: React.FC<SubmissionOverviewProps> = ({
                             <div className={styles.authorCard}>
                                 <div className={styles.authorHeader}>
                                     <div className={styles.avatarPlaceholder}>
-                                        {mainAuthor.firstName.charAt(0)}{mainAuthor.lastName.charAt(0)}
+                                        {(mainAuthor?.firstName?.[0] || '?').toUpperCase()}{(mainAuthor?.lastName?.[0] || '?').toUpperCase()}
                                     </div>
                                     <div>
                                         <h4 className={styles.authorName}>
-                                            {mainAuthor.firstName} {mainAuthor.lastName}
+                                            {(mainAuthor.firstName || '').toString()} {(mainAuthor.lastName || '').toString()}
                                         </h4>
                                         <span className={styles.authorRole}>
                                             Main Author
@@ -183,10 +183,10 @@ const SubmissionOverview: React.FC<SubmissionOverviewProps> = ({
                                                 <div key={idx} className={styles.coAuthorCard}>
                                                     <div className={styles.authorHeader}>
                                                         <div className={styles.avatarPlaceholderSmall}>
-                                                            {author.firstName.charAt(0)}{author.lastName.charAt(0)}
+                                                            {(author?.firstName?.[0] || '?').toUpperCase()}{(author?.lastName?.[0] || '?').toUpperCase()}
                                                         </div>
                                                         <div>
-                                                            <h4 className={styles.coAuthorName}>{author.firstName} {author.lastName}</h4>
+                                                            <h4 className={styles.coAuthorName}>{(author.firstName || '').toString()} {(author.lastName || '').toString()}</h4>
                                                             <span className={styles.authorRole}>
                                                                 {author.role || 'Co-Author'}
                                                                 {isCoAuthorCorresponding && (
@@ -232,7 +232,7 @@ const SubmissionOverview: React.FC<SubmissionOverviewProps> = ({
                         <div className={styles.infoItem}>
                             <label>Proposed Chapters</label>
                             <div className={styles.chaptersList}>
-                                {submission.chapters?.map((ch, i) => {
+                                {Array.isArray(submission.chapters) && submission.chapters.map((ch, i) => {
                                     const info = chapterInfo[ch];
                                     return (
                                         <div key={i} className={styles.chapterBadgeWrapper}>
@@ -279,7 +279,7 @@ const SubmissionOverview: React.FC<SubmissionOverviewProps> = ({
                         <Tag size={16} /> Keywords
                     </h3>
                     <div className={styles.keywordsList}>
-                        {submission.keywords?.map((kw, i) => (
+                        {Array.isArray(submission.keywords) && submission.keywords.map((kw, i) => (
                             <span key={i} className={styles.keyword}>{kw}</span>
                         ))}
                         {!submission.keywords?.length && <span className={styles.emptyText}>No keywords provided</span>}

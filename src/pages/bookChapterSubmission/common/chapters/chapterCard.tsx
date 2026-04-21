@@ -101,12 +101,12 @@ export const ChapterCard: React.FC<ChapterCardProps> = ({
             {/* Info Section */}
             {!compact && (
                 <div className={styles.infoSection}>
-                    {chapter.assignedReviewers && chapter.assignedReviewers.length > 0 && (
+                    {/* {chapter.assignedReviewers && chapter.assignedReviewers.length > 0 && (
                         <div className={styles.infoItem}>
                             <Users size={14} />
                             <span>{chapter.assignedReviewers.length} Reviewer{chapter.assignedReviewers.length > 1 ? 's' : ''}</span>
                         </div>
-                    )}
+                    )} */}
                     {chapter.revisionCount > 0 && (
                         <div className={styles.infoItem}>
                             <Upload size={14} />

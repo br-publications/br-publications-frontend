@@ -87,17 +87,6 @@ export const EditorSubmissionCard: React.FC<EditorSubmissionCardProps> = ({
                     >
                         <Eye size={12} /> View Details
                     </button>
-                    {(submission.status === 'REVIEWER_ASSIGNMENT' || submission.status === 'UNDER_REVIEW') && (
-                        <button
-                            className={styles.actionMenuItem}
-                            onClick={() => {
-                                onView(submission, 'reviewers');
-                                setShowActions(false);
-                            }}
-                        >
-                            <UserCheck size={12} /> Assign Reviewers
-                        </button>
-                    )}
                     <button className={styles.actionMenuItem}>
                         <Send size={12} /> Send Message
                     </button>
@@ -110,7 +99,7 @@ export const EditorSubmissionCard: React.FC<EditorSubmissionCardProps> = ({
                 <div className={styles.authorInfo}>
                     <div className={styles.author}>
                         <div className={styles.authorAvatar}>
-                            {submission.mainAuthor?.firstName?.[0]}{submission.mainAuthor?.lastName?.[0]}
+                            {(submission.mainAuthor?.firstName?.[0] || '?').toUpperCase()}{(submission.mainAuthor?.lastName?.[0] || '?').toUpperCase()}
                         </div>
                         <div>
                             <p className={styles.authorName}>{mainAuthorName}</p>
@@ -128,8 +117,8 @@ export const EditorSubmissionCard: React.FC<EditorSubmissionCardProps> = ({
                     <div className={styles.infoItem}>
                         <FileText size={12} />
                         <span>
-                            {submission.chapters?.length || 0} chapter
-                            {submission.chapters?.length !== 1 ? 's' : ''}
+                            {(Array.isArray(submission.chapters) ? submission.chapters.length : 0)} chapter
+                            {(Array.isArray(submission.chapters) ? submission.chapters.length : 0) !== 1 ? 's' : ''}
                         </span>
                     </div>
                     {discussionCount > 0 && (

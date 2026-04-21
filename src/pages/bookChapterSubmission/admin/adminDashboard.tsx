@@ -122,9 +122,9 @@ export const AdminDashboard: React.FC = () => {
     // Apply search filter locally for now (can be moved to server later)
     if (searchQuery) {
       filtered = filtered.filter(s =>
-        s.bookTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.mainAuthor.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.mainAuthor.lastName.toLowerCase().includes(searchQuery.toLowerCase())
+        (s.bookTitle || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (s.mainAuthor?.firstName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (s.mainAuthor?.lastName || '').toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 

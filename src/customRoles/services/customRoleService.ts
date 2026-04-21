@@ -7,7 +7,7 @@ import type {
     UpdateCustomRoleRequest,
     RoleWithPermissions,
 } from '../types/customRoleTypes';
-import { API_BASE_URL } from '../../services/api.config';
+import { API_BASE_URL, getAuthToken } from '../../services/api.config';
 
 
 // Create axios instance with auth token
@@ -21,7 +21,7 @@ const apiClient = axios.create({
 
 // Add token to requests
 apiClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem('authToken');
+    const token = getAuthToken();
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }

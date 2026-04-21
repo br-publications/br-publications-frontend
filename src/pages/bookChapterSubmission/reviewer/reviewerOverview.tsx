@@ -33,16 +33,20 @@ const ReviewerOverview: React.FC<ReviewerOverviewProps> = ({ assignment }) => {
         isOpen: false, type: 'info', title: '', message: ''
     });
 
-    const chapter = assignment.individualChapters?.[0];
-    const mainAuthor = assignment.mainAuthor;
-    const coAuthors = assignment.coAuthors || [];
+    const chapter = assignment?.individualChapters?.[0];
+    const mainAuthor = assignment?.mainAuthor;
+    const coAuthors = assignment?.coAuthors || [];
+    
+    // Safety guard if data is completely missing
+    if (!assignment) return <div className={styles.container}>No mapping data available for this assignment.</div>;
 
     // Helper: designation display
     const getDesignationDisplay = (author: any) => {
+        if (!author) return '—';
         if (author.designation === 'other' && author.otherDesignation) {
             return author.otherDesignation;
         }
-        const found = DESIGNATIONS.find((d: any) => d.value === author.designation);
+        const found = DESIGNATIONS.find((d: any) => d?.value === author.designation);
         return found ? found.label : (author.designation || '—');
     };
 
@@ -171,7 +175,7 @@ const ReviewerOverview: React.FC<ReviewerOverviewProps> = ({ assignment }) => {
                                 <div key={idx} className={styles.coAuthorCard}>
                                     <div className={styles.authorHeader}>
                                         <div className={styles.avatarSmall}>
-                                            {author.firstName?.charAt(0)}{author.lastName?.charAt(0)}
+                                            {(author.firstName?.charAt(0) || '?')}{(author.lastName?.charAt(0) || '?')}
                                         </div>
                                         <div>
                                             <p className={styles.authorName}>{author.firstName} {author.lastName}</p>

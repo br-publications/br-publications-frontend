@@ -1625,99 +1625,98 @@ const BookChapterManuscript: React.FC = () => {
               {activeTab === 'details' && (
                 <section className="submit-section tab-content" id="chapter-details-section">
 
-                  <div className="form-row">
-                    <div className="bookFormGroup">
-                      <label>Book Title*</label>
-                      <select
-                        value={bookTitle}
-                        onChange={(e) => {
-                          setBookTitle(e.target.value);
-                          if (touchedFields['bookTitle']) {
-                            const error = validateField('bookTitle', e.target.value);
-                            if (error) {
-                              setErrors(prev => ({ ...prev, bookTitle: error }));
-                            } else {
-                              setErrors(prev => {
-                                const newErrors = { ...prev };
-                                delete newErrors['bookTitle'];
-                                return newErrors;
-                              });
-                            }
+                  <div className="bookFormGroup full">
+                    <label>Book Title*</label>
+                    <select
+                      value={bookTitle}
+                      onChange={(e) => {
+                        setBookTitle(e.target.value);
+                        if (touchedFields['bookTitle']) {
+                          const error = validateField('bookTitle', e.target.value);
+                          if (error) {
+                            setErrors(prev => ({ ...prev, bookTitle: error }));
+                          } else {
+                            setErrors(prev => {
+                              const newErrors = { ...prev };
+                              delete newErrors['bookTitle'];
+                              return newErrors;
+                            });
                           }
-                        }}
-                        onBlur={(e) => handleFieldBlur('bookTitle', e.target.value)}
-                        className={errors['bookTitle'] ? 'input-error' : ''}
-                        disabled={isLoadingBooks}
-                      >
-                        <option value="">{isLoadingBooks ? 'Loading book titles...' : 'Select a book title'}</option>
-                        {bookTitles.map(book => (
-                          <option key={book.id} value={book.id.toString()}>{book.title}</option>
-                        ))}
-                      </select>
-                      {errors['bookTitle'] && (
-                        <span className="error-messages">{errors['bookTitle']}</span>
-                      )}
-                    </div>
-                    <div className="bookFormGroup">
-                      <label>Book Chapter Title* (Select One or More)</label>
-                      <div
-                        className={`chapter-multiselect ${!bookTitle ? 'disabled' : ''} ${errors['bookChapterTitle'] ? 'input-error' : ''}`}
-                        tabIndex={0}
-                        onBlur={() => handleFieldBlur('bookChapterTitle', selectedChapters)}
-                      >
-                        {!bookTitle ? (
-                          <div className="multiselect-placeholder">Please select a book title first</div>
-                        ) : availableChapters.length === 0 ? (
-                          <div className="multiselect-placeholder">No chapters available</div>
-                        ) : (
-                          <div className="chapter-checkbox-list">
-                            {availableChapters.map(chapter => (
-                              <label key={chapter.id} className="chapter-checkbox-item">
-                                <input
-                                  type="checkbox"
-                                  value={chapter.id}
-                                  checked={selectedChapters.includes(chapter.id)}
-                                  onChange={(e) => {
-                                    let newChapters;
-                                    if (e.target.checked) {
-                                      newChapters = [...selectedChapters, chapter.id];
-                                    } else {
-                                      newChapters = selectedChapters.filter(id => id !== chapter.id);
-                                    }
-                                    setSelectedChapters(newChapters);
+                        }
+                      }}
+                      onBlur={(e) => handleFieldBlur('bookTitle', e.target.value)}
+                      className={errors['bookTitle'] ? 'input-error' : ''}
+                      disabled={isLoadingBooks}
+                    >
+                      <option value="">{isLoadingBooks ? 'Loading book titles...' : 'Select a book title'}</option>
+                      {bookTitles.map(book => (
+                        <option key={book.id} value={book.id.toString()}>{book.title}</option>
+                      ))}
+                    </select>
+                    {errors['bookTitle'] && (
+                      <span className="error-messages">{errors['bookTitle']}</span>
+                    )}
+                  </div>
 
-                                    // Validate if touched
-                                    if (touchedFields['bookChapterTitle']) {
-                                      const error = validateField('bookChapterTitle', newChapters);
-                                      if (error) {
-                                        setErrors(prev => ({ ...prev, bookChapterTitle: error }));
-                                      } else {
-                                        setErrors(prev => {
-                                          const newErrors = { ...prev };
-                                          delete newErrors['bookChapterTitle'];
-                                          return newErrors;
-                                        });
-                                      }
+                  <div className="bookFormGroup full">
+                    <label>Book Chapter Title* (Select One or More)</label>
+                    <div
+                      className={`chapter-multiselect ${!bookTitle ? 'disabled' : ''} ${errors['bookChapterTitle'] ? 'input-error' : ''}`}
+                      tabIndex={0}
+                      onBlur={() => handleFieldBlur('bookChapterTitle', selectedChapters)}
+                    >
+                      {!bookTitle ? (
+                        <div className="multiselect-placeholder">Please select a book title first</div>
+                      ) : availableChapters.length === 0 ? (
+                        <div className="multiselect-placeholder">No chapters available</div>
+                      ) : (
+                        <div className="chapter-checkbox-list">
+                          {availableChapters.map(chapter => (
+                            <label key={chapter.id} className="chapter-checkbox-item">
+                              <input
+                                type="checkbox"
+                                value={chapter.id}
+                                checked={selectedChapters.includes(chapter.id)}
+                                onChange={(e) => {
+                                  let newChapters;
+                                  if (e.target.checked) {
+                                    newChapters = [...selectedChapters, chapter.id];
+                                  } else {
+                                    newChapters = selectedChapters.filter(id => id !== chapter.id);
+                                  }
+                                  setSelectedChapters(newChapters);
+
+                                  // Validate if touched
+                                  if (touchedFields['bookChapterTitle']) {
+                                    const error = validateField('bookChapterTitle', newChapters);
+                                    if (error) {
+                                      setErrors(prev => ({ ...prev, bookChapterTitle: error }));
+                                    } else {
+                                      setErrors(prev => {
+                                        const newErrors = { ...prev };
+                                        delete newErrors['bookChapterTitle'];
+                                        return newErrors;
+                                      });
                                     }
-                                  }}
-                                  onBlur={() => handleFieldBlur('bookChapterTitle', selectedChapters)}
-                                  disabled={!bookTitle}
-                                />
-                                <span>{chapter.chapterTitle}</span>
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      {errors['bookChapterTitle'] && (
-                        <span className="error-messages">{errors['bookChapterTitle']}</span>
-                      )}
-                      {selectedChapters.length > 0 && (
-                        <div className="selected-chapters-summary">
-                          Selected: {selectedChapters.length} chapter{selectedChapters.length !== 1 ? 's' : ''}
+                                  }
+                                }}
+                                onBlur={() => handleFieldBlur('bookChapterTitle', selectedChapters)}
+                                disabled={!bookTitle}
+                              />
+                              <span>{chapter.chapterTitle}</span>
+                            </label>
+                          ))}
                         </div>
                       )}
                     </div>
+                    {errors['bookChapterTitle'] && (
+                      <span className="error-messages">{errors['bookChapterTitle']}</span>
+                    )}
+                    {selectedChapters.length > 0 && (
+                      <div className="selected-chapters-summary">
+                        Selected: {selectedChapters.length} chapter{selectedChapters.length !== 1 ? 's' : ''}
+                      </div>
+                    )}
                   </div>
 
                   {/* Editor Selection - Only show if book title is selected */}

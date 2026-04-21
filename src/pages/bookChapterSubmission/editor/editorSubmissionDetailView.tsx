@@ -16,6 +16,7 @@ import type { BookChapterSubmission } from '../../../types/submissionTypes';
 import { bookChapterService, bookChapterEditorService } from '../../../services/bookChapterSumission.service';
 import { userService, type User as UserServiceUser } from '../../../services/user.service';
 import bookManagementService from '../../../services/bookManagement.service';
+import { normalizeSubmission } from '../../../utils/submissionUtils';
 import SubmissionOverview from '../common/Overview/submissionOverview';
 import DiscussionPanel from '../common/discussion/discussionPanel';
 import SubmissionStatusHistory from '../common/history/submissionStatusHistory';
@@ -56,12 +57,6 @@ export const EditorSubmissionDetailView: React.FC<EditorSubmissionDetailViewProp
     initialTab = 'overview',
 }) => {
     const [activeTab, setActiveTab] = useState<EditorTab>(initialTab);
-    const [reviewerAssignments, setReviewerAssignments] = useState<any[]>(
-        (submission as any).reviewerAssignments || []
-    );
-    const [isLoadingReviewers, setIsLoadingReviewers] = useState(false);
-    const [reviewerError, setReviewerError] = useState<string | null>(null);
-    const [showAssignReviewerModal, setShowAssignReviewerModal] = useState(false);
     const [chapterTitles, setChapterTitles] = useState<Record<string, string>>({});
     const [resolvedBookTitle, setResolvedBookTitle] = useState<string | null>(null);
     const [isSubmittingIsbn, setIsSubmittingIsbn] = useState(false);
@@ -93,10 +88,10 @@ export const EditorSubmissionDetailView: React.FC<EditorSubmissionDetailViewProp
                             }));
                             setTimeout(() => window.location.reload(), 2000);
                         }
-                        return fetchedSub;
+                        return normalizeSubmission(fetchedSub);
                     });
 
-                    if (onUpdate && isInitialFetch) onUpdate(fetchedSub);
+                    if (onUpdate && isInitialFetch) onUpdate(normalizeSubmission(fetchedSub));
                     isInitialFetch = false;
                 }
             } catch (error) {
@@ -118,37 +113,6 @@ export const EditorSubmissionDetailView: React.FC<EditorSubmissionDetailViewProp
         if (initialTab) setActiveTab(initialTab);
     }, [initialTab]);
 
-    // Sync reviewer assignments from submission prop
-    useEffect(() => {
-        if ((submission as any).reviewerAssignments) {
-            setReviewerAssignments((submission as any).reviewerAssignments);
-        }
-    }, [submission]);
-
-    const fetchReviewers = async () => {
-        if (!submission.id) return;
-        setIsLoadingReviewers(true);
-        setReviewerError(null);
-        try {
-            const response = await bookChapterEditorService.getSubmissionReviewers(submission.id);
-            if (response.success && response.data) {
-                // The API returns data wrapped in an object with 'assignments' property
-                const assignments = (response.data as any).assignments || response.data;
-                setReviewerAssignments(Array.isArray(assignments) ? assignments : []);
-            }
-        } catch (error) {
-            console.error("Error fetching reviewers", error);
-            setReviewerError("Failed to load reviewers");
-        } finally {
-            setIsLoadingReviewers(false);
-        }
-    };
-
-    useEffect(() => {
-        if (activeTab === 'reviewers') {
-            fetchReviewers();
-        }
-    }, [activeTab, submission.id]);
 
     // Fetch chapter titles
     useEffect(() => {
@@ -201,10 +165,6 @@ export const EditorSubmissionDetailView: React.FC<EditorSubmissionDetailViewProp
     }, [submission.bookTitle, submission.chapters, submission.bookChapterTitles]);
 
 
-    // Determine if reviewers tab should be visible
-    const hasReviewers = reviewerAssignments.length > 0;
-    const isReviewerAssignmentStatus = ['REVIEWER_ASSIGNMENT', 'UNDER_REVIEW', 'EDITORIAL_REVIEW'].includes(currentSubmission.status);
-    const showReviewersTab = hasReviewers || isReviewerAssignmentStatus;
 
     return (
         <div className={styles.container}>
@@ -237,11 +197,6 @@ export const EditorSubmissionDetailView: React.FC<EditorSubmissionDetailViewProp
                 <button className={`${styles.tab} ${activeTab === 'discussions' ? styles.activeTab : ''}`} onClick={() => setActiveTab('discussions')}>
                     <MessageSquare size={14} /> Discussions
                 </button>
-                {showReviewersTab && (
-                    <button className={`${styles.tab} ${activeTab === 'reviewers' ? styles.activeTab : ''}`} onClick={() => setActiveTab('reviewers')}>
-                        <Users size={14} /> Reviewers
-                    </button>
-                )}
                 <button className={`${styles.tab} ${activeTab === 'actions' ? styles.activeTab : ''}`} onClick={() => setActiveTab('actions')}>
                     <CheckCircle size={14} /> Actions
                 </button>
@@ -265,16 +220,6 @@ export const EditorSubmissionDetailView: React.FC<EditorSubmissionDetailViewProp
                     <SubmissionWorkflowView submission={currentSubmission} />
                 )}
 
-                {activeTab === 'reviewers' && (
-                    <ReviewersTab
-                        submission={currentSubmission}
-                        assignments={reviewerAssignments}
-                        isLoading={isLoadingReviewers}
-                        error={reviewerError}
-                        onAssignReviewer={() => setShowAssignReviewerModal(true)}
-                        onRefresh={fetchReviewers}
-                    />
-                )}
 
                 {activeTab === 'history' && (
                     <div style={{ marginTop: '20px' }}>
@@ -285,8 +230,6 @@ export const EditorSubmissionDetailView: React.FC<EditorSubmissionDetailViewProp
                 {activeTab === 'actions' && (
                     <EditorActionsTab
                         submission={currentSubmission}
-                        assignments={reviewerAssignments}
-                        onAssignReviewer={() => setShowAssignReviewerModal(true)}
                         onMakeDecision={(decision, notes) => { if (onMakeDecision) onMakeDecision(decision, notes); }}
                         onMakeFinalDecision={(decision, notes) => { if (onMakeFinalDecision) onMakeFinalDecision(decision, notes); }}
                         onUpdate={onUpdate}
@@ -309,17 +252,6 @@ export const EditorSubmissionDetailView: React.FC<EditorSubmissionDetailViewProp
                 )}
             </div>
 
-            {showAssignReviewerModal && (
-                <AssignReviewerModal
-                    submissionId={submission.id}
-                    onClose={() => setShowAssignReviewerModal(false)}
-                    onSuccess={() => {
-                        setShowAssignReviewerModal(false);
-                        if (activeTab === 'reviewers') fetchReviewers();
-                        else setActiveTab('reviewers');
-                    }}
-                />
-            )}
 
 
 
@@ -337,56 +269,9 @@ export const EditorSubmissionDetailView: React.FC<EditorSubmissionDetailViewProp
     );
 };
 
-// Reviewers Tab
-const ReviewersTab: React.FC<{
-    submission: BookChapterSubmission;
-    assignments: any[];
-    isLoading: boolean;
-    error: string | null;
-    onAssignReviewer: () => void;
-    onRefresh: () => void;
-}> = ({ assignments, onRefresh, onAssignReviewer }) => {
-    // Ensure assignments is an array
-    const validAssignments = Array.isArray(assignments) ? assignments : [];
-
-    // Check if any reviewer has declined or if we need more reviewers
-    const hasDeclinedReviewer = validAssignments.some(
-        (a) => a.status === 'DECLINED' || a.status === 'REJECTED' || a.status === 'EXPIRED'
-    );
-    const needsMoreReviewers = validAssignments.length < 2;
-    const canManageReviewers = hasDeclinedReviewer || needsMoreReviewers;
-
-    return (
-        <div className={styles.reviewersTab}>
-            <div className={styles.section}>
-                <div className={styles.sectionHeader}>
-                    <h3>Assigned Reviewers</h3>
-                    <button
-                        className={styles.assignButton}
-                        onClick={onAssignReviewer}
-                        disabled={!canManageReviewers}
-                        title={canManageReviewers ? 'Manage reviewers' : 'Reviewer slots are full'}
-                    >
-                        <UserCheck size={14} /> Manage Reviewers
-                    </button>
-                </div>
-                {validAssignments.length === 0 ? (
-                    <div className={styles.emptyReviewers}>
-                        <Users size={48} />
-                        <p>No reviewers currently assigned</p>
-                    </div>
-                ) : (
-                    <ReviewerList assignments={validAssignments} onRefresh={onRefresh} />
-                )}
-            </div>
-        </div>
-    );
-};
 
 const EditorActionsTab: React.FC<{
     submission: BookChapterSubmission;
-    assignments: any[];
-    onAssignReviewer: () => void;
     onMakeDecision: (decision: 'accept' | 'reject', notes?: string) => void;
     onMakeFinalDecision?: (decision: 'approve' | 'reject', notes?: string) => void;
     onUpdate?: (submission: BookChapterSubmission) => void;
@@ -397,7 +282,7 @@ const EditorActionsTab: React.FC<{
     isSubmittingIsbn: boolean;
     setIsSubmittingIsbn: (submitting: boolean) => void;
     setAlertConfig: React.Dispatch<React.SetStateAction<AlertConfig>>;
-}> = ({ submission, assignments, onAssignReviewer: _onAssignReviewer, onMakeDecision, onMakeFinalDecision, onUpdate, chapterTitles, resolvedBookTitle, isStartingPublication, setIsStartingPublication, isSubmittingIsbn, setIsSubmittingIsbn, setAlertConfig }) => {
+}> = ({ submission, onMakeDecision, onMakeFinalDecision, onUpdate, chapterTitles, resolvedBookTitle, isStartingPublication, setIsStartingPublication, isSubmittingIsbn, setIsSubmittingIsbn, setAlertConfig }) => {
     const [showPublishModal, setShowPublishModal] = useState(false);
     const [notes, setNotes] = useState('');
     const [finalNotes, setFinalNotes] = useState('');
@@ -455,9 +340,9 @@ const EditorActionsTab: React.FC<{
     const allChaptersDecided = submission.individualChapters && submission.individualChapters.length > 0 && submission.individualChapters.every(
         (ch: any) => ch.status === 'CHAPTER_APPROVED' || ch.status === 'CHAPTER_REJECTED'
     );
-    const reviewersCompleted = assignments.length >= 2 && assignments.every(a => a.status === 'COMPLETED');
+    const reviewersCompleted = false; // Reviewers disabled
     const statusReady = ['EDITORIAL_REVIEW'].includes(submission.status);
-    const readyForFinalDecision = (reviewersCompleted || allChaptersDecided || statusReady) && !['APPROVED', 'PUBLISHED', 'REJECTED', 'ISBN_APPLIED', 'PUBLICATION_IN_PROGRESS'].includes(submission.status);
+    const readyForFinalDecision = (allChaptersDecided || statusReady) && !['APPROVED', 'PUBLISHED', 'REJECTED', 'ISBN_APPLIED', 'PUBLICATION_IN_PROGRESS'].includes(submission.status);
 
     const handleUploadProof = async () => {
         if (!proofFile) return;
@@ -516,12 +401,12 @@ const EditorActionsTab: React.FC<{
                                         Chapter Titles ({submission.individualChapters?.length || submission.chapters?.length || submission.bookChapterTitles?.length || 0})
                                     </h5>
                                     <ul className={styles.chapterList}>
-                                        {submission.individualChapters && submission.individualChapters.length > 0 ? (
+                                        {Array.isArray(submission.individualChapters) && submission.individualChapters.length > 0 ? (
                                             submission.individualChapters.map((chapter: any, index: number) => (
                                                 <li key={index}>{chapter.chapterTitle}</li>
                                             ))
                                         ) : (
-                                            (submission.chapters || submission.bookChapterTitles)?.map((chapterId, index) => (
+                                            (Array.isArray(submission.chapters) ? submission.chapters : (Array.isArray(submission.bookChapterTitles) ? submission.bookChapterTitles : []))?.map((chapterId, index) => (
                                                 <li key={index}>{chapterTitles[chapterId] || chapterId}</li>
                                             ))
                                         )}
@@ -538,7 +423,7 @@ const EditorActionsTab: React.FC<{
                                 <div className={styles.abstractSection}>
                                     <h5 className={styles.sectionTitle}>Keywords</h5>
                                     <div className={styles.keywordTags}>
-                                        {submission.keywords.map((keyword, index) => (
+                                        {Array.isArray(submission.keywords) && submission.keywords.map((keyword, index) => (
                                             <span key={index} className={styles.keywordTag}>{keyword}</span>
                                         ))}
                                     </div>
@@ -557,9 +442,9 @@ const EditorActionsTab: React.FC<{
                                                 </span>
                                             )}
                                         </p>
-                                        <p style={{ fontSize: '0.9em', color: '#4b5563', margin: '2px 0' }}><strong>Name:</strong> {submission.mainAuthor.firstName} {submission.mainAuthor.lastName}</p>
-                                        <p style={{ fontSize: '0.9em', color: '#4b5563', margin: '2px 0' }}><strong>Institution:</strong> {submission.mainAuthor.instituteName}</p>
-                                        <p style={{ fontSize: '0.9em', color: '#4b5563', margin: '2px 0' }}><strong>Email:</strong> {submission.mainAuthor.email}</p>
+                                        <p style={{ fontSize: '0.9em', color: '#4b5563', margin: '2px 0' }}><strong>Name:</strong> {(submission.mainAuthor?.firstName || '').toString()} {(submission.mainAuthor?.lastName || '').toString()}</p>
+                                        <p style={{ fontSize: '0.9em', color: '#4b5563', margin: '2px 0' }}><strong>Institution:</strong> {(submission.mainAuthor?.instituteName || '').toString()}</p>
+                                        <p style={{ fontSize: '0.9em', color: '#4b5563', margin: '2px 0' }}><strong>Email:</strong> {(submission.mainAuthor?.email || '').toString()}</p>
                                     </div>
 
                                     {submission.coAuthors && submission.coAuthors.length > 0 && (
@@ -661,99 +546,6 @@ const EditorActionsTab: React.FC<{
                 )}
             </div>
 
-            {/* Step 2: Reviewer Assignment 
-            {showReviewerStep && (
-                <div className={`${styles.stepContainer} ${needsReviewers || !reviewersCompleted ? styles.active : styles.completedPhase}`}>
-                    <div className={styles.stepHeader}>
-                        <h4 className={styles.stepTitle}>
-                            <div className={styles.stepNumber}>2</div>
-                            Reviewer Assignment
-                        </h4>
-                        <span className={`${styles.stepStatus} ${needsReviewers ? styles.pending : (reviewersCompleted ? styles.completed : styles.active)}`}>
-                            {needsReviewers ? 'Action Required' : (reviewersCompleted ? 'Completed' : 'In Progress')}
-                        </span>
-                    </div>
-
-                    <div className={styles.stepContent}>
-                        <div className={styles.reviewerStatusSummary}>
-                            <p style={{ marginBottom: '12px', fontSize: '0.95rem' }}>
-                                {assignments.length === 0
-                                    ? 'No reviewers have been assigned yet. Minimum 2 reviewers are required.'
-                                    : `Currently assigned: ${assignments.length} review${assignments.length !== 1 ? 'ers' : ''}.`}
-                            </p>
-
-                            {assignments.length > 0 && (
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '15px' }}>
-                                    {assignments.map((a, i) => (
-                                        <div key={i} style={{
-                                            padding: '8px 12px',
-                                            backgroundColor: '#f9fafb',
-                                            border: '1px solid #e5e7eb',
-                                            borderRadius: '6px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '8px'
-                                        }}>
-                                            <User size={14} />
-                                            <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>{a.reviewer?.fullName || 'Unknown'}</span>
-                                            <span style={{
-                                                fontSize: '0.75rem',
-                                                padding: '2px 6px',
-                                                borderRadius: '10px',
-                                                backgroundColor: a.status === 'COMPLETED' ? '#dcfce7' : (a.status === 'DECLINED' || a.status === 'REJECTED' || a.status === 'EXPIRED' ? '#fee2e2' : '#fef9c3'),
-                                                color: a.status === 'COMPLETED' ? '#166534' : (a.status === 'DECLINED' || a.status === 'REJECTED' || a.status === 'EXPIRED' ? '#991b1b' : '#854d0e')
-                                            }}>
-                                                {a.status}
-                                            </span>
-                                            {(a.status === 'DECLINED' || a.status === 'REJECTED' || a.status === 'EXPIRED') && (
-                                                <button
-                                                    onClick={() => setReassignTarget({ id: a.id, name: a.reviewer?.fullName })}
-                                                    style={{
-                                                        marginLeft: 'auto',
-                                                        fontSize: '0.75rem',
-                                                        padding: '4px 8px',
-                                                        backgroundColor: '#f3f4f6',
-                                                        border: '1px solid #d1d5db',
-                                                        borderRadius: '4px',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                >
-                                                    Reassign
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            <button
-                                className={styles.assignButton}
-                                onClick={onAssignReviewer}
-                                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', backgroundColor: '#4f46e5', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-                            >
-                                <Users size={14} /> {assignments.length === 0 ? 'Assign Reviewers' : 'Manage Reviewers'}
-                            </button>
-                        </div>
-                    </div>
-
-                    {reassignTarget && (
-                        <ReassignReviewerModal
-                            assignmentId={reassignTarget.id}
-                            reviewerName={reassignTarget.name}
-                            onClose={() => setReassignTarget(null)}
-                            onSuccess={() => {
-                                setReassignTarget(null);
-                                if (onUpdate) {
-                                    // Fetch full details will trigger update
-                                    // But we can also call onUpdate if provided
-                                    // fetchReviewers is not accessible here, window reload or prop update is better
-                                    window.location.reload();
-                                }
-                            }}
-                        />
-                    )}
-                </div>
-            )} */}
 
             {/* Step 3: Final Decision Section */}
             {(readyForFinalDecision || ['APPROVED', 'REJECTED', 'PUBLISHED', 'ISBN_APPLIED', 'PUBLICATION_IN_PROGRESS'].includes(submission.status)) && (
@@ -769,43 +561,6 @@ const EditorActionsTab: React.FC<{
                     </div>
 
                     <div className={styles.stepContent}>
-                        {/* Reviewer Feedback Summary - UPGRADED */}
-                        {assignments.length > 0 && (
-                            <div className={styles.reviewerFeedback}>
-                                <h5 className={styles.feedbackTitle} style={{ fontWeight: '600', marginBottom: '10px' }}>Reviewer Recommendations</h5>
-                                {assignments.map((assignment, index) => (
-                                    <div key={assignment.id} className={styles.reviewerFeedbackCard}>
-                                        <div className={styles.reviewerHeader}>
-                                            <div className={styles.reviewerInfo}>
-                                                <User size={14} />
-                                                <span className={styles.reviewerName}>
-                                                    {assignment.reviewer?.fullName || `Reviewer ${index + 1}`}
-                                                </span>
-                                            </div>
-                                            <span className={`${styles.recommendationBadge} ${styles[assignment.recommendation === 'APPROVE' ? 'approve' : (assignment.recommendation === 'REJECT' ? 'reject' : 'pending')]}`}>
-                                                {assignment.recommendation === 'APPROVE' && <CheckCircle size={12} />}
-                                                {assignment.recommendation === 'REJECT' && <X size={12} />}
-                                                {assignment.recommendation || 'Pending'}
-                                            </span>
-                                        </div>
-                                        <div className={styles.reviewerComments}>
-                                            <p className={styles.commentsLabel}>Comments</p>
-                                            <p className={styles.commentsText}>
-                                                {assignment.reviewerComments || 'No comments provided'}
-                                            </p>
-                                        </div>
-                                        {assignment.confidentialNotes && (
-                                            <div className={styles.confidentialNotes}>
-                                                <p className={styles.confidentialLabel}>Confidential Notes</p>
-                                                <p className={styles.confidentialText}>
-                                                    {assignment.confidentialNotes}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
 
                         {/* Final Decision Area */}
                         {['APPROVED', 'ISBN_APPLIED', 'PUBLICATION_IN_PROGRESS', 'PUBLISHED', 'REJECTED'].includes(submission.status) ? (
@@ -1218,242 +973,5 @@ const EditorActionsTab: React.FC<{
     );
 };
 
-
-// ... Rest of the file (ReviewerList, Modals) remain mostly the same but ensure they are exported or defined correctly
-// Reviewer List
-const ReviewerList: React.FC<{
-    assignments: any[];
-    onRefresh: () => void;
-}> = ({ assignments, onRefresh }) => {
-    const [reassignTarget, setReassignTarget] = useState<{ id: number; name: string } | null>(null);
-
-    // Ensure assignments is an array
-    if (!assignments || !Array.isArray(assignments) || assignments.length === 0) return null;
-
-    return (
-        <div className={styles.reviewersList}>
-            {assignments.map(a => (
-                <div key={a.id} className={styles.reviewerCard}>
-                    <div>
-                        <h4>{a.reviewer?.fullName || 'Unknown'}</h4>
-                        <p>{a.status}</p>
-                    </div>
-                    <div>
-                        {(a.status === 'DECLINED' || a.status === 'REJECTED' || a.status === 'EXPIRED') && (
-                            <button onClick={() => setReassignTarget({ id: a.id, name: a.reviewer?.fullName })}>Reassign</button>
-                        )}
-                    </div>
-                </div>
-            ))}
-            {reassignTarget && (
-                <ReassignReviewerModal
-                    assignmentId={reassignTarget.id}
-                    reviewerName={reassignTarget.name}
-                    onClose={() => setReassignTarget(null)}
-                    onSuccess={() => {
-                        setReassignTarget(null);
-                        onRefresh();
-                    }}
-                />
-            )}
-        </div>
-    );
-};
-
-// Assign Reviewer Modal
-interface AssignReviewerModalProps {
-    submissionId: number;
-    onClose: () => void;
-    onSuccess: () => void;
-}
-const AssignReviewerModal: React.FC<AssignReviewerModalProps> = ({ submissionId, onClose, onSuccess }) => {
-    const [reviewer1Id, setReviewer1Id] = useState('');
-    const [reviewer2Id, setReviewer2Id] = useState('');
-    const [reviewers, setReviewers] = useState<UserServiceUser[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-
-    const [alertConfig, setAlertConfig] = useState<{
-        isOpen: boolean;
-        type: AlertType;
-        title: string;
-        message: string;
-    }>({ isOpen: false, type: 'error', title: '', message: '' });
-
-    useEffect(() => {
-        const load = async () => {
-            setIsLoading(true);
-            try {
-                const res = await userService.getReviewers();
-                if (res.success && res.data) setReviewers(res.data.users);
-            } catch (e) {
-                console.error(e);
-                // Silent fail or show alert if critical
-            }
-            finally { setIsLoading(false); }
-        };
-        load();
-    }, []);
-
-    const handleSubmit = async () => {
-        // Validation: Check if both reviewers are selected
-        if (!reviewer1Id || !reviewer2Id) {
-            setAlertConfig({
-                isOpen: true,
-                type: 'warning',
-                title: 'Incomplete Selection',
-                message: 'Please select both reviewers before assigning.'
-            });
-            return;
-        }
-
-        // Validation: Check if same reviewer is selected twice
-        if (reviewer1Id === reviewer2Id) {
-            setAlertConfig({
-                isOpen: true,
-                type: 'error',
-                title: 'Duplicate Selection',
-                message: 'You cannot assign the same reviewer twice. Please select different reviewers.'
-            });
-            return;
-        }
-
-        try {
-            await bookChapterEditorService.assignReviewers(submissionId, {
-                reviewer1Id: parseInt(reviewer1Id),
-                reviewer2Id: parseInt(reviewer2Id)
-            });
-            onSuccess();
-        } catch (e: any) {
-            console.error('Reviewer assignment error:', e);
-            const errorMessage = e?.message || e?.errors?.message || 'Failed to assign reviewers. Please try again.';
-            setAlertConfig({
-                isOpen: true,
-                type: 'error',
-                title: 'Assignment Failed',
-                message: errorMessage
-            });
-        }
-    };
-
-    return (
-        <div className={styles.modalOverlay}>
-            <div className={styles.modalContent}>
-                <h3>Assign Reviewers</h3>
-                <select
-                    value={reviewer1Id}
-                    onChange={e => setReviewer1Id(e.target.value)}
-                    disabled={isLoading}
-                    className={styles.select}
-                >
-                    <option value="">Select Reviewer 1</option>
-                    {reviewers.map(r => (
-                        <option
-                            key={r.id}
-                            value={r.id.toString()}
-                            disabled={r.id.toString() === reviewer2Id}
-                        >
-                            {r.fullName}
-                        </option>
-                    ))}
-                </select>
-                <select
-                    value={reviewer2Id}
-                    onChange={e => setReviewer2Id(e.target.value)}
-                    disabled={isLoading}
-                    className={styles.select}
-                >
-                    <option value="">Select Reviewer 2</option>
-                    {reviewers.map(r => (
-                        <option
-                            key={r.id}
-                            value={r.id.toString()}
-                            disabled={r.id.toString() === reviewer1Id}
-                        >
-                            {r.fullName}
-                        </option>
-                    ))}
-                </select>
-                <div className={styles.modalActions}>
-                    <button onClick={handleSubmit} className={styles.submitButton}>Assign</button>
-                    <button onClick={onClose} className={styles.cancelButton}>Cancel</button>
-                </div>
-            </div>
-            <AlertPopup
-                isOpen={alertConfig.isOpen}
-                type={alertConfig.type}
-                title={alertConfig.title}
-                message={alertConfig.message}
-                onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
-            />
-        </div >
-    );
-};
-
-// Reassign Reviewer Modal
-interface ReassignReviewerModalProps {
-    assignmentId: number;
-    reviewerName: string;
-    onClose: () => void;
-    onSuccess: () => void;
-}
-const ReassignReviewerModal: React.FC<ReassignReviewerModalProps> = ({ assignmentId, reviewerName, onClose, onSuccess }) => {
-    const [newReviewerId, setNewReviewerId] = useState('');
-    const [reviewers, setReviewers] = useState<UserServiceUser[]>([]);
-
-    const [alertConfig, setAlertConfig] = useState<{
-        isOpen: boolean;
-        type: AlertType;
-        title: string;
-        message: string;
-    }>({ isOpen: false, type: 'error', title: '', message: '' });
-
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const res = await userService.getReviewers();
-                if (res.success && res.data) setReviewers(res.data.users);
-            } catch (e) { console.error(e); }
-        };
-        load();
-    }, []);
-
-    const handleSubmit = async () => {
-        try {
-            await bookChapterEditorService.reassignReviewer(assignmentId, parseInt(newReviewerId));
-            onSuccess();
-        } catch (e) {
-            console.error(e);
-            setAlertConfig({
-                isOpen: true,
-                type: 'error',
-                title: 'Reassignment Failed',
-                message: 'Failed to reassign reviewer. Please try again.'
-            });
-        }
-    };
-
-    return (
-        <div className={styles.modalOverlay}>
-            <div className={styles.modalContent}>
-                <h3>Reassign Reviewer for {reviewerName}</h3>
-                <select value={newReviewerId} onChange={e => setNewReviewerId(e.target.value)} className={styles.select}>
-                    <option value="">Select New Reviewer</option>
-                    {reviewers.map(r => <option key={r.id} value={r.id.toString()}>{r.fullName}</option>)}
-                </select>
-                <div className={styles.modalActions}>
-                    <button onClick={handleSubmit} className={styles.submitButton}>Reassign</button>
-                    <button onClick={onClose} className={styles.cancelButton}>Cancel</button>
-                </div>
-            </div>
-            <AlertPopup
-                isOpen={alertConfig.isOpen}
-                type={alertConfig.type}
-                title={alertConfig.title}
-                message={alertConfig.message}
-                onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
-            />
-        </div >
-    );
-};
 
 export default EditorSubmissionDetailView;
