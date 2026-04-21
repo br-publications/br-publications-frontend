@@ -20,7 +20,6 @@ export const usePublishingDraft = ({
     const [error, setError] = useState<string | null>(null);
     const [hasDraft, setHasDraft] = useState(false);
     const [isRestoring, setIsRestoring] = useState(false);
-    const [changeCount, setChangeCount] = useState(0);
 
     // Store the latest state in a ref to avoid re-triggering the effect
     const stateRef = useRef<any>(null);
@@ -30,7 +29,6 @@ export const usePublishingDraft = ({
      */
     const updateState = useCallback((state: any) => {
         stateRef.current = state;
-        setChangeCount(c => c + 1);
     }, []);
 
     /**

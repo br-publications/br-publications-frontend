@@ -1,6 +1,6 @@
 // Chapter Card Component
 import React from 'react';
-import { FileText, Upload, CheckCircle, XCircle, Clock, Users } from 'lucide-react';
+import { FileText, Upload, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { type IndividualChapter, ChapterStatus } from '../../../../types/chapterTypes';
 import {
     formatChapterTitle,

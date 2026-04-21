@@ -8,7 +8,6 @@ import { DESIGNATIONS } from '../../types/bookChapterManuscriptTypes';
 import { publishBookChapter, validateBeforePublish, uploadTempPdf, findAuthors, checkBookChapterIsbnAvailability } from '../../services/bookChapterPublishing.service';
 import type { TocChapterPayload, AuthorBiographyPayload, EditorBiographyPayload } from '../../services/bookChapterPublishing.service';
 import { useNavigate } from 'react-router-dom';
-import { bookChapterAdminService } from '../../services/bookChapterSumission.service';
 import { bookTitleService, bookEditorService } from '../../services/bookManagement.service';
 import AuthorMultiSelect from '../common/AuthorMultiSelect';
 import AlertPopup from '../common/alertPopup';

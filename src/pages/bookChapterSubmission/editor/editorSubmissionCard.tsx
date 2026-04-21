@@ -5,7 +5,6 @@ import {
     MoreVertical,
     CheckCircle,
     AlertCircle,
-    UserCheck,
     Send,
     MessageSquare
 } from 'lucide-react';

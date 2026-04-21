@@ -4,17 +4,13 @@ import {
     ChevronLeft,
     FileText,
     MessageSquare,
-    User,
     CheckCircle,
-    Users,
-    UserCheck,
     Clock,
     BookOpen,
     AlertCircle,
 } from 'lucide-react';
 import type { BookChapterSubmission } from '../../../types/submissionTypes';
 import { bookChapterService, bookChapterEditorService } from '../../../services/bookChapterSumission.service';
-import { userService, type User as UserServiceUser } from '../../../services/user.service';
 import bookManagementService from '../../../services/bookManagement.service';
 import { normalizeSubmission } from '../../../utils/submissionUtils';
 import SubmissionOverview from '../common/Overview/submissionOverview';
@@ -340,7 +336,6 @@ const EditorActionsTab: React.FC<{
     const allChaptersDecided = submission.individualChapters && submission.individualChapters.length > 0 && submission.individualChapters.every(
         (ch: any) => ch.status === 'CHAPTER_APPROVED' || ch.status === 'CHAPTER_REJECTED'
     );
-    const reviewersCompleted = false; // Reviewers disabled
     const statusReady = ['EDITORIAL_REVIEW'].includes(submission.status);
     const readyForFinalDecision = (allChaptersDecided || statusReady) && !['APPROVED', 'PUBLISHED', 'REJECTED', 'ISBN_APPLIED', 'PUBLICATION_IN_PROGRESS'].includes(submission.status);
 

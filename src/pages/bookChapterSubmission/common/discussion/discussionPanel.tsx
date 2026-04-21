@@ -315,9 +315,7 @@ export const DiscussionPanel: React.FC<DiscussionPanelProps> = ({
           <span>
             {submissionStatus === 'PUBLISHED'
               ? 'This submission has been published. Discussions are closed.'
-              : submissionStatus === 'APPROVED'
-                ? 'This submission has been approved. Discussions are closed.'
-                : 'This submission has been rejected. Discussions are closed.'}
+              : 'This submission has been rejected. Discussions are closed.'}
           </span>
         </div>
       )}
