@@ -23,6 +23,7 @@ interface Author {
         chapterNumber: string | null;
         authors: string | null;
         pagesFrom: string | null;
+        pagesTo: string | null;
         abstract: string | null;
         book: {
             id: number;
@@ -295,8 +296,8 @@ const AuthorDetail: React.FC = () => {
                                             {chapter.book.isbn
                                                 ? ` — ISBN: ${chapter.book.isbn}`
                                                 : ''}
-                                            {chapter.pagesFrom
-                                                ? `. Pages: ${chapter.pagesFrom}`
+                                            {chapter.pagesFrom || chapter.pagesTo
+                                                ? `. Pages: ${chapter.pagesFrom || '?'}${chapter.pagesTo ? ` - ${chapter.pagesTo}` : ''}`
                                                 : ''}
                                         </p>
                                         <p className="chapter-card-abstract">
