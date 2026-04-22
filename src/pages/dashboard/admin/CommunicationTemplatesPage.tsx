@@ -151,7 +151,7 @@ export default function CommunicationTemplatesPage() {
     const openPreview = async (tpl: CommunicationTemplate) => {
         setSelectedTemplate(tpl);
         const initVars: Record<string, string> = {};
-        (tpl.variables || []).forEach((v) => {
+        ensureArray(tpl.variables).forEach((v) => {
             initVars[v] = "";
         });
         setPreviewVars(initVars);
@@ -246,6 +246,19 @@ export default function CommunicationTemplatesPage() {
     };
 
     // ── Close panel ───────────────────────────────────────────────
+    // ── Defensive Helpers ──────────────────────────────────────────
+    const ensureArray = (val: any): string[] => {
+        if (Array.isArray(val)) return val;
+        if (typeof val === 'string') {
+            try {
+                return JSON.parse(val);
+            } catch {
+                return [];
+            }
+        }
+        return [];
+    };
+
     const closePanel = () => {
         setViewMode("list");
         setSelectedTemplate(null);
@@ -499,7 +512,7 @@ export default function CommunicationTemplatesPage() {
                                                         <span className="text-[11px] text-gray-500 font-medium mr-1 uppercase tracking-wider">
                                                             Variables:
                                                         </span>
-                                                        {selectedTemplate.variables.map((v) => (
+                                                        {ensureArray(selectedTemplate.variables).map((v) => (
                                                             <button
                                                                 key={v}
                                                                 type="button"
@@ -562,7 +575,7 @@ export default function CommunicationTemplatesPage() {
                                                         <RichEditor
                                                             html={editContent}
                                                             onChange={setEditContent}
-                                                            variables={selectedTemplate.variables || []}
+                                                            variables={ensureArray(selectedTemplate.variables)}
                                                         />
                                                     </div>
                                                 ) : (
@@ -705,7 +718,7 @@ export default function CommunicationTemplatesPage() {
                                                     </div>
 
                                                     <div className="space-y-3">
-                                                        {selectedTemplate.variables.map((v) => (
+                                                        {ensureArray(selectedTemplate.variables).map((v) => (
                                                             <div key={v}>
                                                                 <label className="block text-[11px] font-medium text-gray-600 mb-1 font-mono">{`{{${v}}}`}</label>
                                                                 <input
