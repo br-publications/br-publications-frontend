@@ -49,6 +49,7 @@ export interface TocChapterPayload {
     pdfName?: string;
     /** Base64 PDF data (fallback for legacy or preview) */
     pdfData?: string;
+    doi?: string;
     /** View count recorded by the analytics system */
     views?: number;
 }
@@ -130,6 +131,7 @@ export interface PublishedIndividualChapter {
     publishedFileId?: string | null;
 
     pdfData?: string | null;
+    doi?: string | null;
     abstract: string | null;
     views: number;
     createdAt: string;

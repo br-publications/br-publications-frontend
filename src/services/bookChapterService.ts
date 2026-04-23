@@ -65,7 +65,7 @@ class BookChapterService {
                 pages: (ch.pagesFrom || ch.pagesTo) ? `${ch.pagesFrom || '?'}${ch.pagesTo ? `-${ch.pagesTo}` : ''}` : '',
                 pdfKey: ch.pdfKey,
                 pdfUrl: (ch.pdfKey || ch.publishedFileId || ch.pdfName) ? getChapterPdfUrl(data.id, index, ch.pdfKey, ch.publishedFileId) : (ch.pdfData || undefined),
-
+                doi: ch.doi || undefined,
                 views: ch.views || 0,
                 authorDetails: ch.authorDetails
             }));
@@ -80,6 +80,7 @@ class BookChapterService {
                 pages: (toc.pagesFrom || toc.pagesTo) ? `${toc.pagesFrom || '?'}${toc.pagesTo ? `-${toc.pagesTo}` : ''}` : '',
                 pdfKey: toc.pdfKey,
                 pdfUrl: toc.pdfKey ? getChapterPdfUrl(data.id, index) : (toc.pdfData || undefined),
+                doi: toc.doi || undefined,
                 views: toc.views || 0
             }));
         }

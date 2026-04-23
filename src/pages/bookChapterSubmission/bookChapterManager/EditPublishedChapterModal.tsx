@@ -1032,11 +1032,12 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                 {Array.isArray(tocChapters) && tocChapters.map((ch, i) => (
                                     <div className="pcw-toc-row" key={i}>
                                         <div className="pcw-toc-row-header">
-                                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                            <div style={{ display: 'flex', gap: '8px', flex: 1, minWidth: 0, alignItems: 'center' }}>
                                                 <div className="pcw-toc-num">{ch.chapterNumber}</div>
-                                                <input className="pcw-input" style={{ border: 'none', background: 'transparent', fontWeight: 600 }} value={ch.title} onChange={(e) => updateTocField(i, 'title', e.target.value)} placeholder="Untitled Chapter" />
+                                                <input className="pcw-input" style={{ flex: 1, minWidth: 0, fontWeight: 600 }} value={ch.title} onChange={(e) => updateTocField(i, 'title', e.target.value)} placeholder="Untitled Chapter" />
+                                                <input className="pcw-input" style={{ flex: 1, minWidth: 0 }} value={ch.doi || ''} onChange={(e) => updateTocField(i, 'doi', e.target.value)} placeholder="Chapter DOI" />
                                             </div>
-                                            <button type="button" className="pcw-remove-btn" onClick={() => removeTocChapter(i)}>✕</button>
+                                            <button type="button" className="pcw-remove-btn" style={{ flexShrink: 0, marginLeft: '8px' }} onClick={() => removeTocChapter(i)}>✕</button>
                                         </div>
                                         <div className="pcw-field-grid">
                                             <AuthorMultiSelect

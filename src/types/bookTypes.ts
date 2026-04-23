@@ -47,6 +47,7 @@ export interface Chapter {
   price: number;
   pages: string;
   pdfUrl?: string;
+  doi?: string;
   views?: number;
   authorDetails?: PublishedAuthor[];
 }
@@ -84,7 +85,7 @@ export interface AuthorBiography {
   email?: string;
 }
 
-export type AuthorBiographiesSection = 
+export type AuthorBiographiesSection =
   | { [key: string]: AuthorBiography }
   | AuthorBiography[];
 
@@ -95,11 +96,11 @@ export interface EditorBiography {
   email?: string;
 }
 
-export type EditorBiographiesSection = 
+export type EditorBiographiesSection =
   | { [key: string]: EditorBiography }
   | EditorBiography[];
 
-export type TableOfContentsSection = 
+export type TableOfContentsSection =
   | { [key: string]: string }
   | any[];
 

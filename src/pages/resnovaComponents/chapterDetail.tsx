@@ -6,6 +6,7 @@ import { getExtraPdfUrl, incrementChapterViews } from '../../services/bookChapte
 import type { Book, Chapter, PublishedAuthor } from '../../types/bookTypes';
 import { generateUniqueSlug } from '../../utils/stringUtils';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import { sanitizeUrl } from '../../utils/urlValidation';
 import './chapterDetail.css';
 
 /**
@@ -187,7 +188,14 @@ const ChapterDetail: React.FC = () => {
                                     <div className="meta-details-grid">
                                         <div className="meta-info-item clickable"><strong>Source Title:</strong> <span onClick={() => navigate(-1)}>{book.title}</span></div>
                                         <div className="meta-info-item"><strong>Copyright:</strong> <span>{book.copyright || 'N/A'}</span></div>
-                                        <div className="meta-info-item"><strong>DOI:</strong> <span>{book.doi || 'N/A'}</span></div>
+                                        {chapter.doi && (
+                                            <div
+                                                className="meta-info-item"
+                                            >
+                                                <strong>DOI:</strong>
+                                                <a href={sanitizeUrl(chapter.doi)} target="_blank" rel="noopener noreferrer">{chapter.doi}</a>
+                                            </div>
+                                        )}
                                         <div className="meta-info-item"><strong>Pages:</strong> <span>{chapter.pages || 'N/A'}</span></div>
                                         <div className="meta-info-item"><strong>Views:</strong> <span>{chapter.views || 0}</span></div>
                                     </div>
