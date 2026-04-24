@@ -1,4 +1,4 @@
-/* Chapter Detail Page Specific Styles */
+﻿/* Chapter Detail Page Specific Styles */
 
 .chapter-detail-page {
     background-color: #f4f6f9;
@@ -34,7 +34,9 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 400px;
+    /* FIX: was 400px — wider than most phone screens.
+       Use a relative max so it never exceeds the available space. */
+    max-width: min(400px, 50vw);
 }
 
 .chapter-layout {
@@ -265,6 +267,8 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+    /* FIX: prevent text from overflowing into the actions column */
+    min-width: 0;
 }
 
 .chapter-badge {
@@ -323,7 +327,13 @@
     flex-direction: column;
     justify-content: center;
     align-items: stretch;
-    min-width: 160px;
+    /* FIX: was a hard 160px — too wide on narrow phones, caused
+       the left column to be crushed. Use a softer clamp so it
+       shrinks gracefully on small screens while staying stable
+       on desktop. */
+    min-width: 120px;
+    width: 140px;
+    flex-shrink: 0;
     gap: 8px;
     padding-left: 16px;
     border-left: 1px solid #e0e0e0;
@@ -489,7 +499,9 @@
     text-decoration: underline;
 }
 
-/* Responsiveness */
+/* =========================================
+   Responsive — Stack sidebar below 1024px
+   ========================================= */
 @media (max-width: 1024px) {
     .chapter-layout {
         flex-direction: column;
@@ -502,7 +514,7 @@
 
 .chapter-link-span {
     cursor: pointer;
-    color: var(--primary-blue, #0056b3);
+    color: var(--primary-color, #0056b3);
     transition: all 0.2s;
 }
 
@@ -511,7 +523,12 @@
     text-decoration: underline;
 }
 
+/* =========================================
+   Responsive — Tablet / large phone (≤ 768px)
+   ========================================= */
 @media (max-width: 768px) {
+
+    /* Stack book cover above the info text */
     .chapter-info-header {
         grid-template-columns: 1fr;
     }
@@ -535,6 +552,184 @@
     .ch-price-box {
         text-align: left;
         margin-bottom: 15px;
+    }
+
+    /* Tighten outer page padding */
+    .chapter-detail-page {
+        padding: 15px 12px;
+    }
+
+    /* Tighten the abstract box */
+    .chapter-abstract-box {
+        padding: 15px;
+    }
+
+    /* Tighten the chapter list container */
+    .complete-chapter-list {
+        padding: 15px;
+    }
+}
+
+/* =========================================
+   Responsive — Tall narrow phones (≤ 480px)
+   Covers: OPPO F31 Pro (~412px), vivo V40e (~393px),
+           vivo Y400 (~393px).
+   After html { zoom: 0.9 } these render at ~354–371px effective.
+   ========================================= */
+@media (max-width: 480px) {
+    .chapter-detail-page {
+        padding: 12px 10px;
+    }
+
+    /* Breadcrumb: trim current-page text more aggressively */
+    .breadcrumbs {
+        font-size: 12px;
+        gap: 5px;
+    }
+
+    .breadcrumbs .current-page {
+        max-width: min(200px, 40vw);
+    }
+
+    /* Abstract box */
+    .chapter-abstract-box {
+        padding: 12px;
+    }
+
+    .main-chapter-title {
+        font-size: 14px;
+    }
+
+    .main-chapter-authors {
+        font-size: 13px;
+    }
+
+    /* TOC card: stack actions below content on phones */
+    .toc-chapter-card {
+        flex-direction: column;
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .chapters-actions-area {
+        width: 100%;
+        min-width: unset;
+        border-left: none;
+        padding-left: 0;
+        border-top: 1px solid #e0e0e0;
+        padding-top: 10px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .ch-price-box {
+        text-align: left;
+        margin-bottom: 0;
+    }
+
+    .btn-add-cart-alt,
+    .btn-view-pdf-alt,
+    .btn-preview {
+        width: auto;
+        flex: 1;
+        font-size: 11px;
+        padding: 6px 8px;
+    }
+
+    /* Frontmatter row: allow title to wrap */
+    .toc-frontmatter-row {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 10px 12px;
+    }
+
+    .toc-frontmatter-row .row-title {
+        font-size: 13px;
+    }
+
+    /* Chapter list container */
+    .complete-chapter-list {
+        padding: 12px 10px;
+    }
+
+    .toc-search-bar {
+        gap: 8px;
+    }
+
+    .toc-search-bar input {
+        padding: 7px 10px;
+    }
+
+    .toc-search-bar button {
+        padding: 7px 12px;
+    }
+}
+
+/* =========================================
+   Responsive — Very small phones (≤ 360px)
+   Covers: Moto G31 (~360px), vivo Y51 Pro (~360px).
+   After zoom: effective ≈ 324px.
+   ========================================= */
+@media (max-width: 360px) {
+    .chapter-detail-page {
+        padding: 10px 8px;
+    }
+
+    .breadcrumbs {
+        font-size: 11px;
+        gap: 4px;
+    }
+
+    .breadcrumbs .current-page {
+        max-width: min(160px, 35vw);
+    }
+
+    .chapter-abstract-box {
+        padding: 10px;
+    }
+
+    .main-chapter-title {
+        font-size: 13px;
+    }
+
+    .main-chapter-authors {
+        font-size: 12px;
+    }
+
+    .toc-chapter-card {
+        padding: 10px;
+    }
+
+    .chapter-title {
+        font-size: 13px;
+    }
+
+    .complete-chapter-list {
+        padding: 10px 8px;
+    }
+
+    /* On truly tiny screens, stack the search bar vertically */
+    .toc-search-bar {
+        flex-direction: column;
+    }
+
+    .toc-search-bar button {
+        width: 100%;
+    }
+
+    /* Actions row: stack buttons vertically again at this size */
+    .chapters-actions-area {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-add-cart-alt,
+    .btn-view-pdf-alt,
+    .btn-preview {
+        width: 100%;
+        flex: unset;
     }
 }
 
@@ -573,4 +768,13 @@
 
 .back-button:active {
     transform: translateY(1px);
+}
+
+.doi-link {
+    color: #007bff !important;
+    text-decoration: none;
+}
+
+.doi-link:hover {
+    text-decoration: underline;
 }

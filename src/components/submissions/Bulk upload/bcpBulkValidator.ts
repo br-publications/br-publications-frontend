@@ -1067,7 +1067,7 @@ export const CHAPTER_CSV_SAMPLE_ROW: Record<string, string> = {
     pages: '350',
     releaseDate: '2024-06-15',
     indexedIn: 'Scopus',
-    copyright: '© 2024 TS Publication',
+    copyright: '© 2024',
     priceSoftCopy: '29.99',
     priceHardCopy: '49.99',
     priceCombined: '69.99',

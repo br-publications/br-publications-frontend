@@ -635,7 +635,7 @@ body {
 }
 
 .tab-content ul li::before {
-  content: '■';
+  content: '\25A0';
   position: absolute;
   left: 0;
   color: var(--orange-gold);
@@ -1132,4 +1132,12 @@ body {
     border-top: 1px solid #e0e0e0;
     padding-top: 12px;
   }
+}
+.doi-link {
+    color: #007bff !important;
+    text-decoration: none;
+}
+
+.doi-link:hover {
+    text-decoration: underline;
 }

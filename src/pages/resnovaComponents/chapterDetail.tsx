@@ -193,7 +193,7 @@ const ChapterDetail: React.FC = () => {
                                                 className="meta-info-item"
                                             >
                                                 <strong>DOI:</strong>
-                                                <a href={sanitizeUrl(chapter.doi)} target="_blank" rel="noopener noreferrer">{chapter.doi}</a>
+                                                <a href={sanitizeUrl(chapter.doi)} target="_blank" rel="noopener noreferrer" className="doi-link">{chapter.doi}</a>
                                             </div>
                                         )}
                                         <div className="meta-info-item"><strong>Pages:</strong> <span>{chapter.pages || 'N/A'}</span></div>

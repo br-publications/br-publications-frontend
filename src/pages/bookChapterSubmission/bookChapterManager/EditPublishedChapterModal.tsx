@@ -136,7 +136,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
         pages: 0,
         indexedIn: 'Google Scholar',
         releaseDate: new Date().toLocaleDateString('en-GB'),
-        copyright: `© ${new Date().getFullYear()} BR Publications`,
+        copyright: `© ${new Date().getFullYear()}`,
         doi: '',
         priceSoftCopy: undefined,
         priceHardCopy: undefined,
@@ -960,7 +960,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                     </div>
                                     <div className="pcw-field span-full">
                                         <label className="pcw-label">Copyright</label>
-                                        <input className="pcw-input" name="copyright" value={form.copyright} onChange={handleFormChange} placeholder="e.g. © 2024 BR Publications" />
+                                        <input className="pcw-input" name="copyright" value={form.copyright} onChange={handleFormChange} placeholder="e.g. © 2024" />
                                     </div>
                                     <div className="pcw-field span-full">
                                         <label className="pcw-label">Pricing Details (Soft / Hard / Combined)</label>

@@ -376,7 +376,7 @@ const BookChapterDetail: React.FC = () => {
                         className="meta-item"
                       >
                         <strong>DOI:</strong>
-                        <a href={sanitizeUrl(book.doi)} target="_blank" rel="noopener noreferrer">{book.doi}</a>
+                        <a href={sanitizeUrl(book.doi)} target="_blank" rel="noopener noreferrer" className="doi-link">{book.doi}</a>
                       </div>
                     )}
                     <div

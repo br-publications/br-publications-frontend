@@ -218,7 +218,7 @@ const BooksDetail: React.FC = () => {
                     {book.copyright && (
                       <div className="meta-item">
                         <strong>Copyright:</strong>
-                        <span>{book.copyright}</span>
+                        <span>© {book.copyright}</span>
                       </div>
                     )}
                     <div className="meta-item">
