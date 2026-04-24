@@ -197,36 +197,63 @@
     margin: 0;
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border-color);
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 /* ── Stats Table ── */
 .author-stats-table {
-    background: var(--light-bg);
-    border: 1px solid var(--border-color);
+    border: 1px solid #dde3ed;
+    border-radius: 6px;
+    overflow: hidden;
+    /* Left accent stripe in brand blue */
+    border-left: 4px solid var(--primary-blue);
+    margin-top: 4px;
+    box-shadow: 0 1px 4px rgba(30, 82, 146, 0.06);
 }
 
 .stat-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 5px 10px;
-    border-bottom: 1px dotted var(--border-color);
+    padding: 9px 14px;
+    border-bottom: 1px solid #edf0f5;
     font-size: 12px;
+    background: white;
+    transition: background 0.15s;
+    gap: 12px;
+}
+
+.stat-row:nth-child(even) {
+    background: #f7f9fd;
 }
 
 .stat-row:last-child {
     border-bottom: none;
 }
 
+.stat-row:hover {
+    background: #eef3fb;
+}
+
 .stat-row strong {
-    color: var(--dark-blue);
+    color: var(--primary-blue);
     font-weight: 700;
-    min-width: 130px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 90px;
+    flex-shrink: 0;
 }
 
 .stat-row span {
-    color: var(--text-medium);
+    color: var(--text-dark);
     text-align: right;
+    font-weight: 500;
+    /* Prevent long emails/affiliations from overflowing */
+    overflow-wrap: break-word;
+    word-break: break-word;
+    min-width: 0;
 }
 
 /* ── Social Links Row ── */
@@ -469,8 +496,13 @@
     background: var(--dark-blue);
 }
 
-/* ── Responsive ── */
+/* ── Responsive — Tablet (≤ 768px) ── */
 @media (max-width: 768px) {
+    .product-wrapper-details {
+        margin: 15px auto;
+        padding: 0 12px 30px;
+    }
+
     .profile-grid {
         grid-template-columns: 1fr;
     }
@@ -484,10 +516,14 @@
         text-align: center;
     }
 
+    /* On mobile the label sits above the value */
     .stat-row {
-        flex-direction: column;
         align-items: flex-start;
         gap: 2px;
+    }
+
+    .stat-row span {
+        text-align: left;
     }
 
     .social-row {
@@ -503,12 +539,89 @@
     }
 }
 
+/* ── Responsive — Small phones (≤ 480px) ── */
 @media (max-width: 480px) {
+    .product-wrapper-details {
+        margin: 10px auto;
+        padding: 0 10px 24px;
+    }
+
+    .author-profile-section {
+        padding: 14px;
+    }
+
+    .author-name {
+        font-size: 16px;
+    }
+
     .section-body {
         padding: 12px;
     }
 
+    /* Stack chapter card: cover on top, text below */
+    .chapter-card {
+        flex-direction: column;
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .chapter-cover {
+        width: 48px;
+        margin-right: 0;
+    }
+
+    .chapter-cover img {
+        width: 48px;
+    }
+
     .expertise-tags {
         gap: 4px;
+    }
+
+    .section-heading {
+        font-size: 12px;
+        padding: 7px 12px;
+    }
+}
+
+/* ── Responsive — Very small phones (≤ 360px) ── */
+@media (max-width: 360px) {
+    .product-wrapper-details {
+        padding: 0 8px 20px;
+    }
+
+    .author-profile-section {
+        padding: 10px;
+    }
+
+    .author-name {
+        font-size: 14px;
+    }
+
+    .author-designation {
+        font-size: 11px;
+    }
+
+    .chapter-card {
+        padding: 10px;
+    }
+
+    .chapter-card-title {
+        font-size: 13px;
+    }
+
+    .chapter-card-abstract,
+    .chapter-card-meta {
+        font-size: 11px;
+    }
+
+    .stat-row {
+        padding: 5px 8px;
+    }
+
+    .section-heading {
+        font-size: 11px;
+        padding: 6px 10px;
+        letter-spacing: 0.4px;
     }
 }

@@ -71,8 +71,10 @@
 
 .chapter-info-header {
     display: grid;
-    /* Fluid cover column: min 160px, max 220px — shrinks on narrow screens */
-    grid-template-columns: minmax(160px, 220px) 1fr;
+    /* 'auto' sizes the cover column to the thumbnail's own width.
+       '1fr' gives the text column all remaining space.
+       min-width: 0 on the text child prevents grid blowout. */
+    grid-template-columns: auto 1fr;
     gap: 20px;
     margin-bottom: 20px;
     padding-bottom: 15px;
@@ -81,22 +83,25 @@
 }
 
 .book-cover-thumbnail {
-    width: 100%;
+    /* Explicit width so 'auto' column tracks it perfectly */
+    width: 200px;
+    flex-shrink: 0;
     background: white;
-    /* Prevent the cover from ever being taller than the viewport */
-    max-width: 220px;
 }
 
 .book-cover-thumbnail img {
     width: 100%;
     height: auto;
-    max-height: 320px;
+    max-height: 300px;
     display: block;
     object-fit: contain;
 }
 
 .chapter-info-text {
-    flex: 1;
+    /* Critical: prevents text from overflowing the grid cell */
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .main-chapter-title {
@@ -111,6 +116,9 @@
     font-size: 14px;
     font-weight: 500;
     margin: 0 0 15px 0;
+    /* Prevent long author+affiliation strings from overflowing */
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .author-link {
@@ -528,32 +536,37 @@
 }
 
 /* =========================================
-   Responsive — Tablet / large phone (≤ 768px)
+   Responsive — Medium screens (≤ 900px)
    ========================================= */
 @media (max-width: 900px) {
-    /* At tablet width the fixed cover column can crowd the text —
-       switch to a slightly smaller fluid range */
-    .chapter-info-header {
-        grid-template-columns: minmax(140px, 180px) 1fr;
-        gap: 16px;
-    }
-
     .book-cover-thumbnail {
-        max-width: 180px;
+        width: 160px;
     }
 }
 
+/* =========================================
+   Responsive — Tablet / large phone (≤ 768px)
+   Stack cover above text
+   ========================================= */
 @media (max-width: 768px) {
 
-    /* Stack book cover above the info text */
+    /* Switch to single-column stacked layout */
     .chapter-info-header {
         grid-template-columns: 1fr;
-        gap: 16px;
+        gap: 14px;
     }
 
+    /* Center the cover and cap its width */
     .book-cover-thumbnail {
-        max-width: 220px;
+        width: 180px;
         margin: 0 auto;
+    }
+
+    /* Override inline white-space:nowrap on author spans so long
+       "Name (Affiliation)" strings wrap on narrow screens */
+    .main-chapter-authors span {
+        white-space: normal !important;
+        display: inline !important;
     }
 
     .toc-chapter-row {
@@ -592,7 +605,6 @@
    Responsive — Tall narrow phones (≤ 480px)
    Covers: OPPO F31 Pro (~412px), vivo V40e (~393px),
            vivo Y400 (~393px).
-   After html { zoom: 0.9 } these render at ~354–371px effective.
    ========================================= */
 @media (max-width: 480px) {
     .chapter-detail-page {
@@ -612,6 +624,11 @@
     /* Abstract box */
     .chapter-abstract-box {
         padding: 12px;
+    }
+
+    /* Smaller cover on narrow phones */
+    .book-cover-thumbnail {
+        width: 140px;
     }
 
     .main-chapter-title {
@@ -706,6 +723,11 @@
 
     .chapter-abstract-box {
         padding: 10px;
+    }
+
+    /* Smallest cover on very tiny phones */
+    .book-cover-thumbnail {
+        width: 120px;
     }
 
     .main-chapter-title {
