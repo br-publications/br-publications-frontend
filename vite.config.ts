@@ -1,15 +1,45 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import prerender from 'vite-plugin-prerender'
+import path from 'path'
 
 // https://vite.dev/config/
 // NOTE: sitemap.xml is generated dynamically by the Express backend (sitemapRoutes.ts).
-// vite-plugin-sitemap is not needed here.
-export default defineConfig(() => {
+export default defineConfig(async () => {
+  const routes = [
+    '/',
+    '/about',
+    '/contact',
+    '/bookchapters',
+    '/bookpublications',
+    '/books',
+    '/resnova'
+  ];
+
+  try {
+    // Fetch top 20 books for prerendering (so Google sees their content instantly)
+    const tbRes = await fetch('https://api.brpublications.com/api/books?limit=20');
+    if (tbRes.ok) {
+      const json = (await tbRes.json()) as any;
+      const list = json.data?.books || json.data || json.books || [];
+      if (Array.isArray(list)) {
+        list.forEach((item: any) => {
+          if (item?.id) routes.push(`/book/${item.id}`);
+        });
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to fetch dynamic routes for prerendering:', error);
+  }
   return {
     plugins: [
       react(),
       tailwindcss(),
+      prerender({
+        staticDir: path.join(__dirname, 'dist'),
+        routes: routes,
+      })
     ],
     build: {
       rollupOptions: {
