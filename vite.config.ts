@@ -1,8 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import prerender from 'vite-plugin-prerender'
-import path from 'path'
+import prerender from '@prerenderer/rollup-plugin'
 
 // https://vite.dev/config/
 // NOTE: sitemap.xml is generated dynamically by the Express backend (sitemapRoutes.ts).
@@ -37,8 +36,11 @@ export default defineConfig(async () => {
       react(),
       tailwindcss(),
       prerender({
-        staticDir: path.join(__dirname, 'dist'),
         routes: routes,
+        renderer: '@prerenderer/renderer-puppeteer',
+        server: {
+          port: 5173,
+        },
       })
     ],
     build: {
