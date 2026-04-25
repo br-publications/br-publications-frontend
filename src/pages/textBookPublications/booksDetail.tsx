@@ -6,7 +6,7 @@ import { contactService, type ContactDetails } from '../../services/contactServi
 import PhoneIcon from '@mui/icons-material/Phone';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import './booksDetail.css';
-import { setPageTitle, setMetaDescription, setOpenGraph, setCanonicalUrl, setJsonLd, resetSeo } from '../../utils/seoUtils';
+import { setPageTitle, setMetaDescription, setOpenGraph, setCanonicalUrl, setJsonLd, resetSeo, setKeywords } from '../../utils/seoUtils';
 import { generateUniqueSlug } from '../../utils/stringUtils';
 import { sanitizeUrl } from '../../utils/urlValidation';
 
@@ -65,6 +65,7 @@ const BooksDetail: React.FC = () => {
             setPageTitle(`${bookData.title} | BR Publications`);
             setMetaDescription(synopsisText);
             setCanonicalUrl(canonicalPath);
+            setKeywords(`${bookData.title}, ${bookData.author ?? ''}, academic book, ${bookData.isbn}, BR Publications, peer-reviewed`);
             setOpenGraph({
               title: `${bookData.title} | BR Publications`,
               description: synopsisText,
@@ -78,10 +79,15 @@ const BooksDetail: React.FC = () => {
               'name': bookData.title,
               'author': { '@type': 'Person', 'name': bookData.author },
               'isbn': bookData.isbn,
-              'publisher': { '@type': 'Organization', 'name': 'BR Publications' },
+              'publisher': {
+                '@type': 'Organization',
+                'name': 'BR Publications',
+                'url': 'https://www.brpublications.com'
+              },
               'image': bookData.coverImage,
               'url': `${window.location.origin}${canonicalPath}`,
               'description': synopsisText,
+              'inLanguage': 'en',
               ...(bookData.publishedDate ? { 'datePublished': bookData.publishedDate } : {})
             });
           } else if (!stateBook) {

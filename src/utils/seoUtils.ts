@@ -93,9 +93,19 @@ export const setJsonLd = (data: object, id = 'structured-data'): void => {
 };
 
 /**
+ * Set meta keywords tag
+ */
+export const setKeywords = (keywords: string): void => {
+  setMetaTag('keywords', keywords);
+};
+
+/**
  * Reset page to default SEO state (call on unmount if needed)
  */
 export const resetSeo = (): void => {
   document.title = 'BR Publications | Academic Books & Research';
   setMetaTag('description', 'BR Publications is an academic publisher offering peer-reviewed books, book chapters, and research publications across engineering, science, and management.');
+  // Remove page-specific JSON-LD (book/chapter schemas) but leave org/website schemas
+  const pageScript = document.getElementById('structured-data');
+  if (pageScript) pageScript.remove();
 };

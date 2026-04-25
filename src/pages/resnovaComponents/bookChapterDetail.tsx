@@ -10,7 +10,7 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { ArrowLeft } from 'lucide-react';
 import './bookChapterDetail.css';
 import { sanitizeUrl } from '../../utils/urlValidation';
-import { setPageTitle, setMetaDescription, setOpenGraph, setCanonicalUrl, setJsonLd, resetSeo } from '../../utils/seoUtils';
+import { setPageTitle, setMetaDescription, setOpenGraph, setCanonicalUrl, setJsonLd, resetSeo, setKeywords } from '../../utils/seoUtils';
 import { generateUniqueSlug } from '../../utils/stringUtils';
 
 type TabType = 'synopsis' | 'scope' | 'toc' | 'biographies' | 'archives';
@@ -97,6 +97,7 @@ const BookChapterDetail: React.FC = () => {
             setPageTitle(`${bookData.title} | BR ResNova Academic Press`);
             setMetaDescription(description);
             setCanonicalUrl(canonicalPath);
+            setKeywords(`${bookData.title}, ${(bookData.editors ?? []).join(', ')}, book chapter, ${bookData.isbn}, BR Publications, academic research`);
             setOpenGraph({
               title: `${bookData.title} | BR ResNova Academic Press`,
               description,
@@ -110,10 +111,15 @@ const BookChapterDetail: React.FC = () => {
               'name': bookData.title,
               'editor': bookData.editors?.map(e => ({ '@type': 'Person', 'name': e })),
               'isbn': bookData.isbn,
-              'publisher': { '@type': 'Organization', 'name': 'BR ResNova Academic Press' },
+              'publisher': {
+                '@type': 'Organization',
+                'name': 'BR ResNova Academic Press',
+                'url': 'https://www.brpublications.com'
+              },
               'image': bookData.coverImage,
               'url': `${window.location.origin}${canonicalPath}`,
               'description': description,
+              'inLanguage': 'en',
               'numberOfPages': bookData.chapters?.length,
               ...(bookData.doi ? { 'identifier': bookData.doi } : {})
             });

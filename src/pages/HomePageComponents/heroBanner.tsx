@@ -8,6 +8,8 @@ const HeroBanner = () => {
       <div className="hero-container">
         <div className="content-left">
           <h1 className="hero-title">
+            {/* Visually hidden brand name — critical for Google to associate this page with "BR Publications" */}
+            <span className="seo-brand-name">BR Publications</span>
             Transform Your Research Into <br />
             <span>Published Reality</span>
           </h1>

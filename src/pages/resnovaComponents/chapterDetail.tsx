@@ -8,6 +8,7 @@ import { generateUniqueSlug } from '../../utils/stringUtils';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { sanitizeUrl } from '../../utils/urlValidation';
 import './chapterDetail.css';
+import { setPageTitle, setMetaDescription, setCanonicalUrl, setOpenGraph, setJsonLd, setKeywords, resetSeo } from '../../utils/seoUtils';
 
 /**
  * Helper to truncate text to a specific number of words
@@ -88,7 +89,66 @@ const ChapterDetail: React.FC = () => {
         };
 
         fetchBookAndChapter();
+        return () => { resetSeo(); };
     }, [id, chapterId]);
+
+    /* ── Apply SEO once both book and chapter are loaded ── */
+    useEffect(() => {
+        if (!book || !chapter) return;
+
+        const canonicalPath = `/book/${book.id}/chapter/${chapter.chapterNumber}`;
+        const authorNames = chapter.authorDetails && chapter.authorDetails.length > 0
+            ? chapter.authorDetails.map(a => a.name).join(', ')
+            : chapter.authors || '';
+        const description = chapter.abstract
+            ? chapter.abstract.slice(0, 155)
+            : `${chapter.title} — a chapter from "${book.title}" published by BR Publications.`;
+
+        setPageTitle(`${chapter.title} | ${book.title} — BR Publications`);
+        setMetaDescription(description);
+        setCanonicalUrl(canonicalPath);
+        setKeywords(`${chapter.title}, ${authorNames}, ${book.title}, ${book.isbn}, book chapter, academic research, BR Publications`);
+        setOpenGraph({
+            title: `${chapter.title} | ${book.title}`,
+            description,
+            image: book.coverImage,
+            url: `${window.location.origin}${canonicalPath}`,
+            type: 'article',
+        });
+        // ScholarlyArticle schema — tells Google this is an individual academic chapter
+        // This enables rich snippets: chapter title, authors, and abstract in search results
+        setJsonLd({
+            '@context': 'https://schema.org',
+            '@type': 'ScholarlyArticle',
+            'name': chapter.title,
+            'headline': chapter.title,
+            'description': description,
+            'author': chapter.authorDetails && chapter.authorDetails.length > 0
+                ? chapter.authorDetails.map(a => ({
+                    '@type': 'Person',
+                    'name': a.name,
+                    'url': `${window.location.origin}/author/${a.id}`,
+                    ...(a.affiliation ? { 'affiliation': { '@type': 'Organization', 'name': a.affiliation } } : {})
+                }))
+                : [{ '@type': 'Person', 'name': chapter.authors }],
+            'isPartOf': {
+                '@type': 'Book',
+                'name': book.title,
+                'isbn': book.isbn,
+                'publisher': {
+                    '@type': 'Organization',
+                    'name': 'BR Publications',
+                    'url': 'https://www.brpublications.com'
+                },
+                'image': book.coverImage,
+                'url': `${window.location.origin}/bookchapter/${book.id}/${generateUniqueSlug(book.isbn, book.releaseDate)}`
+            },
+            'url': `${window.location.origin}${canonicalPath}`,
+            'inLanguage': 'en',
+            ...(chapter.doi ? { 'identifier': { '@type': 'PropertyValue', 'propertyID': 'DOI', 'value': chapter.doi } } : {}),
+            ...(chapter.pages ? { 'pagination': chapter.pages } : {}),
+        });
+    }, [book, chapter]);
 
     const handleViewChapter = async (chap: Chapter) => {
         if (typeof chap.id === 'number') {

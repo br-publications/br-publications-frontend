@@ -9,6 +9,7 @@ import {
     ChevronUp,
 } from 'lucide-react';
 import './authorDetail.css';
+import { setPageTitle, setMetaDescription, setCanonicalUrl, setOpenGraph, setJsonLd, setKeywords, resetSeo } from '../../../utils/seoUtils';
 
 interface Author {
     id: number;
@@ -59,7 +60,49 @@ const AuthorDetail: React.FC = () => {
             }
         };
         if (id) fetchAuthorDetails();
+        return () => { resetSeo(); };
     }, [id]);
+
+    /* ── Apply SEO after data loads ── */
+    useEffect(() => {
+        if (!author) return;
+        const canonicalPath = `/author/${author.id}`;
+        const description = author.biography
+            ? author.biography.replace(/\n/g, ' ').slice(0, 155)
+            : `${author.name} is a verified academic author published by BR Publications${author.affiliation ? `, affiliated with ${author.affiliation}` : ''}.`;
+        const publicationTitles = author.chapters?.map(c => c.title).join(', ') || '';
+
+        setPageTitle(`${author.name} | Author Profile — BR Publications`);
+        setMetaDescription(description);
+        setCanonicalUrl(canonicalPath);
+        setKeywords(`${author.name}, ${author.affiliation ?? ''}, academic author, BR Publications, researcher, ${publicationTitles}`.slice(0, 200));
+        setOpenGraph({
+            title: `${author.name} | Author — BR Publications`,
+            description,
+            url: `${window.location.origin}${canonicalPath}`,
+            type: 'profile',
+        });
+        // Person schema — this is what makes Google show the author's name & affiliation in search
+        setJsonLd({
+            '@context': 'https://schema.org',
+            '@type': 'Person',
+            'name': author.name,
+            'url': `${window.location.origin}${canonicalPath}`,
+            ...(author.affiliation ? { 'affiliation': { '@type': 'Organization', 'name': author.affiliation } } : {}),
+            ...(author.biography ? { 'description': author.biography.slice(0, 500) } : {}),
+            ...(author.email ? { 'email': author.email } : {}),
+            'worksFor': { '@type': 'Organization', 'name': 'BR Publications', 'url': 'https://www.brpublications.com' },
+            'hasOccupation': { '@type': 'Occupation', 'name': 'Academic Researcher' },
+            'publishingPrinciples': 'https://www.brpublications.com',
+            ...(author.chapters && author.chapters.length > 0 ? {
+                'author': author.chapters.map(c => ({
+                    '@type': 'ScholarlyArticle',
+                    'name': c.title,
+                    'isPartOf': { '@type': 'Book', 'name': c.book.title, 'isbn': c.book.isbn }
+                }))
+            } : {})
+        });
+    }, [author]);
 
     /* ── Scroll-to-top visibility ── */
     useEffect(() => {
