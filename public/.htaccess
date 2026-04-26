@@ -1,0 +1,18 @@
+Options -MultiViews
+RewriteEngine On
+
+# Force www (your existing rule — unchanged)
+RewriteCond %{HTTP_HOST} !^www\.brpublications\.com$ [NC]
+RewriteRule ^ https://www.brpublications.com%{REQUEST_URI} [L,R=301]
+
+# ── NEW: Remove trailing slash (except root and real directories) ─────────────
+# Fixes all "Broken redirect" errors: /about/ → /about (301)
+#                                     /books/ → /books (301)  etc.
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)/$ /$1 [L,R=301]
+
+# SPA fallback (your existing rule — unchanged)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [QSA,L]
+
