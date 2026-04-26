@@ -11,7 +11,7 @@ import {
 import { getEditorById, type PublishedEditor } from '../../../services/bookChapterPublishing.service';
 import { generateUniqueSlug } from '../../../utils/stringUtils';
 import './editorDetail.css';
-import { setPageTitle, setMetaDescription, setCanonicalUrl, setOpenGraph, setJsonLd, setKeywords, resetSeo } from '../../../utils/seoUtils';
+import { Helmet } from 'react-helmet-async';
 
 const EditorDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -36,49 +36,9 @@ const EditorDetail: React.FC = () => {
             }
         };
         fetchEditorDetails();
-        return () => { resetSeo(); };
     }, [id]);
 
-    /* ── Apply SEO after data loads ── */
-    useEffect(() => {
-        if (!editor) return;
-        const canonicalPath = `/editor/${editor.id}`;
-        const description = editor.biography
-            ? editor.biography.replace(/\n/g, ' ').slice(0, 155)
-            : `${editor.name} is a verified academic editor at BR Publications${editor.affiliation ? `, affiliated with ${editor.affiliation}` : ''}.`;
-        const bookTitles = editor.books?.map(b => b.title).join(', ') || '';
 
-        setPageTitle(`${editor.name} | Editor Profile — BR Publications`);
-        setMetaDescription(description);
-        setCanonicalUrl(canonicalPath);
-        setKeywords(`${editor.name}, ${editor.affiliation ?? ''}, academic editor, BR Publications, ${bookTitles}`.slice(0, 200));
-        setOpenGraph({
-            title: `${editor.name} | Editor — BR Publications`,
-            description,
-            url: `${window.location.origin}${canonicalPath}`,
-            type: 'profile',
-        });
-        // Person schema — enables Google to show editor name, affiliation, and edited books in search
-        setJsonLd({
-            '@context': 'https://schema.org',
-            '@type': 'Person',
-            'name': editor.name,
-            'url': `${window.location.origin}${canonicalPath}`,
-            ...(editor.affiliation ? { 'affiliation': { '@type': 'Organization', 'name': editor.affiliation } } : {}),
-            ...(editor.biography ? { 'description': editor.biography.slice(0, 500) } : {}),
-            ...(editor.email ? { 'email': editor.email } : {}),
-            'worksFor': { '@type': 'Organization', 'name': 'BR Publications', 'url': 'https://www.brpublications.com' },
-            'hasOccupation': { '@type': 'Occupation', 'name': 'Academic Editor' },
-            ...(editor.books && editor.books.length > 0 ? {
-                'editor': editor.books.map(b => ({
-                    '@type': 'Book',
-                    'name': b.title,
-                    ...(b.isbn ? { 'isbn': b.isbn } : {}),
-                    'publisher': { '@type': 'Organization', 'name': 'BR Publications' }
-                }))
-            } : {})
-        });
-    }, [editor]);
 
     /* ── Scroll-to-top visibility ── */
     useEffect(() => {
@@ -115,9 +75,48 @@ const EditorDetail: React.FC = () => {
         editor.name
     )}&background=1e5292&color=fff&size=180`;
 
+    /* ── SEO Logic ── */
+    const canonicalPath = `/editor/${editor.id}`;
+    const description = editor.biography
+        ? editor.biography.replace(/\n/g, ' ').slice(0, 155)
+        : `${editor.name} is a verified academic editor at BR Publications${editor.affiliation ? `, affiliated with ${editor.affiliation}` : ''}.`;
+    const bookTitles = editor.books?.map(b => b.title).join(', ') || '';
+    const canonicalUrlFull = `https://www.brpublications.com${canonicalPath}`;
+
+    const schemaData = {
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        'name': editor.name,
+        'url': canonicalUrlFull,
+        ...(editor.affiliation ? { 'affiliation': { '@type': 'Organization', 'name': editor.affiliation } } : {}),
+        ...(editor.biography ? { 'description': editor.biography.slice(0, 500) } : {}),
+        ...(editor.email ? { 'email': editor.email } : {}),
+        'worksFor': { '@type': 'Organization', 'name': 'BR Publications', 'url': 'https://www.brpublications.com' },
+        'hasOccupation': { '@type': 'Occupation', 'name': 'Academic Editor' },
+        ...(editor.books && editor.books.length > 0 ? {
+            'editor': editor.books.map(b => ({
+                '@type': 'Book',
+                'name': b.title,
+                ...(b.isbn ? { 'isbn': b.isbn } : {}),
+                'publisher': { '@type': 'Organization', 'name': 'BR Publications' }
+            }))
+        } : {})
+    };
+
     /* ── Render ── */
     return (
         <div className="editor-detail-page">
+            <Helmet>
+                <title>{editor.name} | Editor Profile — BR Publications</title>
+                <meta name="description" content={description} />
+                <meta name="keywords" content={`${editor.name}, ${editor.affiliation ?? ''}, academic editor, BR Publications, ${bookTitles}`.slice(0, 200)} />
+                <meta property="og:title" content={`${editor.name} | Editor — BR Publications`} />
+                <meta property="og:description" content={description} />
+                <meta property="og:url" content={canonicalUrlFull} />
+                <meta property="og:type" content="profile" />
+                <link rel="canonical" href={canonicalUrlFull} />
+                <script type="application/ld+json">{JSON.stringify(schemaData)}</script>
+            </Helmet>
 
             {/* ── Hero Bar ── */}
             <section className="product-hero">

@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from 'react';
+import { lazy, Suspense } from 'react';
 
 // ─── Critical path (render immediately — these make up the LCP) ───────────────
 import HeroBanner from "../HomePageComponents/heroBanner";
@@ -10,52 +10,49 @@ const Subjects = lazy(() => import("../HomePageComponents/subjects"));
 const TextBookCarousel = lazy(() => import("../HomePageComponents/textBookCarousel"));
 const BookCarousel = lazy(() => import("../HomePageComponents/bookCarousel"));
 
-import { setPageTitle, setMetaDescription, setJsonLd } from '../../utils/seoUtils';
-
+import { Helmet } from 'react-helmet-async';
 export default function Home() {
-  useEffect(() => {
-    setPageTitle('BR Publications | Academic Books & Research');
-    setMetaDescription('Explore peer-reviewed academic books, book chapters, and research publications across engineering, science, management, and more. Published by BR Publications.');
+  const orgSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    'name': 'BR Publications',
+    'url': 'https://www.brpublications.com',
+    'logo': {
+      '@type': 'ImageObject',
+      'url': 'https://www.brpublications.com/src/assets/BR_logo.png'
+    },
+    'description': 'BR Publications is an academic publisher offering peer-reviewed books, book chapters, and research publications across engineering, science, and management.',
+    'sameAs': [],
+    'contactPoint': {
+      '@type': 'ContactPoint',
+      'contactType': 'customer service',
+      'availableLanguage': 'English'
+    }
+  };
 
-    // Organization Schema — tells Google "BR Publications" is a real organization
-    // This enables the Knowledge Panel when someone searches "BR Publications"
-    setJsonLd({
-      '@context': 'https://schema.org',
-      '@type': 'Organization',
-      'name': 'BR Publications',
-      'url': 'https://www.brpublications.com',
-      'logo': {
-        '@type': 'ImageObject',
-        'url': 'https://www.brpublications.com/src/assets/BR_logo.png'
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    'name': 'BR Publications',
+    'url': 'https://www.brpublications.com',
+    'potentialAction': {
+      '@type': 'SearchAction',
+      'target': {
+        '@type': 'EntryPoint',
+        'urlTemplate': 'https://www.brpublications.com/books?search={search_term_string}'
       },
-      'description': 'BR Publications is an academic publisher offering peer-reviewed books, book chapters, and research publications across engineering, science, and management.',
-      'sameAs': [],
-      'contactPoint': {
-        '@type': 'ContactPoint',
-        'contactType': 'customer service',
-        'availableLanguage': 'English'
-      }
-    }, 'org-structured-data');
-
-    // WebSite Schema — can trigger a Google Sitelinks Searchbox directly in search results
-    setJsonLd({
-      '@context': 'https://schema.org',
-      '@type': 'WebSite',
-      'name': 'BR Publications',
-      'url': 'https://www.brpublications.com',
-      'potentialAction': {
-        '@type': 'SearchAction',
-        'target': {
-          '@type': 'EntryPoint',
-          'urlTemplate': 'https://www.brpublications.com/books?search={search_term_string}'
-        },
-        'query-input': 'required name=search_term_string'
-      }
-    }, 'website-structured-data');
-  }, []);
+      'query-input': 'required name=search_term_string'
+    }
+  };
 
   return (
     <>
+      <Helmet>
+        <title>BR Publications | Academic Books & Research</title>
+        <meta name="description" content="BR Publications is dedicated to publishing a diverse range of high-quality academic and professional works for readers and researchers with a passion for knowledge across multidisciplinary domains. Our publications span Sciences, Medical Sciences, Engineering, Technology, Humanities and more—reflecting our commitment to academic excellence and intellectual growth." />
+        <script type="application/ld+json">{JSON.stringify(orgSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>
+      </Helmet>
       {/* Critical above-the-fold content — loads immediately */}
       <HeroBanner />
       <WelcomeBanner />

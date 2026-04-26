@@ -6,6 +6,14 @@ import Renderer from '@prerenderer/renderer-puppeteer'
 
 // https://vite.dev/config/
 // NOTE: sitemap.xml is generated dynamically by the Express backend (sitemapRoutes.ts).
+const toSlug = (text: string): string =>
+  text.toString().toLowerCase().trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+
 export default defineConfig(async () => {
   const routes = [
     '/',
@@ -18,20 +26,35 @@ export default defineConfig(async () => {
   ];
 
   try {
-    // Fetch top 20 books for prerendering (so Google sees their content instantly)
-    const tbRes = await fetch('https://api.brpublications.com/api/books?limit=20');
+    // Fetch books for prerendering
+    const tbRes = await fetch('https://api.brpublications.com/api/books?limit=100');
     if (tbRes.ok) {
       const json = (await tbRes.json()) as any;
       const list = json.data?.books || json.data || json.books || [];
       if (Array.isArray(list)) {
         list.forEach((item: any) => {
-          if (item?.id) routes.push(`/book/${item.id}`);
+          if (item?.id && item?.title) routes.push(`/book/${item.id}/${toSlug(item.title)}`);
         });
       }
     }
   } catch (error) {
-    console.warn('Failed to fetch dynamic routes for prerendering:', error);
+    console.warn('Failed to fetch books for prerendering:', error);
   }
+
+  try {
+    // Fetch book chapters for prerendering
+    const res = await fetch('https://api.brpublications.com/api/book-chapter-publishing?limit=100');
+    if (res.ok) {
+      const json = (await res.json()) as any;
+      const list = json.data?.chapters || json.data || json.chapters || [];
+      if (Array.isArray(list)) {
+        list.forEach((item: any) => {
+          if (item?.id && item?.title) routes.push(`/bookchapter/${item.id}/${toSlug(item.title)}`);
+        });
+      }
+    }
+  } catch (e) { console.warn('Book chapters fetch failed:', e); }
+
   return {
     plugins: [
       react(),

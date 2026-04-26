@@ -10,8 +10,8 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { ArrowLeft } from 'lucide-react';
 import './bookChapterDetail.css';
 import { sanitizeUrl } from '../../utils/urlValidation';
-import { setPageTitle, setMetaDescription, setOpenGraph, setCanonicalUrl, setJsonLd, resetSeo, setKeywords } from '../../utils/seoUtils';
 import { generateUniqueSlug } from '../../utils/stringUtils';
+import { Helmet } from 'react-helmet-async';
 
 type TabType = 'synopsis' | 'scope' | 'toc' | 'biographies' | 'archives';
 
@@ -84,45 +84,6 @@ const BookChapterDetail: React.FC = () => {
 
           if (bookData) {
             setBook(bookData);
-            // Apply SEO after data is loaded
-            const slug = generateUniqueSlug(bookData.isbn, bookData.releaseDate);
-            const canonicalPath = `/bookchapter/${bookData.id}/${slug}`;
-            const editorsStr = Array.isArray(bookData.editors) && bookData.editors.length > 0
-              ? `Editors: ${bookData.editors.join(', ')}.`
-              : `By ${bookData.author}.`;
-            const description = bookData.synopsis
-              ? Object.values(bookData.synopsis).join(' ').replace(/<[^>]+>/g, '').slice(0, 150)
-              : `${bookData.title}. ${editorsStr} Published by BR ResNova Academic Press.`;
-
-            setPageTitle(`${bookData.title} | BR ResNova Academic Press`);
-            setMetaDescription(description);
-            setCanonicalUrl(canonicalPath);
-            setKeywords(`${bookData.title}, ${(bookData.editors ?? []).join(', ')}, book chapter, ${bookData.isbn}, BR Publications, academic research`);
-            setOpenGraph({
-              title: `${bookData.title} | BR ResNova Academic Press`,
-              description,
-              image: bookData.coverImage,
-              url: `${window.location.origin}${canonicalPath}`,
-              type: 'book'
-            });
-            setJsonLd({
-              '@context': 'https://schema.org',
-              '@type': 'Book',
-              'name': bookData.title,
-              'editor': bookData.editors?.map(e => ({ '@type': 'Person', 'name': e })),
-              'isbn': bookData.isbn,
-              'publisher': {
-                '@type': 'Organization',
-                'name': 'BR ResNova Academic Press',
-                'url': 'https://www.brpublications.com'
-              },
-              'image': bookData.coverImage,
-              'url': `${window.location.origin}${canonicalPath}`,
-              'description': description,
-              'inLanguage': 'en',
-              'numberOfPages': bookData.chapters?.length,
-              ...(bookData.doi ? { 'identifier': bookData.doi } : {})
-            });
           } else if (!stateBook) {
             setError('Book not found');
           }
@@ -139,7 +100,6 @@ const BookChapterDetail: React.FC = () => {
     };
 
     loadBookDetails();
-    return () => { resetSeo(); };
   }, [id, location.state]);
 
   /**
@@ -288,8 +248,49 @@ const BookChapterDetail: React.FC = () => {
   const tocContent = parseSectionContent(book.tableContents);
   const archivesContent = parseSectionContent(book.archives);
 
+  const slug = generateUniqueSlug(book.isbn, book.releaseDate);
+  const canonicalPath = `/bookchapter/${book.id}/${slug}`;
+  const editorsStr = Array.isArray(book.editors) && book.editors.length > 0
+    ? `Editors: ${book.editors.join(', ')}.`
+    : `By ${book.author}.`;
+  const description = book.synopsis
+    ? Object.values(book.synopsis).join(' ').replace(/<[^>]+>/g, '').slice(0, 150)
+    : `${book.title}. ${editorsStr} Published by BR ResNova Academic Press.`;
+  const canonicalUrlFull = `https://www.brpublications.com${canonicalPath}`;
+
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    "name": book.title,
+    "editor": book.editors?.map(e => ({ '@type': 'Person', 'name': e })),
+    "isbn": book.isbn,
+    "publisher": {
+      "@type": "Organization",
+      "name": "BR ResNova Academic Press",
+      "url": "https://www.brpublications.com"
+    },
+    "image": book.coverImage,
+    "url": canonicalUrlFull,
+    "description": description,
+    "inLanguage": "en",
+    "numberOfPages": book.chapters?.length,
+    ...(book.doi ? { 'identifier': book.doi } : {})
+  };
+
   return (
     <main className="content">
+      <Helmet>
+        <title>{book.title} | BR ResNova Academic Press</title>
+        <meta name="description" content={description} />
+        <meta name="keywords" content={`${book.title}, ${(book.editors ?? []).join(', ')}, book chapter, ${book.isbn}, BR Publications, academic research`} />
+        <meta property="og:title" content={`${book.title} | BR ResNova Academic Press`} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={book.coverImage} />
+        <meta property="og:url" content={canonicalUrlFull} />
+        <meta property="og:type" content="book" />
+        <link rel="canonical" href={canonicalUrlFull} />
+        <script type="application/ld+json">{JSON.stringify(schemaData)}</script>
+      </Helmet>
       <section id="resNovaPage" className="resNova-page">
         {/* Hero Section */}
         <section className="product-hero">

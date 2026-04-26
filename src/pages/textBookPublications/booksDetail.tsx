@@ -6,9 +6,9 @@ import { contactService, type ContactDetails } from '../../services/contactServi
 import PhoneIcon from '@mui/icons-material/Phone';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import './booksDetail.css';
-import { setPageTitle, setMetaDescription, setOpenGraph, setCanonicalUrl, setJsonLd, resetSeo, setKeywords } from '../../utils/seoUtils';
 import { generateUniqueSlug } from '../../utils/stringUtils';
 import { sanitizeUrl } from '../../utils/urlValidation';
+import { Helmet } from 'react-helmet-async';
 
 const BooksDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -54,42 +54,6 @@ const BooksDetail: React.FC = () => {
           const bookData = await productBooksService.getBookById(parseInt(id));
           if (bookData) {
             setBook(bookData);
-            // Apply SEO after data is loaded
-            const slug = generateUniqueSlug(bookData.isbn, bookData.releaseDate);
-            const canonicalPath = `/book/${bookData.id}/${slug}`;
-            // synopsis is a SynopsisSection (object), extract text from its values
-            const synopsisText = bookData.synopsis
-              ? Object.values(bookData.synopsis).join(' ').replace(/<[^>]+>/g, '').slice(0, 150)
-              : `${bookData.title} by ${bookData.author} — published by BR Publications.`;
-
-            setPageTitle(`${bookData.title} | BR Publications`);
-            setMetaDescription(synopsisText);
-            setCanonicalUrl(canonicalPath);
-            setKeywords(`${bookData.title}, ${bookData.author ?? ''}, academic book, ${bookData.isbn}, BR Publications, peer-reviewed`);
-            setOpenGraph({
-              title: `${bookData.title} | BR Publications`,
-              description: synopsisText,
-              image: bookData.coverImage,
-              url: `${window.location.origin}${canonicalPath}`,
-              type: 'book'
-            });
-            setJsonLd({
-              '@context': 'https://schema.org',
-              '@type': 'Book',
-              'name': bookData.title,
-              'author': { '@type': 'Person', 'name': bookData.author },
-              'isbn': bookData.isbn,
-              'publisher': {
-                '@type': 'Organization',
-                'name': 'BR Publications',
-                'url': 'https://www.brpublications.com'
-              },
-              'image': bookData.coverImage,
-              'url': `${window.location.origin}${canonicalPath}`,
-              'description': synopsisText,
-              'inLanguage': 'en',
-              ...(bookData.publishedDate ? { 'datePublished': bookData.publishedDate } : {})
-            });
           } else if (!stateBook) {
             setError('Book not found');
           }
@@ -106,7 +70,6 @@ const BooksDetail: React.FC = () => {
     };
 
     loadData();
-    return () => { resetSeo(); };
   }, [id, location.state]);
 
   /**
@@ -165,8 +128,45 @@ const BooksDetail: React.FC = () => {
 
 
 
+  const slug = generateUniqueSlug(book.isbn, book.releaseDate);
+  const canonicalPath = `/book/${book.id}/${slug}`;
+  const canonicalUrlFull = `https://www.brpublications.com${canonicalPath}`;
+  const synopsisText = book.synopsis
+    ? Object.values(book.synopsis).join(' ').replace(/<[^>]+>/g, '').slice(0, 150)
+    : `${book.title} by ${book.author} — published by BR Publications.`;
+
+  const schemaData = {
+    '@context': 'https://schema.org',
+    '@type': 'Book',
+    'name': book.title,
+    'author': { '@type': 'Person', 'name': book.author },
+    'isbn': book.isbn,
+    'publisher': {
+      '@type': 'Organization',
+      'name': 'BR Publications',
+      'url': 'https://www.brpublications.com'
+    },
+    'image': book.coverImage,
+    'url': canonicalUrlFull,
+    'description': synopsisText,
+    'inLanguage': 'en',
+    ...(book.publishedDate ? { 'datePublished': book.publishedDate } : {})
+  };
+
   return (
     <main className="content">
+      <Helmet>
+        <title>{book.title} | BR Publications</title>
+        <meta name="description" content={synopsisText} />
+        <meta name="keywords" content={`${book.title}, ${book.author ?? ''}, academic book, ${book.isbn}, BR Publications, peer-reviewed`} />
+        <meta property="og:title" content={`${book.title} | BR Publications`} />
+        <meta property="og:description" content={synopsisText} />
+        <meta property="og:image" content={book.coverImage} />
+        <meta property="og:url" content={canonicalUrlFull} />
+        <meta property="og:type" content="book" />
+        <link rel="canonical" href={canonicalUrlFull} />
+        <script type="application/ld+json">{JSON.stringify(schemaData)}</script>
+      </Helmet>
       <section id="resNovaPage" className="resNova-page">
         {/* Hero Section */}
         <section className="product-hero">
