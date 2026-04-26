@@ -48,11 +48,11 @@ export default function Footer() {
     <>
       {/* Floating Action Buttons */}
       <section className={`fixed bottom-[25px] right-[25px] flex flex-col gap-[15px] z-[2000] transition-all duration-300 ${hideFloatingButtons ? 'opacity-0 invisible pointer-events-none' : 'opacity-100 visible'}`}>
-        <a href={`https://wa.me/${whatsappNumber}`} className="w-[55px] h-[55px] rounded-[25%] flex items-center justify-center text-[25px] text-white shadow-[0_4px_10px_rgba(0,0,0,0.2)] transition-all duration-300 hover:scale-110 hover:shadow-[0_6px_20px_rgba(0,0,0,0.3)] bg-[#25d366]" target="_blank" title="Chat on WhatsApp" rel="noreferrer">
-          <MessageCircle size={28} />
+        <a href={`https://wa.me/${whatsappNumber}`} aria-label="Chat with us on WhatsApp" className="w-[55px] h-[55px] rounded-[25%] flex items-center justify-center text-[25px] text-white shadow-[0_4px_10px_rgba(0,0,0,0.2)] transition-all duration-300 hover:scale-110 hover:shadow-[0_6px_20px_rgba(0,0,0,0.3)] bg-[#25d366]" target="_blank" rel="noreferrer">
+          <MessageCircle size={28} aria-hidden="true" />
         </a>
-        <a href={`tel:${phoneNumber}`} className="w-[55px] h-[55px] rounded-[25%] flex items-center justify-center text-[25px] text-white shadow-[0_4px_10px_rgba(0,0,0,0.2)] transition-all duration-300 hover:scale-110 hover:shadow-[0_6px_20px_rgba(0,0,0,0.3)] bg-white text-[#1e5292]!" title="Call Us">
-          <Phone size={25} className="text-[#1e5292]" />
+        <a href={`tel:${phoneNumber}`} aria-label="Call us" className="w-[55px] h-[55px] rounded-[25%] flex items-center justify-center text-[25px] text-white shadow-[0_4px_10px_rgba(0,0,0,0.2)] transition-all duration-300 hover:scale-110 hover:shadow-[0_6px_20px_rgba(0,0,0,0.3)] bg-white text-[#1e5292]!">
+          <Phone size={25} aria-hidden="true" className="text-[#1e5292]" />
         </a>
       </section>
 
@@ -71,28 +71,28 @@ export default function Footer() {
             </p>
             <div className="flex">
               {/* {contactDetails?.facebook && ( */}
-              <a href='#' target="_blank" className="inline-flex justify-center items-center mr-[10px] text-[12px] text-black border border-[#1e5292] p-[8px] rounded-full transition-all duration-300 w-[30px] h-[30px] hover:bg-[#1e5292] hover:text-white group" rel="noreferrer">
-                <Facebook size={14} className="group-hover:text-white" />
+              <a href='#' target="_blank" aria-label="Follow us on Facebook" className="inline-flex justify-center items-center mr-[10px] text-[12px] text-black border border-[#1e5292] p-[8px] rounded-full transition-all duration-300 w-[44px] h-[44px] hover:bg-[#1e5292] hover:text-white group" rel="noreferrer">
+                <Facebook size={14} aria-hidden="true" className="group-hover:text-white" />
               </a>
               {/* // )} */}
               {/* {contactDetails?.twitter && ( */}
-              <a href='#' target="_blank" className="inline-flex justify-center items-center mr-[10px] text-[12px] text-black border border-[#1e5292] p-[8px] rounded-full transition-all duration-300 w-[30px] h-[30px] hover:bg-[#1e5292] hover:text-white group" rel="noreferrer">
-                <Twitter size={14} className="group-hover:text-white" />
+              <a href='#' target="_blank" aria-label="Follow us on Twitter" className="inline-flex justify-center items-center mr-[10px] text-[12px] text-black border border-[#1e5292] p-[8px] rounded-full transition-all duration-300 w-[44px] h-[44px] hover:bg-[#1e5292] hover:text-white group" rel="noreferrer">
+                <Twitter size={14} aria-hidden="true" className="group-hover:text-white" />
               </a>
               {/* )} */}
               {/* {contactDetails?.linkedin && ( */}
-              <a href='#' target="_blank" className="inline-flex justify-center items-center mr-[10px] text-[12px] text-black border border-[#1e5292] p-[8px] rounded-full transition-all duration-300 w-[30px] h-[30px] hover:bg-[#1e5292] hover:text-white group" rel="noreferrer">
-                <Linkedin size={14} className="group-hover:text-white" />
+              <a href='#' target="_blank" aria-label="Connect with us on LinkedIn" className="inline-flex justify-center items-center mr-[10px] text-[12px] text-black border border-[#1e5292] p-[8px] rounded-full transition-all duration-300 w-[44px] h-[44px] hover:bg-[#1e5292] hover:text-white group" rel="noreferrer">
+                <Linkedin size={14} aria-hidden="true" className="group-hover:text-white" />
               </a>
               {/* )} */}
               {contactDetails?.instagram && (
-                <a href={contactDetails.instagram} target="_blank" className="inline-flex justify-center items-center mr-[10px] text-[12px] text-black border border-[#1e5292] p-[8px] rounded-full transition-all duration-300 w-[30px] h-[30px] hover:bg-[#1e5292] hover:text-white group" rel="noreferrer">
-                  <Instagram size={14} className="group-hover:text-white" />
+                <a href={contactDetails.instagram} target="_blank" aria-label="Follow us on Instagram" className="inline-flex justify-center items-center mr-[10px] text-[12px] text-black border border-[#1e5292] p-[8px] rounded-full transition-all duration-300 w-[44px] h-[44px] hover:bg-[#1e5292] hover:text-white group" rel="noreferrer">
+                  <Instagram size={14} aria-hidden="true" className="group-hover:text-white" />
                 </a>
               )}
               {contactDetails?.whatsapp && (
-                <a href={`https://wa.me/${contactDetails.whatsapp}`} target="_blank" title="Chat on WhatsApp" className="inline-flex justify-center items-center mr-[10px] text-[12px] text-black border border-[#1e5292] p-[8px] rounded-full transition-all duration-300 w-[30px] h-[30px] hover:bg-[#1e5292] hover:text-white group" rel="noreferrer">
-                  <MessageCircle size={14} className="group-hover:text-white" />
+                <a href={`https://wa.me/${contactDetails.whatsapp}`} target="_blank" aria-label="Chat with us on WhatsApp" className="inline-flex justify-center items-center mr-[10px] text-[12px] text-black border border-[#1e5292] p-[8px] rounded-full transition-all duration-300 w-[44px] h-[44px] hover:bg-[#1e5292] hover:text-white group" rel="noreferrer">
+                  <MessageCircle size={14} aria-hidden="true" className="group-hover:text-white" />
                 </a>
               )}
             </div>

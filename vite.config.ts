@@ -50,7 +50,9 @@ export default defineConfig(async () => {
             // React core — changes rarely, long cache life
             'react-core': ['react', 'react-dom', 'react-router-dom'],
             // MUI is large — isolate it so one change doesn't bust the entire bundle
-            'mui': ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
+            'mui': ['@mui/material', '@emotion/react', '@emotion/styled'],
+            // Separate chunk for icons — very large, only needed on admin/dashboard pages
+            'mui-icons': ['@mui/icons-material'],
             // Icon library
             'lucide': ['lucide-react'],
             // Charting library — only needed on dashboard pages

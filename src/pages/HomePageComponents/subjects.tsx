@@ -21,7 +21,7 @@ const Subjects = () => {
     <section className="subjects-section">
       <div className="subjects-container">
         <div className="subjects-box">
-          <h3>Subjects</h3>
+          <h2>Subjects</h2>
           <ul className="subject-list">
             <li>
               <a href="#" onClick={(e) => handleCategoryClick(e, 'Engineering & Management')}>

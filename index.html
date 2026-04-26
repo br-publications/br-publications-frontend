@@ -3,8 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="Content-Security-Policy" content="%VITE_CSP_POLICY%" />
-    <link rel="icon" type="image/svg+xml" href="./src/assets/BR_logo.png" />
+    <link rel="icon" type="image/png" href="/BR_logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- DNS prefetch for API domain to speed up first API call -->
+    <link rel="dns-prefetch" href="https://api.brpublications.com" />
+    <link rel="preconnect" href="https://api.brpublications.com" crossorigin />
     <!-- Preconnect to Google Fonts — establishes connection early but does NOT block render -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

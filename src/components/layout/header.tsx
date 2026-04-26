@@ -195,6 +195,9 @@ export default function Header({
             <img
               src={logo}
               alt="BR Publications Logo"
+              width="61"
+              height="61"
+              fetchPriority="high"
               className="w-[clamp(30px,4.7vw+5px,61px)] h-[clamp(30px,4.7vw+5px,61px)] rounded-full shrink-0 object-cover"
             />
             <div className="flex flex-col">
@@ -218,11 +221,11 @@ export default function Header({
                 </div>
 
                 <div className="hidden min-[371px]:max-[768px]:flex gap-[8px]">
-                  <button onClick={() => setIsSearchOpen(true)} className="bg-[rgba(255,255,255,0.15)] border border-[rgba(255,255,255,0.3)] rounded-[6px] w-[34px] h-[34px] flex items-center justify-center cursor-pointer hover:bg-white/20 transition">
-                    <img src="https://cdn-icons-png.flaticon.com/512/54/54481.png" alt="Search" className="w-[16px] h-[16px] brightness-0 invert" />
+                  <button onClick={() => setIsSearchOpen(true)} aria-label="Open search" className="bg-[rgba(255,255,255,0.15)] border border-[rgba(255,255,255,0.3)] rounded-[6px] w-[34px] h-[34px] flex items-center justify-center cursor-pointer hover:bg-white/20 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-white" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                   </button>
-                  <a href="/login" className="bg-[rgba(255,255,255,0.15)] border border-[rgba(255,255,255,0.3)] rounded-[6px] w-[34px] h-[34px] flex items-center justify-center cursor-pointer hover:bg-white/20 transition">
-                    <img src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png" alt="Login" className="w-[16px] h-[16px] brightness-0 invert" />
+                  <a href="/login" aria-label="Register or Login" className="bg-[rgba(255,255,255,0.15)] border border-[rgba(255,255,255,0.3)] rounded-[6px] w-[34px] h-[34px] flex items-center justify-center cursor-pointer hover:bg-white/20 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-white" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                   </a>
                 </div>
               </>
@@ -350,8 +353,8 @@ export default function Header({
                 {/* LOGGED IN STATE - Tablet (371px - 768px) */}
                 <div className="hidden min-[371px]:max-[768px]:flex items-center gap-[8px]">
                   <NotificationBell />
-                  <button onClick={() => setIsSearchOpen(true)} className="bg-[rgba(255,255,255,0.15)] border border-[rgba(255,255,255,0.3)] rounded-[6px] w-[34px] h-[34px] flex items-center justify-center cursor-pointer hover:bg-white/20 transition">
-                    <img src="https://cdn-icons-png.flaticon.com/512/54/54481.png" alt="Search" className="w-[14px] h-[14px] brightness-0 invert" />
+                  <button onClick={() => setIsSearchOpen(true)} aria-label="Open search" className="bg-[rgba(255,255,255,0.15)] border border-[rgba(255,255,255,0.3)] rounded-[6px] w-[34px] h-[34px] flex items-center justify-center cursor-pointer hover:bg-white/20 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[14px] h-[14px] text-white" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                   </button>
 
                   <button
@@ -426,8 +429,8 @@ export default function Header({
 
                 {/* LOGGED IN STATE - Mobile (< 370px) */}
                 <div className="hidden max-[370px]:flex items-center gap-[8px]">
-                  <button onClick={() => setIsSearchOpen(true)} className="bg-[rgba(255,255,255,0.15)] border border-[rgba(255,255,255,0.3)] rounded-[6px] w-[30px] h-[30px] flex items-center justify-center cursor-pointer hover:bg-white/20 transition">
-                    <img src="https://cdn-icons-png.flaticon.com/512/54/54481.png" alt="Search" className="w-[14px] h-[14px] brightness-0 invert" />
+                  <button onClick={() => setIsSearchOpen(true)} aria-label="Open search" className="bg-[rgba(255,255,255,0.15)] border border-[rgba(255,255,255,0.3)] rounded-[6px] w-[30px] h-[30px] flex items-center justify-center cursor-pointer hover:bg-white/20 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[14px] h-[14px] text-white" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                   </button>
 
                   <button

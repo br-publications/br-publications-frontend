@@ -116,8 +116,11 @@ export default function BookCarousel() {
                     src={book.image}
                     alt={book.title}
                     className="book-image"
-                    loading="lazy"
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                    fetchPriority={index === 0 ? 'high' : 'auto'}
                     decoding="async"
+                    width="160"
+                    height="220"
                     onError={(e) => {
                       e.currentTarget.src = '/placeholder-book.png';
                     }}
