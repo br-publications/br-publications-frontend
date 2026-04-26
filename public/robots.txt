@@ -1,7 +1,9 @@
+User-agent: bingbot
+Crawl-delay: 10
+
 User-agent: *
 Allow: /
 Disallow: /dashboard/
-Disallow: /api/
 Disallow: /user/register
 Disallow: /user/login
 
