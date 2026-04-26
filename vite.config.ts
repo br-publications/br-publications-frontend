@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import prerender from '@prerenderer/rollup-plugin'
+import Renderer from '@prerenderer/renderer-puppeteer'
 
 // https://vite.dev/config/
 // NOTE: sitemap.xml is generated dynamically by the Express backend (sitemapRoutes.ts).
@@ -37,7 +38,15 @@ export default defineConfig(async () => {
       tailwindcss(),
       prerender({
         routes: routes,
-        renderer: '@prerenderer/renderer-puppeteer',
+        renderer: new Renderer({
+          // Wait 5s after page load so React has time to mount and render
+          renderAfterTime: 5000,
+          // Use modern headless Chrome for better JS execution
+          headless: true,
+          consoleHandler: (route: string, message: any) => {
+            console.log(`[Puppeteer ${route}] ${message.type()}: ${message.text()}`);
+          }
+        }),
         server: {
           port: 5173,
         },
@@ -50,9 +59,7 @@ export default defineConfig(async () => {
             // React core — changes rarely, long cache life
             'react-core': ['react', 'react-dom', 'react-router-dom'],
             // MUI is large — isolate it so one change doesn't bust the entire bundle
-            'mui': ['@mui/material', '@emotion/react', '@emotion/styled'],
-            // Separate chunk for icons — very large, only needed on admin/dashboard pages
-            'mui-icons': ['@mui/icons-material'],
+            'mui': ['@mui/material', '@emotion/react', '@emotion/styled', '@mui/icons-material'],
             // Icon library
             'lucide': ['lucide-react'],
             // Charting library — only needed on dashboard pages

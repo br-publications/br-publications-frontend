@@ -76,7 +76,7 @@ const EditorDetail = lazy(() => import('../pages/dashboard/editor/EditorDetail')
 
 export default function AppRoutes() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<div className="prerender-loading">Loading BR Publications...</div>}>
       <Routes>
         <Route element={<Dashboard />}>
           <Route path="/" element={<Home />} />
