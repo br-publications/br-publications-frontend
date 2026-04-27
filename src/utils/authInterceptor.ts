@@ -23,10 +23,13 @@ export const handleTokenExpiration = () => {
         }
     }));
 
-    // Redirect to home page after a small delay to allow the alert to be shown
-    setTimeout(() => {
-        window.location.href = '/';
-    }, 2000);
+    // Redirect to home page only if we are currently on a dashboard route
+    // Public pages should just show the error alert but stay on the page
+    if (window.location.pathname.startsWith('/dashboard')) {
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 2000);
+    }
 };
 
 /**
@@ -38,9 +41,9 @@ const originalFetch = window.fetch;
 // Endpoints where a 401 is an expected failure mode (e.g. invalid credentials)
 // and should NOT trigger a global logout
 const PUBLIC_ENDPOINTS = [
-    '/api/auth/login', 
-    '/api/auth/register', 
-    '/api/auth/send-otp', 
+    '/api/auth/login',
+    '/api/auth/register',
+    '/api/auth/send-otp',
     '/api/auth/google'
 ];
 
@@ -59,6 +62,15 @@ window.fetch = async (...args) => {
                 return response;
             }
 
+            // Phase 3 Hardening: Don't trigger global logout if NO token was even sent.
+            // This happens on public pages that call auth-optional endpoints.
+            const headers = args[1]?.headers as any;
+            const hasToken = headers?.['Authorization'] || headers?.['authorization'];
+
+            if (!hasToken) {
+                return response;
+            }
+
             // Clone the response to read the body
             const clonedResponse = response.clone();
 
@@ -66,7 +78,6 @@ window.fetch = async (...args) => {
                 const data = await clonedResponse.json();
 
                 // Check if it's a token expiration or invalidity error
-                // We should NOT logout on "No token provided" as it might just be a misconfigured local service call
                 const message = data.message?.toLowerCase() || '';
                 const isTokenError =
                     message.includes('expired') ||
@@ -78,14 +89,11 @@ window.fetch = async (...args) => {
                     console.warn('🔒 Token expired or invalid. Logging out...', message);
                     handleTokenExpiration();
                 } else if (!message.includes('no token') && !message.includes('missing auth token')) {
-                    // Safe default: if it's not a public endpoint, and there is a token but it was rejected,
-                    // we log out by default to be safe, rather than silently ignoring it.
-                    console.warn('⚠️ Received 401 Unauthorized outside public endpoints. Logging out...', message);
+                    // Safe default: if there was a token but it was rejected, we log out.
+                    console.warn('⚠️ Received 401 Unauthorized with token. Logging out...', message);
                     handleTokenExpiration();
                 }
             } catch (error) {
-                // If we can't parse the response, it's safer to logout on 401 to be secure
-                // but usually backend sends JSON for errors.
                 console.warn('🔒 Received 401 Unauthorized and couldn\'t parse body. Logging out...');
                 handleTokenExpiration();
             }

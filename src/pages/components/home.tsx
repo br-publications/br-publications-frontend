@@ -48,8 +48,6 @@ export default function Home() {
   return (
     <>
       <Helmet>
-        <title>BR Publications | Academic Books & Research</title>
-        <meta name="description" content="BR Publications is dedicated to publishing a diverse range of high-quality academic and professional works for readers and researchers with a passion for knowledge across multidisciplinary domains. Our publications span Sciences, Medical Sciences, Engineering, Technology, Humanities and more—reflecting our commitment to academic excellence and intellectual growth." />
         <script type="application/ld+json">{JSON.stringify(orgSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>
       </Helmet>

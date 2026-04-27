@@ -11,15 +11,22 @@ const API_BASE = `${BASE_URL}/api/book-chapter-publishing`;
 
 function getAuthHeaders(): HeadersInit {
     const token = getAuthToken();
-    return { Authorization: token ? `Bearer ${token}` : '' };
+    const headers: HeadersInit = {};
+    if (token) {
+        (headers as any)['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
 }
 
 function getJsonHeaders(): HeadersInit {
     const token = getAuthToken();
-    return {
+    const headers: HeadersInit = {
         'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
     };
+    if (token) {
+        (headers as any)['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
 }
 
 async function handleResponse(response: Response) {
