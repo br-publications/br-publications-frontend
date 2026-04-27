@@ -216,7 +216,7 @@ const ProductBooks: React.FC = () => {
       <div className="error-container">
         <Helmet>
           <title>Error | BR Publications</title>
-          <meta name="robots" content="noindex" />
+          <meta name="robots" content="index, follow" />
         </Helmet>
         <div className="error-message">
           <i className="fas fa-exclamation-triangle"></i>

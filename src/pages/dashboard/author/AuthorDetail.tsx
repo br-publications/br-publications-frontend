@@ -88,7 +88,7 @@ const AuthorDetail: React.FC = () => {
                 <Helmet>
                     <title>Author Profile | BR Publications</title>
                     <meta name="description" content="Loading author profile from BR Publications." />
-                    <meta name="robots" content="noindex" />
+                    <meta name="robots" content="index, follow" />
                 </Helmet>
                 <div className="spinner" />
                 <p>Loading author profile…</p>

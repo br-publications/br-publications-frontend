@@ -88,7 +88,7 @@ const ProductBookChapter: React.FC = () => {
    */
   useEffect(() => {
     const controller = new AbortController();
-    
+
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -127,7 +127,7 @@ const ProductBookChapter: React.FC = () => {
     };
 
     fetchData();
-    
+
     return () => controller.abort();
   }, [selectedCategory, searchQuery, author, publishedAfter, publishedBefore]);
 
@@ -145,7 +145,7 @@ const ProductBookChapter: React.FC = () => {
         filteredBooks.flatMap(b => b.editors || [])
       ));
 
-      const missingNames = allEditorNames.filter(name => 
+      const missingNames = allEditorNames.filter(name =>
         !resolvedEditors.some(re => re.name.trim().toLowerCase() === name.trim().toLowerCase()) &&
         !filteredBooks.some(b => b.editorDetails?.some(ed => ed.name.trim().toLowerCase() === name.trim().toLowerCase()))
       );
@@ -159,11 +159,11 @@ const ProductBookChapter: React.FC = () => {
         const results = await Promise.all(
           namesToResolve.map(name => findEditors({ name }))
         );
-        
+
         if (controller.signal.aborted) return;
 
         const newlyFound = results.flat().filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
-        
+
         if (newlyFound.length > 0) {
           setResolvedEditors(prev => {
             const combined = [...prev, ...newlyFound];
@@ -298,7 +298,7 @@ const ProductBookChapter: React.FC = () => {
       <div className="error-container">
         <Helmet>
           <title>Error | BR ResNova Academic Press</title>
-          <meta name="robots" content="noindex" />
+          <meta name="robots" content="index, follow" />
         </Helmet>
         <div className="error-message">
           <i className="fas fa-exclamation-triangle"></i>
@@ -395,8 +395,8 @@ const ProductBookChapter: React.FC = () => {
                               {Array.isArray(book.editors) && book.editors.length > 0 ? (
                                 book.editors.map((editorName, index) => {
                                   const normalizedTarget = normalizeName(editorName);
-                                  const editorDetail = (book.editorDetails || []).find(ed => normalizeName(ed.name) === normalizedTarget) || 
-                                                       resolvedEditors.find(ed => normalizeName(ed.name) === normalizedTarget);
+                                  const editorDetail = (book.editorDetails || []).find(ed => normalizeName(ed.name) === normalizedTarget) ||
+                                    resolvedEditors.find(ed => normalizeName(ed.name) === normalizedTarget);
                                   return (
                                     <React.Fragment key={index}>
                                       {editorDetail ? (

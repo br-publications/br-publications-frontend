@@ -67,7 +67,7 @@ const EditorDetail: React.FC = () => {
                 <Helmet>
                     <title>Editor Profile | BR Publications</title>
                     <meta name="description" content="Loading editor profile from BR Publications." />
-                    <meta name="robots" content="noindex" />
+                    <meta name="robots" content="index, follow" />
                 </Helmet>
                 <div className="spinner" />
                 <p>Loading editor profile…</p>

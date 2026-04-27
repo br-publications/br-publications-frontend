@@ -301,7 +301,7 @@ export default function ContactUs() {
         <Helmet>
           <title>Contact Us | BR Publications</title>
           <meta name="description" content="Learn about BR Publications, a dedicated academic publisher committed to disseminating high-quality scholarly works and protecting innovation through patent services." />
-          <meta name="robots" content="noindex" />
+          <meta name="robots" content="index, follow" />
         </Helmet>
         <p>Loading contact details...</p>
       </div>
