@@ -270,6 +270,10 @@ const ProductBookChapter: React.FC = () => {
   if (loading) {
     return (
       <div className="loading-container">
+        <Helmet>
+          <title>Book Chapters | BR ResNova Academic Press</title>
+          <meta name="description" content="Explore a comprehensive collection of peer-reviewed book chapters and academic research across various disciplines." />
+        </Helmet>
         <div className="loading-spinner"></div>
         <p>Loading books...</p>
       </div>
@@ -282,6 +286,10 @@ const ProductBookChapter: React.FC = () => {
   if (error) {
     return (
       <div className="error-container">
+        <Helmet>
+          <title>Error | BR ResNova Academic Press</title>
+          <meta name="robots" content="noindex" />
+        </Helmet>
         <div className="error-message">
           <i className="fas fa-exclamation-triangle"></i>
           <h3>Error Loading Books</h3>
