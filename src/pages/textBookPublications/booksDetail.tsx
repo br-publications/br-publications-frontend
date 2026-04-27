@@ -6,7 +6,6 @@ import { contactService, type ContactDetails } from '../../services/contactServi
 import PhoneIcon from '@mui/icons-material/Phone';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import './booksDetail.css';
-import { generateUniqueSlug } from '../../utils/stringUtils';
 import { sanitizeUrl } from '../../utils/urlValidation';
 import { Helmet } from 'react-helmet-async';
 
