@@ -1,10 +1,17 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import './bookPublications.css';
 
 const BookPublications: React.FC = () => {
 
   return (
     <section id="books-page" className="books-page">
+      <Helmet>
+        <title>Book Publications | Academic Publishing & Author Guidelines</title>
+        <meta name="description" content="Publish your research book, technical handbook, or conference proceedings with BR Publications. Comprehensive publishing solutions including ISBN, DOI, and global indexing support." />
+        <meta name="keywords" content="book publication, academic publishing, author guidelines, ISBN registration, DOI registration, research book publishing" />
+        <link rel="canonical" href="https://www.brpublications.com/book-publications" />
+      </Helmet>
       <section className="books-hero">
         <h1>Book Publications</h1>
       </section>

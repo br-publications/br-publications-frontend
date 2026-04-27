@@ -5,10 +5,17 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import ScienceIcon from '@mui/icons-material/Science';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { Helmet } from 'react-helmet-async';
 
 export default function AboutUs() {
   return (
     <div className="font-sans text-[#333333] leading-[1.6] bg-white overflow-x-hidden">
+      <Helmet>
+        <title>About Us | BR Publications</title>
+        <meta name="description" content="Learn about BR Publications, a dedicated academic publisher committed to disseminating high-quality scholarly works and protecting innovation through patent services." />
+        <meta name="keywords" content="about BR Publications, academic publisher, scholarly works, research excellence, patent services" />
+        <link rel="canonical" href="https://www.brpublications.com/about" />
+      </Helmet>
 
       {/* Hero Section */}
       <header className="bg-[#1e5292] text-white py-[50px] px-[20px] text-center border-b-[4px] border-[#164175] w-full">

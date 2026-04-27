@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import {
   FileText, Copyright, Stamp, Check, User, Globe,
   ClipboardList, Shield, Gavel, Target, Search, FileSignature
@@ -25,6 +26,12 @@ const IPR = () => {
 
   return (
     <div className="ipr-page-wrapper">
+      <Helmet>
+        <title>Intellectual Property Rights (IPR) Services | Patents, Copyrights, Trademarks</title>
+        <meta name="description" content="Professional IPR services by BR Publications. Expert support for patent filing, copyright registration, and trademark protection to safeguard your academic and technical innovations." />
+        <meta name="keywords" content="patent filing, copyright registration, trademark protection, intellectual property rights, IPR services, innovation protection" />
+        <link rel="canonical" href="https://www.brpublications.com/ipr" />
+      </Helmet>
       <header className="ipr-hero">
         <h1>Intellectual Property Rights Services</h1>
         <p>Protecting Your Innovations, Securing Your Future</p>

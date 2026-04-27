@@ -212,53 +212,23 @@ const BookChapterDetail: React.FC = () => {
     });
   };
 
-  /**
-   * Render loading state
-   */
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading book details...</p>
-      </div>
-    );
-  }
-
-  /**
-   * Render error state
-   */
-  if (error || !book) {
-    return (
-      <div className="error-container">
-        <div className="error-message">
-          <i className="fas fa-exclamation-triangle"></i>
-          <h3>Book Not Found</h3>
-          <p>{error || 'The requested book could not be found.'}</p>
-          <button onClick={handleBackClick} className="back-button">
-            Back to Products
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Parse tab content
-  const synopsisContent = parseSectionContent(book.synopsis);
-  const scopeContent = parseSectionContent(book.scope);
-  const tocContent = parseSectionContent(book.tableContents);
-  const archivesContent = parseSectionContent(book.archives);
-
-  const slug = generateUniqueSlug(book.isbn, book.releaseDate);
-  const canonicalPath = `/bookchapter/${book.id}/${slug}`;
-  const editorsStr = Array.isArray(book.editors) && book.editors.length > 0
+  // SEO and Metadata logic
+  // SEO and Metadata logic
+  const displayTitle = book 
+    ? `${book.title} ${book.editors && book.editors.length > 0 ? `by ${book.editors.join(', ')}` : book.author ? `by ${book.author}` : ''}` 
+    : (id ? `Book Details | BR Publications` : 'Book Details');
+  const editorsStr = book && Array.isArray(book.editors) && book.editors.length > 0
     ? `Editors: ${book.editors.join(', ')}.`
-    : `By ${book.author}.`;
-  const description = book.synopsis
-    ? Object.values(book.synopsis).join(' ').replace(/<[^>]+>/g, '').slice(0, 150)
-    : `${book.title}. ${editorsStr} Published by BR ResNova Academic Press.`;
-  const canonicalUrlFull = `https://www.brpublications.com${canonicalPath}`;
+    : book?.author ? `By ${book.author}.` : '';
 
-  const schemaData = {
+  const metaDescription = book?.synopsis
+    ? Object.values(book.synopsis).join(' ').replace(/<[^>]+>/g, '').slice(0, 150)
+    : book ? `${book.title}. ${editorsStr} Published by BR ResNova Academic Press.` : 'Detailed information about academic book chapters and research publications from BR Publications.';
+
+  const slug = book ? generateUniqueSlug(book.isbn, book.releaseDate) : (id ? `id=${id}` : '');
+  const canonicalUrlFull = `https://www.brpublications.com/bookchapter/${id}/${slug}`;
+
+  const schemaData = book ? {
     "@context": "https://schema.org",
     "@type": "Book",
     "name": book.title,
@@ -271,25 +241,70 @@ const BookChapterDetail: React.FC = () => {
     },
     "image": book.coverImage,
     "url": canonicalUrlFull,
-    "description": description,
+    "description": metaDescription,
     "inLanguage": "en",
     "numberOfPages": book.chapters?.length,
     ...(book.doi ? { 'identifier': book.doi } : {})
-  };
+  } : null;
+
+  /**
+   * Render loading state
+   */
+  if (loading && !book) {
+    return (
+      <div className="loading-container">
+        <Helmet>
+          <title>{displayTitle}</title>
+          <meta name="description" content={metaDescription} />
+          <link rel="canonical" href={canonicalUrlFull} />
+        </Helmet>
+        <div className="loading-spinner"></div>
+        <p>Loading book details...</p>
+      </div>
+    );
+  }
+
+  /**
+   * Render error state
+   */
+  if (error || !book) {
+    return (
+      <div className="error-container">
+        <Helmet>
+          <title>Book Not Found | BR Publications</title>
+          <meta name="robots" content="noindex, follow" />
+        </Helmet>
+        <div className="error-message">
+          <i className="fas fa-exclamation-triangle"></i>
+          <h3>Book Not Found</h3>
+          <p>{error || 'The requested book could not be found.'}</p>
+          <button onClick={handleBackClick} className="back-button">
+            Back to Products
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Tab contents parsed
+  const synopsisContent = parseSectionContent(book.synopsis);
+  const scopeContent = parseSectionContent(book.scope);
+  const tocContent = parseSectionContent(book.tableContents);
+  const archivesContent = parseSectionContent(book.archives);
 
   return (
     <main className="content">
       <Helmet>
-        <title>{book.title} | BR ResNova Academic Press</title>
-        <meta name="description" content={description} />
+        <title>{displayTitle} | BR ResNova Academic Press</title>
+        <meta name="description" content={metaDescription} />
         <meta name="keywords" content={`${book.title}, ${(book.editors ?? []).join(', ')}, book chapter, ${book.isbn}, BR Publications, academic research`} />
-        <meta property="og:title" content={`${book.title} | BR ResNova Academic Press`} />
-        <meta property="og:description" content={description} />
+        <meta property="og:title" content={`${displayTitle} | BR ResNova Academic Press`} />
+        <meta property="og:description" content={metaDescription} />
         <meta property="og:image" content={book.coverImage} />
         <meta property="og:url" content={canonicalUrlFull} />
         <meta property="og:type" content="book" />
         <link rel="canonical" href={canonicalUrlFull} />
-        <script type="application/ld+json">{JSON.stringify(schemaData)}</script>
+        {schemaData && <script type="application/ld+json">{JSON.stringify(schemaData)}</script>}
       </Helmet>
       <section id="resNovaPage" className="resNova-page">
         {/* Hero Section */}

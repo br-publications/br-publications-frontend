@@ -130,44 +130,23 @@ const ChapterDetail: React.FC = () => {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="loading-container">
-                <div className="loading-spinner"></div>
-                <p>Loading chapter details...</p>
-            </div>
-        );
-    }
-
-    if (error || !book || !chapter) {
-        return (
-            <div className="error-container">
-                <div className="error-message">
-                    <i className="fas fa-exclamation-circle"></i>
-                    <p>{error || 'Chapter details could not be found.'}</p>
-                    <button onClick={() => navigate(-1)} className="back-button">
-                        Go Back
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
-    const canonicalPath = `/book/${book.id}/chapter/${chapter.chapterNumber}`;
-    const authorNames = chapter.authorDetails && chapter.authorDetails.length > 0
+    // SEO and Metadata logic
+    const authorNames = chapter?.authorDetails && chapter.authorDetails.length > 0
         ? chapter.authorDetails.map(a => a.name).join(', ')
-        : chapter.authors || '';
-    const description = chapter.abstract
-        ? chapter.abstract.slice(0, 155)
-        : `${chapter.title} — a chapter from "${book.title}" published by BR Publications.`;
-    const canonicalUrlFull = `https://www.brpublications.com${canonicalPath}`;
+        : chapter?.authors || '';
 
-    const schemaData = {
+    const displayTitle = (chapter && book) ? `${chapter.title} by ${authorNames} | ${book.title} — BR Publications` : (id && chapterId ? `Chapter ${chapterId} Details | BR Publications` : 'Chapter Details');
+    const metaDescription = chapter?.abstract
+        ? chapter.abstract.slice(0, 155)
+        : (chapter && book) ? `${chapter.title} — a chapter from "${book.title}" published by BR Publications.` : 'Detailed information about academic research chapters from BR Publications.';
+    const canonicalUrlFull = (book && chapter) ? `https://www.brpublications.com/book/${book.id}/chapter/${chapter.chapterNumber}` : `https://www.brpublications.com/book/${id}/chapter/${chapterId}`;
+
+    const schemaData = (book && chapter) ? {
         '@context': 'https://schema.org',
         '@type': 'ScholarlyArticle',
         'name': chapter.title,
         'headline': chapter.title,
-        'description': description,
+        'description': metaDescription,
         'author': chapter.authorDetails && chapter.authorDetails.length > 0
             ? chapter.authorDetails.map(a => ({
                 '@type': 'Person',
@@ -192,21 +171,55 @@ const ChapterDetail: React.FC = () => {
         'inLanguage': 'en',
         ...(chapter.doi ? { 'identifier': { '@type': 'PropertyValue', 'propertyID': 'DOI', 'value': chapter.doi } } : {}),
         ...(chapter.pages ? { 'pagination': chapter.pages } : {}),
-    };
+    } : null;
+
+    if (loading && (!book || !chapter)) {
+        return (
+            <div className="loading-container">
+                <Helmet>
+                    <title>{displayTitle}</title>
+                    <meta name="description" content={metaDescription} />
+                    <link rel="canonical" href={canonicalUrlFull} />
+                </Helmet>
+                <div className="loading-spinner"></div>
+                <p>Loading chapter details...</p>
+            </div>
+        );
+    }
+
+    if (error || !book || !chapter) {
+        return (
+            <div className="error-container">
+                <Helmet>
+                    <title>Chapter Not Found | BR Publications</title>
+                    <meta name="robots" content="noindex, follow" />
+                </Helmet>
+                <div className="error-message">
+                    <i className="fas fa-exclamation-circle"></i>
+                    <p>{error || 'Chapter details could not be found.'}</p>
+                    <button onClick={() => navigate(-1)} className="back-button">
+                        Go Back
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // Metadata handled above
 
     return (
         <main className="content chapter-detail-page">
             <Helmet>
-                <title>{chapter.title} | {book.title} — BR Publications</title>
-                <meta name="description" content={description} />
+                <title>{displayTitle}</title>
+                <meta name="description" content={metaDescription} />
                 <meta name="keywords" content={`${chapter.title}, ${authorNames}, ${book.title}, ${book.isbn}, book chapter, academic research, BR Publications`} />
-                <meta property="og:title" content={`${chapter.title} | ${book.title}`} />
-                <meta property="og:description" content={description} />
+                <meta property="og:title" content={displayTitle} />
+                <meta property="og:description" content={metaDescription} />
                 <meta property="og:image" content={book.coverImage} />
                 <meta property="og:url" content={canonicalUrlFull} />
                 <meta property="og:type" content="article" />
                 <link rel="canonical" href={canonicalUrlFull} />
-                <script type="application/ld+json">{JSON.stringify(schemaData)}</script>
+                {schemaData && <script type="application/ld+json">{JSON.stringify(schemaData)}</script>}
             </Helmet>
             <section className="resNova-page">
                 <div className="breadcrumbs">

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import './resNova.css';
 
 const ResNova: React.FC = () => {
@@ -7,6 +8,12 @@ const ResNova: React.FC = () => {
 
   return (
     <main className="content">
+      <Helmet>
+        <title>ResNova Academic Press | BR Publications</title>
+        <meta name="description" content="ResNova Academic Press is a premier platform dedicated to advancing scholarly communication, fostering innovation, and disseminating high-quality academic knowledge globally." />
+        <meta name="keywords" content="ResNova Academic Press, scholarly communication, research excellence, academic publishing" />
+        <link rel="canonical" href="https://www.brpublications.com/resnova" />
+      </Helmet>
       {/* ResNova Page */}
       <section id="resNovaPage" className="resNova-page">
         <section className="resNova-hero">

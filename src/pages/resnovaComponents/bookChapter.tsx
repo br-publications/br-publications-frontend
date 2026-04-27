@@ -4,6 +4,7 @@ import { findEditors, type PublishedEditor } from '../../services/bookChapterPub
 import type { Book } from '../../types/bookTypes';
 import bookChapterService from '../../services/bookChapterService';
 import { generateUniqueSlug } from '../../utils/stringUtils';
+import { Helmet } from 'react-helmet-async';
 import './bookChapter.css';
 
 const ProductBookChapter: React.FC = () => {
@@ -295,6 +296,12 @@ const ProductBookChapter: React.FC = () => {
 
   return (
     <main className="content">
+      <Helmet>
+        <title>Book Chapters | BR ResNova Academic Press</title>
+        <meta name="description" content="Explore a comprehensive collection of peer-reviewed book chapters and academic research across various disciplines including Engineering, Management, Science, and Technology." />
+        <meta name="keywords" content="book chapters, academic research, peer-reviewed publications, ResNova Academic Press, scholarly chapters" />
+        <link rel="canonical" href="https://www.brpublications.com/bookchapters" />
+      </Helmet>
       <section id="productBookPage" className="productBook-page">
         {/* Hero Section */}
         <section className="productBook-hero">

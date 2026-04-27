@@ -6,13 +6,18 @@ import Renderer from '@prerenderer/renderer-puppeteer'
 
 // https://vite.dev/config/
 // NOTE: sitemap.xml is generated dynamically by the Express backend (sitemapRoutes.ts).
-const toSlug = (text: string): string =>
-  text.toString().toLowerCase().trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w-]+/g, '')
-    .replace(/--+/g, '-')
-    .replace(/^-+/, '')
-    .replace(/-+$/, '');
+const generateUniqueSlug = (isbn: string, releaseDate?: string): string => {
+  const combined = `${isbn}${releaseDate || ''}`;
+  let hash = 0;
+  for (let i = 0; i < combined.length; i++) {
+    const char = combined.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  const positiveHash = Math.abs(hash);
+  const sixDigit = (positiveHash % 1000000).toString().padStart(6, '0');
+  return `uid=${sixDigit}`;
+};
 
 export default defineConfig(async () => {
   const routes = [
@@ -33,7 +38,7 @@ export default defineConfig(async () => {
       const list = json.data?.books || json.data || json.books || [];
       if (Array.isArray(list)) {
         list.forEach((item: any) => {
-          if (item?.id && item?.title) routes.push(`/book/${item.id}/${toSlug(item.title)}`);
+          if (item?.id) routes.push(`/book/${item.id}`);
         });
       }
     }
@@ -49,7 +54,10 @@ export default defineConfig(async () => {
       const list = json.data?.chapters || json.data || json.chapters || [];
       if (Array.isArray(list)) {
         list.forEach((item: any) => {
-          if (item?.id && item?.title) routes.push(`/bookchapter/${item.id}/${toSlug(item.title)}`);
+          if (item?.id && item?.isbn) {
+            const slug = generateUniqueSlug(item.isbn, item.releaseDate);
+            routes.push(`/bookchapter/${item.id}/${slug}`);
+          }
         });
       }
     }

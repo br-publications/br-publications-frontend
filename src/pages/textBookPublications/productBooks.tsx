@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import type { Book } from '../../types/bookTypes';
 import productBooksService from '../../services/productbooksservice';
 import { generateUniqueSlug } from '../../utils/stringUtils';
+import { Helmet } from 'react-helmet-async';
 import './productBooks.css';
 
 const ProductBooks: React.FC = () => {
@@ -132,8 +133,7 @@ const ProductBooks: React.FC = () => {
    * Handle book preview/details navigation
    */
   const handleBookClick = (book: Book) => {
-    const slug = generateUniqueSlug(book.isbn, book.releaseDate);
-    navigate(`/book/${book.id}/${slug}`, {
+    navigate(`/book/${book.id}`, {
       state: { book }
     });
   };
@@ -215,6 +215,12 @@ const ProductBooks: React.FC = () => {
 
   return (
     <main className="content">
+      <Helmet>
+        <title>Academic Books | BR Publications</title>
+        <meta name="description" content="Browse our selection of peer-reviewed academic books, textbooks, and research monographs across various scientific and professional fields." />
+        <meta name="keywords" content="academic books, textbooks, research monographs, scholarly publishing, BR Publications" />
+        <link rel="canonical" href="https://www.brpublications.com/books" />
+      </Helmet>
       <section id="productBookPage" className="productBook-page">
         {/* Hero Section */}
         <section className="productBook-hero">

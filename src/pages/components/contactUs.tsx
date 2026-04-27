@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -294,6 +295,12 @@ export default function ContactUs() {
 
   return (
     <div className="contact_container">
+      <Helmet>
+        <title>Contact Us | BR Publications</title>
+        <meta name="description" content="Get in touch with BR Publications for inquiries regarding book chapters, academic publications, or our patent filing and consultation services." />
+        <meta name="keywords" content="contact BR Publications, academic inquiry, publication support, patent consultation" />
+        <link rel="canonical" href="https://www.brpublications.com/contact" />
+      </Helmet>
 
       {/* Hero Section */}
       <header className="contact_hero">

@@ -96,12 +96,45 @@ const BooksDetail: React.FC = () => {
     });
   };
 
+  // SEO and Metadata logic
+  const displayTitle = book 
+    ? `${book.title} by ${book.author} | BR Publications` 
+    : (id ? `Book Details | BR Publications` : 'Book Details');
+  const metaDescription = book?.synopsis
+    ? Object.values(book.synopsis).join(' ').replace(/<[^>]+>/g, '').slice(0, 150)
+    : book ? `${book.title} by ${book.author} — published by BR Publications.` : 'Detailed information about academic books and research publications from BR Publications.';
+
+  const canonicalUrlFull = `https://www.brpublications.com/book/${id}`;
+
+  const schemaData = book ? {
+    '@context': 'https://schema.org',
+    '@type': 'Book',
+    'name': book.title,
+    'author': { '@type': 'Person', 'name': book.author },
+    'isbn': book.isbn,
+    'publisher': {
+      '@type': 'Organization',
+      'name': 'BR Publications',
+      'url': 'https://www.brpublications.com'
+    },
+    'image': book.coverImage,
+    'url': canonicalUrlFull,
+    'description': metaDescription,
+    'inLanguage': 'en',
+    ...(book.publishedDate ? { 'datePublished': book.publishedDate } : {})
+  } : null;
+
   /**
    * Render loading state
    */
-  if (loading) {
+  if (loading && !book) {
     return (
       <div className="loading-container">
+        <Helmet>
+          <title>{displayTitle}</title>
+          <meta name="description" content={metaDescription} />
+          <link rel="canonical" href={canonicalUrlFull} />
+        </Helmet>
         <div className="loading-spinner"></div>
         <p>Loading details...</p>
       </div>
@@ -114,6 +147,10 @@ const BooksDetail: React.FC = () => {
   if (error || !book) {
     return (
       <div className="error-container">
+        <Helmet>
+          <title>Book Not Found | BR Publications</title>
+          <meta name="robots" content="noindex, follow" />
+        </Helmet>
         <div className="error-message">
           <i className="fas fa-exclamation-triangle"></i>
           <h3>Book Not Found</h3>
@@ -128,44 +165,21 @@ const BooksDetail: React.FC = () => {
 
 
 
-  const slug = generateUniqueSlug(book.isbn, book.releaseDate);
-  const canonicalPath = `/book/${book.id}/${slug}`;
-  const canonicalUrlFull = `https://www.brpublications.com${canonicalPath}`;
-  const synopsisText = book.synopsis
-    ? Object.values(book.synopsis).join(' ').replace(/<[^>]+>/g, '').slice(0, 150)
-    : `${book.title} by ${book.author} — published by BR Publications.`;
-
-  const schemaData = {
-    '@context': 'https://schema.org',
-    '@type': 'Book',
-    'name': book.title,
-    'author': { '@type': 'Person', 'name': book.author },
-    'isbn': book.isbn,
-    'publisher': {
-      '@type': 'Organization',
-      'name': 'BR Publications',
-      'url': 'https://www.brpublications.com'
-    },
-    'image': book.coverImage,
-    'url': canonicalUrlFull,
-    'description': synopsisText,
-    'inLanguage': 'en',
-    ...(book.publishedDate ? { 'datePublished': book.publishedDate } : {})
-  };
+  // Metadata handled above
 
   return (
     <main className="content">
       <Helmet>
-        <title>{book.title} | BR Publications</title>
-        <meta name="description" content={synopsisText} />
+        <title>{displayTitle} | BR Publications</title>
+        <meta name="description" content={metaDescription} />
         <meta name="keywords" content={`${book.title}, ${book.author ?? ''}, academic book, ${book.isbn}, BR Publications, peer-reviewed`} />
-        <meta property="og:title" content={`${book.title} | BR Publications`} />
-        <meta property="og:description" content={synopsisText} />
+        <meta property="og:title" content={displayTitle} />
+        <meta property="og:description" content={metaDescription} />
         <meta property="og:image" content={book.coverImage} />
         <meta property="og:url" content={canonicalUrlFull} />
         <meta property="og:type" content="book" />
         <link rel="canonical" href={canonicalUrlFull} />
-        <script type="application/ld+json">{JSON.stringify(schemaData)}</script>
+        {schemaData && <script type="application/ld+json">{JSON.stringify(schemaData)}</script>}
       </Helmet>
       <section id="resNovaPage" className="resNova-page">
         {/* Hero Section */}
