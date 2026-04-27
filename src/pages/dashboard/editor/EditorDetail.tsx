@@ -81,7 +81,7 @@ const EditorDetail: React.FC = () => {
             <div className="editor-detail-page error">
                 <Helmet>
                     <title>Editor Not Found | BR Publications</title>
-                    <meta name="robots" content="noindex, follow" />
+                    <meta name="robots" content="index, follow" />
                 </Helmet>
                 <h2>Error</h2>
                 <p>{error || 'Editor not found'}</p>

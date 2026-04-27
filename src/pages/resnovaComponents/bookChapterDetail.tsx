@@ -284,7 +284,7 @@ const BookChapterDetail: React.FC = () => {
       <div className="error-container">
         <Helmet>
           <title>Book Not Found | BR Publications</title>
-          <meta name="robots" content="noindex, follow" />
+          <meta name="robots" content="index, follow" />
         </Helmet>
         <div className="error-message">
           <i className="fas fa-exclamation-triangle"></i>

@@ -102,7 +102,7 @@ const AuthorDetail: React.FC = () => {
             <div className="author-detail-page error">
                 <Helmet>
                     <title>Author Not Found | BR Publications</title>
-                    <meta name="robots" content="noindex, follow" />
+                    <meta name="robots" content="index, follow" />
                 </Helmet>
                 <h2>Error</h2>
                 <p>{error || 'Author not found'}</p>
