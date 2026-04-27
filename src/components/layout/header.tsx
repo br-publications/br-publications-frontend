@@ -15,7 +15,7 @@ interface HeaderProps {
   userEmail?: string;
   userRole?: string;
   userProfilePicture?: string;
-  onLogout?: () => void;
+  onLogout?: (explicit?: boolean) => void;
 }
 
 export default function Header({
@@ -144,7 +144,7 @@ export default function Header({
     setIsProfileMenuOpen(false);
     setIsMenuOpen(false);
     if (onLogout) {
-      onLogout();
+      onLogout(true);
     }
   };
 

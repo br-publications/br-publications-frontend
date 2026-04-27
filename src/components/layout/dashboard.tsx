@@ -81,8 +81,7 @@ export default function Dashboard() {
     };
   }, [location.pathname]); // Re-check when route changes
 
-  const handleLogout = async () => {
-
+  const handleLogout = async (explicit = false) => {
     try {
       await authService.logout();
     } catch {
@@ -92,14 +91,15 @@ export default function Dashboard() {
       removeAuthToken();
 
       // Update state immediately
-      // Update state immediately
       setUser({ isLoggedIn: false, userName: '', email: '', role: 'user', profilePicture: '' });
 
       // Dispatch custom event for other components
       window.dispatchEvent(new Event('auth-changed'));
 
-      // Navigate to home
-      navigate('/', { replace: true });
+      // Only navigate to home if it's an explicit logout or we're in a dashboard route
+      if (explicit || location.pathname.startsWith('/dashboard')) {
+        navigate('/', { replace: true });
+      }
     }
   };
 
