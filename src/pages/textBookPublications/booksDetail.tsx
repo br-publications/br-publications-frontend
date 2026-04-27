@@ -58,6 +58,8 @@ const BooksDetail: React.FC = () => {
           }
         } else if (!stateBook) {
           setError('Invalid book ID');
+          setLoading(false);
+          return;
         }
 
       } catch (err) {
@@ -70,6 +72,16 @@ const BooksDetail: React.FC = () => {
 
     loadData();
   }, [id, location.state]);
+
+  /**
+   * Dispatch prerender-ready event so Puppeteer snapshots the page
+   * only after data is loaded and page-specific metadata is set.
+   */
+  useEffect(() => {
+    if (!loading) {
+      setTimeout(() => document.dispatchEvent(new Event('prerender-ready')), 300);
+    }
+  }, [loading]);
 
   /**
    * Handle back navigation
@@ -96,8 +108,8 @@ const BooksDetail: React.FC = () => {
   };
 
   // SEO and Metadata logic
-  const displayTitle = book 
-    ? `${book.title} by ${book.author} | BR Publications` 
+  const displayTitle = book
+    ? `${book.title} by ${book.author} | BR Publications`
     : (id ? `Book Details | BR Publications` : 'Book Details');
   const metaDescription = book?.synopsis
     ? Object.values(book.synopsis).join(' ').replace(/<[^>]+>/g, '').slice(0, 150)
@@ -169,7 +181,8 @@ const BooksDetail: React.FC = () => {
   return (
     <main className="content">
       <Helmet>
-        <title>{displayTitle} | BR Publications</title>
+        <title>{displayTitle}</title>
+        {/* NOTE: displayTitle already includes "| BR Publications" — do NOT add it again here */}
         <meta name="description" content={metaDescription} />
         <meta name="keywords" content={`${book.title}, ${book.author ?? ''}, academic book, ${book.isbn}, BR Publications, peer-reviewed`} />
         <meta property="og:title" content={displayTitle} />

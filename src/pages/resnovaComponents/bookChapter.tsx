@@ -74,6 +74,16 @@ const ProductBookChapter: React.FC = () => {
   }, []);
 
   /**
+   * Dispatch prerender-ready event so Puppeteer snapshots the page
+   * only after the list data is loaded.
+   */
+  useEffect(() => {
+    if (!loading) {
+      setTimeout(() => document.dispatchEvent(new Event('prerender-ready')), 300);
+    }
+  }, [loading]);
+
+  /**
    * Fetch books when filters change
    */
   useEffect(() => {

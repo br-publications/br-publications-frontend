@@ -10,8 +10,13 @@ const Subjects = lazy(() => import("../HomePageComponents/subjects"));
 const TextBookCarousel = lazy(() => import("../HomePageComponents/textBookCarousel"));
 const BookCarousel = lazy(() => import("../HomePageComponents/bookCarousel"));
 
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 export default function Home() {
+  // For static pages like Home, dispatch prerender-ready immediately on mount
+  useEffect(() => {
+    setTimeout(() => document.dispatchEvent(new Event('prerender-ready')), 300);
+  }, []);
   const orgSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -48,6 +53,16 @@ export default function Home() {
   return (
     <>
       <Helmet>
+        <title>BR Publications | Academic Books &amp; Research</title>
+        <meta name="description" content="BR Publications is dedicated to publishing a diverse range of high-quality academic and professional works across multidisciplinary domains including Sciences, Engineering, and Humanities." />
+        <meta name="keywords" content="academic books, book chapters, research publications, BR Publications, academic publisher" />
+        <meta property="og:title" content="BR Publications | Academic Books & Research" />
+        <meta property="og:description" content="BR Publications is dedicated to publishing a diverse range of high-quality academic and professional works across multidisciplinary domains including Sciences, Engineering, and Humanities." />
+        <meta property="og:site_name" content="BR Publications" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.brpublications.com/" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://www.brpublications.com/" />
         <script type="application/ld+json">{JSON.stringify(orgSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>
       </Helmet>

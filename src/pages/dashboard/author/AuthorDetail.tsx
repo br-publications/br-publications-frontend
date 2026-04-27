@@ -60,8 +60,18 @@ const AuthorDetail: React.FC = () => {
             }
         };
         if (id) fetchAuthorDetails();
+        else setLoading(false);
     }, [id]);
 
+    /**
+     * Dispatch prerender-ready event so Puppeteer snapshots the page
+     * only after data is loaded and page-specific metadata is set.
+     */
+    useEffect(() => {
+        if (!loading) {
+            setTimeout(() => document.dispatchEvent(new Event('prerender-ready')), 300);
+        }
+    }, [loading]);
 
 
     /* ── Scroll-to-top visibility ── */
@@ -75,6 +85,11 @@ const AuthorDetail: React.FC = () => {
     if (loading) {
         return (
             <div className="author-detail-page loading">
+                <Helmet>
+                    <title>Author Profile | BR Publications</title>
+                    <meta name="description" content="Loading author profile from BR Publications." />
+                    <meta name="robots" content="noindex" />
+                </Helmet>
                 <div className="spinner" />
                 <p>Loading author profile…</p>
             </div>
@@ -85,6 +100,10 @@ const AuthorDetail: React.FC = () => {
     if (error || !author) {
         return (
             <div className="author-detail-page error">
+                <Helmet>
+                    <title>Author Not Found | BR Publications</title>
+                    <meta name="robots" content="noindex, follow" />
+                </Helmet>
                 <h2>Error</h2>
                 <p>{error || 'Author not found'}</p>
                 <button onClick={() => navigate(-1)} className="back-btn">

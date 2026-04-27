@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import './bookPublications.css';
 
 const BookPublications: React.FC = () => {
+  useEffect(() => {
+    setTimeout(() => document.dispatchEvent(new Event('prerender-ready')), 300);
+  }, []);
 
   return (
     <section id="books-page" className="books-page">

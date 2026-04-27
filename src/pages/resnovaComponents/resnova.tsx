@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import './resNova.css';
 
 const ResNova: React.FC = () => {
-
+  useEffect(() => {
+    setTimeout(() => document.dispatchEvent(new Event('prerender-ready')), 300);
+  }, []);
 
   return (
     <main className="content">

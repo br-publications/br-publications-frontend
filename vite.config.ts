@@ -63,6 +63,36 @@ export default defineConfig(async () => {
     }
   } catch (e) { console.warn('Book chapters fetch failed:', e); }
 
+  try {
+    // Fetch authors for pre-rendering — so Google sees real author metadata, not a JS shell
+    const authRes = await fetch('https://api.brpublications.com/api/book-chapter-publishing/authors?limit=500');
+    if (authRes.ok) {
+      const json = (await authRes.json()) as any;
+      const list = json.data || json.authors || [];
+      if (Array.isArray(list)) {
+        list.forEach((item: any) => {
+          if (item?.id) routes.push(`/author/${item.id}`);
+        });
+        console.log(`Queued ${list.length} author routes for pre-rendering`);
+      }
+    }
+  } catch (e) { console.warn('Authors fetch failed:', e); }
+
+  try {
+    // Fetch editors for pre-rendering — so Google sees real editor metadata, not a JS shell
+    const edRes = await fetch('https://api.brpublications.com/api/book-chapter-publishing/editors?limit=500');
+    if (edRes.ok) {
+      const json = (await edRes.json()) as any;
+      const list = json.data || json.editors || [];
+      if (Array.isArray(list)) {
+        list.forEach((item: any) => {
+          if (item?.id) routes.push(`/editor/${item.id}`);
+        });
+        console.log(`Queued ${list.length} editor routes for pre-rendering`);
+      }
+    }
+  } catch (e) { console.warn('Editors fetch failed:', e); }
+
   return {
     plugins: [
       react(),
@@ -70,10 +100,12 @@ export default defineConfig(async () => {
       prerender({
         routes: routes,
         renderer: new Renderer({
-          // Wait 5s after page load so React has time to mount and render
-          renderAfterTime: 5000,
-          // Use modern headless Chrome for better JS execution
+          // Wait for a custom DOM event to guarantee dynamic API data has loaded.
+          // This ensures we capture the fully populated metadata instead of loading states.
+          renderAfterDocumentEvent: 'prerender-ready',
+          timeout: 60000,
           headless: true,
+          args: ['--no-sandbox', '--disable-setuid-sandbox'],
           consoleHandler: (route: string, message: any) => {
             console.log(`[Puppeteer ${route}] ${message.type()}: ${message.text()}`);
           }

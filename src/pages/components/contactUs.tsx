@@ -158,6 +158,12 @@ export default function ContactUs() {
     checkAdminRole();
   }, []);
 
+  useEffect(() => {
+    if (!loading) {
+      setTimeout(() => document.dispatchEvent(new Event('prerender-ready')), 300);
+    }
+  }, [loading]);
+
   const fetchContactDetails = async () => {
     try {
       setLoading(true);
@@ -290,7 +296,16 @@ export default function ContactUs() {
   };
 
   if (loading) {
-    return <div className="contact_container"><p>Loading contact details...</p></div>;
+    return (
+      <div className="contact_container">
+        <Helmet>
+          <title>Contact Us | BR Publications</title>
+          <meta name="description" content="Learn about BR Publications, a dedicated academic publisher committed to disseminating high-quality scholarly works and protecting innovation through patent services." />
+          <meta name="robots" content="noindex" />
+        </Helmet>
+        <p>Loading contact details...</p>
+      </div>
+    );
   }
 
   return (

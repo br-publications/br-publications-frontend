@@ -103,6 +103,16 @@ const BookChapterDetail: React.FC = () => {
   }, [id, location.state]);
 
   /**
+   * Dispatch prerender-ready event so Puppeteer snapshots the page
+   * only after data is loaded and page-specific metadata is set.
+   */
+  useEffect(() => {
+    if (!loading) {
+      setTimeout(() => document.dispatchEvent(new Event('prerender-ready')), 300);
+    }
+  }, [loading]);
+
+  /**
    * Dynamic ID Resolution for Editors
    */
   useEffect(() => {
@@ -214,9 +224,11 @@ const BookChapterDetail: React.FC = () => {
 
   // SEO and Metadata logic
   // SEO and Metadata logic
-  const displayTitle = book 
-    ? `${book.title} ${book.editors && book.editors.length > 0 ? `by ${book.editors.join(', ')}` : book.author ? `by ${book.author}` : ''}` 
-    : (id ? `Book Details | BR Publications` : 'Book Details');
+  // Build a consistent displayTitle that ALWAYS includes the brand suffix.
+  // Every <Helmet> in this component just uses {displayTitle} — never append the suffix again.
+  const displayTitle = book
+    ? `${book.title}${book.editors && book.editors.length > 0 ? ` by ${book.editors.join(', ')}` : book.author ? ` by ${book.author}` : ''} | BR ResNova Academic Press`
+    : (id ? `Book Chapter Details | BR Publications` : 'Book Chapter Details | BR Publications');
   const editorsStr = book && Array.isArray(book.editors) && book.editors.length > 0
     ? `Editors: ${book.editors.join(', ')}.`
     : book?.author ? `By ${book.author}.` : '';
@@ -295,10 +307,11 @@ const BookChapterDetail: React.FC = () => {
   return (
     <main className="content">
       <Helmet>
-        <title>{displayTitle} | BR ResNova Academic Press</title>
+        <title>{displayTitle}</title>
+        {/* displayTitle already contains "| BR ResNova Academic Press" — do NOT append it again */}
         <meta name="description" content={metaDescription} />
         <meta name="keywords" content={`${book.title}, ${(book.editors ?? []).join(', ')}, book chapter, ${book.isbn}, BR Publications, academic research`} />
-        <meta property="og:title" content={`${displayTitle} | BR ResNova Academic Press`} />
+        <meta property="og:title" content={displayTitle} />
         <meta property="og:description" content={metaDescription} />
         <meta property="og:image" content={book.coverImage} />
         <meta property="og:url" content={canonicalUrlFull} />

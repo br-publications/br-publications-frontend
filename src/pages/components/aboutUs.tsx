@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
 import SecurityIcon from '@mui/icons-material/Security';
 import TrackChangesIcon from '@mui/icons-material/TrackChanges';
@@ -8,6 +9,10 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Helmet } from 'react-helmet-async';
 
 export default function AboutUs() {
+  useEffect(() => {
+    setTimeout(() => document.dispatchEvent(new Event('prerender-ready')), 300);
+  }, []);
+
   return (
     <div className="font-sans text-[#333333] leading-[1.6] bg-white overflow-x-hidden">
       <Helmet>

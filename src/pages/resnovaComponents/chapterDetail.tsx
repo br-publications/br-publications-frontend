@@ -91,6 +91,16 @@ const ChapterDetail: React.FC = () => {
         fetchBookAndChapter();
     }, [id, chapterId]);
 
+    /**
+     * Dispatch prerender-ready event so Puppeteer snapshots the page
+     * only after data is loaded and page-specific metadata is set.
+     */
+    useEffect(() => {
+        if (!loading) {
+            setTimeout(() => document.dispatchEvent(new Event('prerender-ready')), 300);
+        }
+    }, [loading]);
+
 
 
     const handleViewChapter = async (chap: Chapter) => {

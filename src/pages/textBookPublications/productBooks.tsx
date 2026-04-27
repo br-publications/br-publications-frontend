@@ -69,6 +69,16 @@ const ProductBooks: React.FC = () => {
   }, [searchQuery, author, selectedCategory, publishedAfter, publishedBefore]);
 
   /**
+   * Dispatch prerender-ready event so Puppeteer snapshots the page
+   * only after the list data is loaded.
+   */
+  useEffect(() => {
+    if (!loading) {
+      setTimeout(() => document.dispatchEvent(new Event('prerender-ready')), 300);
+    }
+  }, [loading]);
+
+  /**
    * Sync category and search query if location state changes (e.g. from header search)
    */
   useEffect(() => {

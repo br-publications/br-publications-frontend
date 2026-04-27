@@ -35,9 +35,22 @@ const EditorDetail: React.FC = () => {
                 setLoading(false);
             }
         };
-        fetchEditorDetails();
+        if (id) {
+            fetchEditorDetails();
+        } else {
+            setLoading(false);
+        }
     }, [id]);
 
+    /**
+     * Dispatch prerender-ready event so Puppeteer snapshots the page
+     * only after data is loaded and page-specific metadata is set.
+     */
+    useEffect(() => {
+        if (!loading) {
+            setTimeout(() => document.dispatchEvent(new Event('prerender-ready')), 300);
+        }
+    }, [loading]);
 
 
     /* ── Scroll-to-top visibility ── */
@@ -51,6 +64,11 @@ const EditorDetail: React.FC = () => {
     if (loading) {
         return (
             <div className="editor-detail-page loading">
+                <Helmet>
+                    <title>Editor Profile | BR Publications</title>
+                    <meta name="description" content="Loading editor profile from BR Publications." />
+                    <meta name="robots" content="noindex" />
+                </Helmet>
                 <div className="spinner" />
                 <p>Loading editor profile…</p>
             </div>
@@ -61,6 +79,10 @@ const EditorDetail: React.FC = () => {
     if (error || !editor) {
         return (
             <div className="editor-detail-page error">
+                <Helmet>
+                    <title>Editor Not Found | BR Publications</title>
+                    <meta name="robots" content="noindex, follow" />
+                </Helmet>
                 <h2>Error</h2>
                 <p>{error || 'Editor not found'}</p>
                 <button onClick={() => navigate(-1)} className="back-btn">
