@@ -1,8 +1,8 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import Dashboard from "../components/layout/dashboard";
 import Home from "../pages/components/home";
 import Login from "../components/common/login";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 
 // ─── Eagerly loaded (critical path: always needed on first visit) ───────────
 import ForgotPassword from "../components/common/forgotPassword";
@@ -73,10 +73,26 @@ const ProjectDetailView = lazy(() => import('../pages/projectsInternshipSubmissi
 const AuthorDetail = lazy(() => import('../pages/dashboard/author/AuthorDetail'));
 const EditorDetail = lazy(() => import('../pages/dashboard/editor/EditorDetail'));
 
+/**
+ * Redirect trailing slash to non-slash inside React
+ */
+function TrailingSlashHandler() {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    if (pathname !== '/' && pathname.endsWith('/')) {
+      navigate(pathname.slice(0, -1), { replace: true });
+    }
+  }, [pathname, navigate]);
+
+  return null;
+}
 
 export default function AppRoutes() {
   return (
     <Suspense fallback={<div className="prerender-loading">Loading BR Publications...</div>}>
+      <TrailingSlashHandler />
       <Routes>
         <Route element={<Dashboard />}>
           <Route path="/" element={<Home />} />
