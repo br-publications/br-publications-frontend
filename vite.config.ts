@@ -55,8 +55,31 @@ export default defineConfig(async () => {
       if (Array.isArray(list)) {
         list.forEach((item: any) => {
           if (item?.id && item?.isbn) {
+            // 1. Add the book landing page route (slug-based)
             const slug = generateUniqueSlug(item.isbn, item.releaseDate);
             routes.push(`/bookchapter/${item.id}/${slug}`);
+
+            // 2. Add individual chapter routes (/book/:id/chapter/:num)
+            // We check both relational 'chapters' and legacy 'tableContents' JSON
+            let chapterEntries = [];
+            if (Array.isArray(item.chapters) && item.chapters.length > 0) {
+              chapterEntries = item.chapters;
+            } else if (item.tableContents) {
+              try {
+                chapterEntries = typeof item.tableContents === 'string'
+                  ? JSON.parse(item.tableContents)
+                  : item.tableContents;
+              } catch (e) { chapterEntries = []; }
+            }
+
+            if (Array.isArray(chapterEntries)) {
+              chapterEntries.forEach((ch: any, idx: number) => {
+                // Ensure we use the exact same padding logic as ChapterDetail.tsx (padStart 2)
+                const rawNum = ch.chapterNumber || (idx + 1);
+                const chNum = String(rawNum).padStart(2, '0');
+                routes.push(`/book/${item.id}/chapter/${chNum}`);
+              });
+            }
           }
         });
       }
