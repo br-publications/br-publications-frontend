@@ -249,6 +249,7 @@ const ChapterDetail: React.FC = () => {
                 <meta name="citation_publisher" content="BR Publications" />
                 <meta name="citation_isbn" content={book.isbn} />
                 <meta name="citation_language" content="en" />
+                <meta name="citation_abstract_html_url" content={canonicalUrlFull} />
                 {chapter.doi && <meta name="citation_doi" content={chapter.doi} />}
                 {chapter.pdfUrl && <meta name="citation_pdf_url" content={chapter.pdfUrl} />}
                 {chapter.pages && chapter.pages.includes('-') ? (
