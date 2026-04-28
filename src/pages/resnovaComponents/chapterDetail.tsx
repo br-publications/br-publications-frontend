@@ -149,7 +149,7 @@ const ChapterDetail: React.FC = () => {
     const metaDescription = chapter?.abstract
         ? chapter.abstract.slice(0, 155)
         : (chapter && book) ? `${chapter.title} — a chapter from "${book.title}" published by BR Publications.` : 'Detailed information about academic research chapters from BR Publications.';
-    const canonicalUrlFull = (book && chapter) ? `https://www.brpublications.com/book/${book.id}/chapter/${chapter.chapterNumber}` : `https://www.brpublications.com/book/${id}/chapter/${chapterId}`;
+    const canonicalUrlFull = (book && chapter) ? `https://www.brpublications.com/book/${book.id}/chapter/${String(chapter.chapterNumber).padStart(2, '0')}` : `https://www.brpublications.com/book/${id}/chapter/${chapterId}`;
 
     const schemaData = (book && chapter) ? {
         '@context': 'https://schema.org',
