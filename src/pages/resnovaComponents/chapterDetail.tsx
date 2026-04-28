@@ -229,6 +229,37 @@ const ChapterDetail: React.FC = () => {
                 <meta property="og:url" content={canonicalUrlFull} />
                 <meta property="og:type" content="article" />
                 <link rel="canonical" href={canonicalUrlFull} />
+
+                {/* Google Scholar / Academic Metadata */}
+                <meta name="citation_title" content={chapter.title} />
+                {chapter.authorDetails && chapter.authorDetails.length > 0 ? (
+                    chapter.authorDetails.map(a => (
+                        <meta name="citation_author" content={a.name} key={a.id} />
+                    ))
+                ) : (
+                    chapter.authors && <meta name="citation_author" content={chapter.authors} />
+                )}
+                {(book.publishedDate || book.releaseDate) && (
+                    <meta name="citation_publication_date" content={book.publishedDate || book.releaseDate} />
+                )}
+                <meta name="citation_inbook_title" content={book.title} />
+                {book.editors && book.editors.map(name => (
+                    <meta name="citation_editor" content={name} key={name} />
+                ))}
+                <meta name="citation_publisher" content="BR Publications" />
+                <meta name="citation_isbn" content={book.isbn} />
+                <meta name="citation_language" content="en" />
+                {chapter.doi && <meta name="citation_doi" content={chapter.doi} />}
+                {chapter.pdfUrl && <meta name="citation_pdf_url" content={chapter.pdfUrl} />}
+                {chapter.pages && chapter.pages.includes('-') ? (
+                    <>
+                        <meta name="citation_firstpage" content={chapter.pages.split('-')[0].trim()} />
+                        <meta name="citation_lastpage" content={chapter.pages.split('-')[1].trim()} />
+                    </>
+                ) : (
+                    chapter.pages && <meta name="citation_firstpage" content={chapter.pages} />
+                )}
+
                 {schemaData && <script type="application/ld+json">{JSON.stringify(schemaData)}</script>}
             </Helmet>
             <section className="resNova-page">

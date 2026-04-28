@@ -317,6 +317,24 @@ const BookChapterDetail: React.FC = () => {
         <meta property="og:url" content={canonicalUrlFull} />
         <meta property="og:type" content="book" />
         <link rel="canonical" href={canonicalUrlFull} />
+        
+        {/* Google Scholar / Academic Metadata */}
+        <meta name="citation_title" content={book.title} />
+        {Array.isArray(book.editors) && book.editors.length > 0 ? (
+          book.editors.map(name => (
+            <meta name="citation_author" content={name} key={name} />
+          ))
+        ) : (
+          book.author && <meta name="citation_author" content={book.author} />
+        )}
+        {(book.publishedDate || book.releaseDate) && (
+          <meta name="citation_publication_date" content={book.publishedDate || book.releaseDate} />
+        )}
+        <meta name="citation_isbn" content={book.isbn} />
+        <meta name="citation_publisher" content="BR ResNova Academic Press" />
+        <meta name="citation_language" content="en" />
+        {book.doi && <meta name="citation_doi" content={book.doi} />}
+
         {schemaData && <script type="application/ld+json">{JSON.stringify(schemaData)}</script>}
       </Helmet>
       <section id="resNovaPage" className="resNova-page">

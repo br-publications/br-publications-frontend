@@ -191,6 +191,19 @@ const BooksDetail: React.FC = () => {
         <meta property="og:url" content={canonicalUrlFull} />
         <meta property="og:type" content="book" />
         <link rel="canonical" href={canonicalUrlFull} />
+
+        {/* Google Scholar / Academic Metadata */}
+        <meta name="citation_title" content={book.title} />
+        <meta name="citation_author" content={book.author} />
+        {book["co-authors"] && book["co-authors"].split(',').map(name => (
+          <meta name="citation_author" content={name.trim()} key={name} />
+        ))}
+        {book.publishedDate && <meta name="citation_publication_date" content={book.publishedDate} />}
+        <meta name="citation_isbn" content={book.isbn} />
+        <meta name="citation_publisher" content="BR Publications" />
+        <meta name="citation_language" content="en" />
+        {book.doi && <meta name="citation_doi" content={book.doi} />}
+
         {schemaData && <script type="application/ld+json">{JSON.stringify(schemaData)}</script>}
       </Helmet>
       <section id="resNovaPage" className="resNova-page">
