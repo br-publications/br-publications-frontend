@@ -126,7 +126,7 @@ export default defineConfig(async () => {
           // Wait for a custom DOM event to guarantee dynamic API data has loaded.
           // This ensures we capture the fully populated metadata instead of loading states.
           renderAfterDocumentEvent: 'prerender-ready',
-          timeout: 60000,
+          timeout: 120000,
           headless: true,
           args: ['--no-sandbox', '--disable-setuid-sandbox'],
           consoleHandler: (route: string, message: any) => {

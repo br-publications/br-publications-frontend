@@ -97,7 +97,7 @@ const ChapterDetail: React.FC = () => {
      */
     useEffect(() => {
         if (!loading) {
-            setTimeout(() => document.dispatchEvent(new Event('prerender-ready')), 300);
+            setTimeout(() => document.dispatchEvent(new Event('prerender-ready')), 500);
         }
     }, [loading]);
 
