@@ -101,19 +101,15 @@ const ChapterDetail: React.FC = () => {
         }
     }, [loading]);
 
-
-
     const handleViewChapter = async (chap: Chapter) => {
         if (typeof chap.id === 'number') {
             try {
                 await incrementChapterViews(chap.id);
-                // Update local state for immediate feedback
                 setChapter(prev => prev ? { ...prev, views: (prev.views || 0) + 1 } : null);
             } catch (err) {
                 console.error('Failed to increment views:', err);
             }
         } else {
-            // Still update state locally to show the click was registered
             setChapter(prev => prev ? { ...prev, views: (prev.views || 0) + 1 } : null);
         }
         navigate(`/book/${book?.id}/chapter/${chap.chapterNumber}`);
@@ -123,13 +119,11 @@ const ChapterDetail: React.FC = () => {
         if (typeof chap.id === 'number') {
             try {
                 await incrementChapterViews(chap.id);
-                // Update local state for immediate feedback
                 setChapter(prev => prev ? { ...prev, views: (prev.views || 0) + 1 } : null);
             } catch (err) {
                 console.error('Failed to increment views:', err);
             }
         } else {
-            // Still update state locally to show the click was registered
             setChapter(prev => prev ? { ...prev, views: (prev.views || 0) + 1 } : null);
         }
 
@@ -183,305 +177,244 @@ const ChapterDetail: React.FC = () => {
         ...(chapter.pages ? { 'pagination': chapter.pages } : {}),
     } : null;
 
-    if (loading && (!book || !chapter)) {
-        return (
-            <div className="loading-container">
-                <Helmet>
-                    <title>{displayTitle}</title>
-                    <meta name="description" content={metaDescription} />
-                    <link rel="canonical" href={canonicalUrlFull} />
-                </Helmet>
-                <div className="loading-spinner"></div>
-                <p>Loading chapter details...</p>
-            </div>
-        );
-    }
-
-    if (error || !book || !chapter) {
-        return (
-            <div className="error-container">
-                <Helmet>
-                    <title>Chapter Not Found | BR Publications</title>
-                    <meta name="robots" content="index, follow" />
-                </Helmet>
-                <div className="error-message">
-                    <i className="fas fa-exclamation-circle"></i>
-                    <p>{error || 'Chapter details could not be found.'}</p>
-                    <button onClick={() => navigate(-1)} className="back-button">
-                        Go Back
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
-    // Metadata handled above
-
     return (
-        <main className="content chapter-detail-page">
+        <>
             <Helmet>
                 <title>{displayTitle}</title>
                 <meta name="description" content={metaDescription} />
-                <meta name="keywords" content={`${chapter.title}, ${authorNames}, ${book.title}, ${book.isbn}, book chapter, academic research, BR Publications`} />
-                <meta property="og:title" content={displayTitle} />
-                <meta property="og:description" content={metaDescription} />
-                <meta property="og:image" content={book.coverImage} />
-                <meta property="og:url" content={canonicalUrlFull} />
-                <meta property="og:type" content="article" />
-                <link rel="canonical" href={canonicalUrlFull} />
-
-                {/* Google Scholar / Academic Metadata */}
-                <meta name="citation_title" content={chapter.title} />
-                {chapter.authorDetails && chapter.authorDetails.length > 0 ? (
-                    chapter.authorDetails.map(a => (
-                        <meta name="citation_author" content={a.name} key={a.id} />
-                    ))
-                ) : (
-                    chapter.authors && <meta name="citation_author" content={chapter.authors} />
-                )}
-                {(book.publishedDate || book.releaseDate) && (
-                    <meta name="citation_publication_date" content={book.publishedDate || book.releaseDate} />
-                )}
-                <meta name="citation_inbook_title" content={book.title} />
-                {book.editors && book.editors.map(name => (
-                    <meta name="citation_editor" content={name} key={name} />
-                ))}
-                <meta name="citation_publisher" content="BR Publications" />
-                <meta name="citation_isbn" content={book.isbn} />
-                <meta name="citation_language" content="en" />
-                <meta name="citation_abstract_html_url" content={canonicalUrlFull} />
-                {chapter.doi && <meta name="citation_doi" content={chapter.doi} />}
-                {chapter.pdfUrl && <meta name="citation_pdf_url" content={chapter.pdfUrl} />}
-                {chapter.pages && chapter.pages.includes('-') ? (
+                {chapter && book && (
                     <>
-                        <meta name="citation_firstpage" content={chapter.pages.split('-')[0].trim()} />
-                        <meta name="citation_lastpage" content={chapter.pages.split('-')[1].trim()} />
+                        <meta name="keywords" content={`${chapter.title}, ${authorNames}, ${book.title}, ${book.isbn}, book chapter, academic research, BR Publications`} />
+                        <meta property="og:title" content={displayTitle} />
+                        <meta property="og:description" content={metaDescription} />
+                        <meta property="og:image" content={book.coverImage} />
+                        <meta property="og:url" content={canonicalUrlFull} />
+                        <meta property="og:type" content="article" />
+                        <link rel="canonical" href={canonicalUrlFull} />
+
+                        {/* Google Scholar / Academic Metadata */}
+                        <meta name="citation_title" content={chapter.title} />
+                        {chapter.authorDetails && chapter.authorDetails.length > 0 ? (
+                            chapter.authorDetails.map(a => (
+                                <meta name="citation_author" content={a.name} key={a.id} />
+                            ))
+                        ) : (
+                            chapter.authors && <meta name="citation_author" content={chapter.authors} />
+                        )}
+                        {(book.publishedDate || book.releaseDate) && (
+                            <meta name="citation_publication_date" content={book.publishedDate || book.releaseDate} />
+                        )}
+                        <meta name="citation_inbook_title" content={book.title} />
+                        {book.editors && book.editors.map(name => (
+                            <meta name="citation_editor" content={name} key={name} />
+                        ))}
+                        <meta name="citation_publisher" content="BR Publications" />
+                        <meta name="citation_isbn" content={book.isbn} />
+                        <meta name="citation_language" content="en" />
+                        <meta name="citation_abstract_html_url" content={canonicalUrlFull} />
+                        {chapter.pages && chapter.pages.includes('-') ? (
+                            <>
+                                <meta name="citation_firstpage" content={chapter.pages.split('-')[0].trim()} />
+                                <meta name="citation_lastpage" content={chapter.pages.split('-')[1].trim()} />
+                            </>
+                        ) : (
+                            chapter.pages && <meta name="citation_firstpage" content={chapter.pages} />
+                        )}
+                        <meta name="citation_pdf_url" content={`https://api.brpublications.com/api/book-chapter-publishing/${id}/pdf`} />
+                        {chapter.doi && <meta name="citation_doi" content={chapter.doi} />}
+                        {schemaData && <script type="application/ld+json">{JSON.stringify(schemaData)}</script>}
                     </>
-                ) : (
-                    chapter.pages && <meta name="citation_firstpage" content={chapter.pages} />
                 )}
-
-                {schemaData && <script type="application/ld+json">{JSON.stringify(schemaData)}</script>}
+                {error && <meta name="robots" content="noindex, follow" />}
             </Helmet>
-            <section className="resNova-page">
-                <div className="breadcrumbs">
-                    <Link to="/bookchapters">Books</Link>
-                    <ChevronRight size={14} className="breadcrumb-separator" />
-                    <Link to={`/bookchapter/${book.id}/${generateUniqueSlug(book.isbn, book.releaseDate)}`}>
-                        {truncateWords(book.title, 4)}
-                    </Link>
 
-                    <ChevronRight size={14} className="breadcrumb-separator" />
-                    <span className="current-page">{chapter.title}</span>
+            {loading && (!book || !chapter) ? (
+                <div className="loading-container">
+                    <div className="loading-spinner"></div>
+                    <p>Loading chapter details...</p>
                 </div>
+            ) : error || !book || !chapter ? (
+                <div className="error-container">
+                    <div className="error-message">
+                        <i className="fas fa-exclamation-circle"></i>
+                        <p>{error || 'Chapter details could not be found.'}</p>
+                        <button onClick={() => navigate(-1)} className="back-button">
+                            Go Back
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <main className="content chapter-detail-page">
+                    <section className="resNova-page">
+                        <div className="breadcrumbs">
+                            <Link to="/bookchapters">Books</Link>
+                            <ChevronRight size={14} className="breadcrumb-separator" />
+                            <Link to={`/bookchapter/${book.id}/${generateUniqueSlug(book.isbn, book.releaseDate)}`}>
+                                {truncateWords(book.title, 4)}
+                            </Link>
 
-                <div className="chapter-layout">
+                            <ChevronRight size={14} className="breadcrumb-separator" />
+                            <span className="current-page">{chapter.title}</span>
+                        </div>
 
-                    {/* Main Content Area */}
-                    <div className="chapter-main">
+                        <div className="chapter-layout">
+                            {/* Main Content Area */}
+                            <div className="chapter-main">
+                                {/* Abstract Section */}
+                                <div className="chapter-abstract-box">
+                                    <div className="chapter-info-header">
+                                        <div className="book-cover-thumbnail">
+                                            <img
+                                                src={book.coverImage}
+                                                alt={book.title}
+                                                onError={(e) => {
+                                                    e.currentTarget.src = '/assets/books/placeholder.png';
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="chapter-info-text">
+                                            <h1 className="main-chapter-title">{chapter.title}</h1>
+                                            <p className="main-chapter-authors">{renderAuthors(chapter.authors, chapter.authorDetails)}</p>
 
-                        {/* Abstract Section */}
-                        <div className="chapter-abstract-box">
-                            <div className="chapter-info-header">
-                                <div className="book-cover-thumbnail">
-                                    <img
-                                        src={book.coverImage}
-                                        alt={book.title}
-                                        onError={(e) => {
-                                            e.currentTarget.src = '/assets/books/placeholder.png';
-                                        }}
-                                    />
-                                </div>
-                                <div className="chapter-info-text">
-                                    <h1 className="main-chapter-title">{chapter.title}</h1>
-                                    <p className="main-chapter-authors">{renderAuthors(chapter.authors, chapter.authorDetails)}</p>
-
-                                    <div className="meta-details-grid">
-                                        <div className="meta-info-item clickable"><strong>Source Title:</strong> <span onClick={() => navigate(-1)}>{book.title}</span></div>
-                                        <div className="meta-info-item"><strong>Copyright:</strong> <span>{book.copyright || 'N/A'}</span></div>
-                                        {chapter.doi && (
-                                            <div
-                                                className="meta-info-item"
-                                            >
-                                                <strong>DOI:</strong>
-                                                <a href={sanitizeUrl(chapter.doi)} target="_blank" rel="noopener noreferrer" className="doi-link">{chapter.doi}</a>
+                                            <div className="meta-details-grid">
+                                                <div className="meta-info-item clickable"><strong>Source Title:</strong> <span onClick={() => navigate(-1)}>{book.title}</span></div>
+                                                <div className="meta-info-item"><strong>Copyright:</strong> <span>{book.copyright || 'N/A'}</span></div>
+                                                {chapter.doi && (
+                                                    <div className="meta-info-item">
+                                                        <strong>DOI:</strong>
+                                                        <a href={sanitizeUrl(chapter.doi)} target="_blank" rel="noopener noreferrer" className="doi-link">{chapter.doi}</a>
+                                                    </div>
+                                                )}
+                                                <div className="meta-info-item"><strong>Pages:</strong> <span>{chapter.pages || 'N/A'}</span></div>
+                                                <div className="meta-info-item"><strong>Views:</strong> <span>{chapter.views || 0}</span></div>
                                             </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="abstract-content">
+                                        <h3>Abstract</h3>
+                                        <p>{chapter.abstract}</p>
+                                    </div>
+                                </div>
+
+                                {/* Complete Chapter List */}
+                                <div className="complete-chapter-list">
+                                    <h3>Complete Chapter List</h3>
+                                    <div className="toc-search-bar">
+                                        <input
+                                            type="text"
+                                            placeholder="Search this book's list of contents..."
+                                            value={chapterSearchQuery}
+                                            onChange={(e) => setChapterSearchQuery(e.target.value)}
+                                        />
+                                        <button>Search</button>
+                                    </div>
+
+                                    <div className="toc-list">
+                                        {!chapterSearchQuery && (
+                                            <>
+                                                {(book.frontmatterPdfs?.['Dedication']?.pdfKey || (book.frontmatterPdfs?.['Dedication'] as any)?.publishedFileId) && (
+                                                    <div className="toc-frontmatter-row">
+                                                        <span className="row-title">Dedication</span>
+                                                        <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Dedication'), '_blank')}>
+                                                            <PictureAsPdfIcon fontSize="small" /> View PDF
+                                                        </button>
+                                                    </div>
+                                                )}
+                                                {(book.frontmatterPdfs?.['Detailed Table of Contents']?.pdfKey || (book.frontmatterPdfs?.['Detailed Table of Contents'] as any)?.publishedFileId) && (
+                                                    <div className="toc-frontmatter-row">
+                                                        <span className="row-title">Detailed Table of Contents</span>
+                                                        <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Detailed Table of Contents'), '_blank')}>
+                                                            <PictureAsPdfIcon fontSize="small" /> View PDF
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
-                                        <div className="meta-info-item"><strong>Pages:</strong> <span>{chapter.pages || 'N/A'}</span></div>
-                                        <div className="meta-info-item"><strong>Views:</strong> <span>{chapter.views || 0}</span></div>
+
+                                        {(() => {
+                                            const filteredChapters = book.chapters?.filter(chap => {
+                                                if (!chapterSearchQuery) return true;
+                                                const query = chapterSearchQuery.toLowerCase();
+                                                const titleMatch = chap.title?.toLowerCase().includes(query) || false;
+                                                const authorMatch = chap.authors?.toLowerCase().includes(query) || false;
+                                                return titleMatch || authorMatch;
+                                            });
+
+                                            return filteredChapters && filteredChapters.length > 0 ? (
+                                                <>
+                                                    {[...filteredChapters].sort((a, b) =>
+                                                        a.chapterNumber.toString().localeCompare(b.chapterNumber.toString(), undefined, { numeric: true })
+                                                    ).map((ch) => (
+                                                        <div key={ch.id} className={`toc-chapter-card ${String(ch.id) === String(chapter.id) ? 'active-chapter' : ''}`}>
+                                                            <div className="chapter-card-left">
+                                                                <span className="chapter-badge">{ch.chapterNumber}</span>
+                                                                <h4 className="chapter-title">
+                                                                    <span className="chapter-link-span" onClick={() => handleViewChapter(ch)}>{ch.title}</span>
+                                                                    {ch.pages && <span className="chapter-pages"> (pages {ch.pages})</span>}
+                                                                </h4>
+                                                                <p className="chapter-authors">{renderAuthors(ch.authors)}</p>
+                                                                <p className="chapter-abstract">{ch.abstract}</p>
+                                                            </div>
+                                                            <div className="chapters-actions-area">
+                                                                <div className="ch-price-box">
+                                                                    <span>Download This Chapter</span>
+                                                                </div>
+                                                                {ch.pdfUrl && (
+                                                                    <button
+                                                                        className="btn-view-pdf-alt"
+                                                                        onClick={() => handleViewPdf(ch)}
+                                                                    >
+                                                                        <PictureAsPdfIcon fontSize="small" /> View PDF
+                                                                    </button>
+                                                                )}
+                                                                <button
+                                                                    className="btn-preview"
+                                                                    onClick={() => handleViewChapter(ch)}
+                                                                >
+                                                                    Preview Chapter
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </>
+                                            ) : (
+                                                <div className="toc-fallback">
+                                                    <p style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+                                                        No chapters found matching "{chapterSearchQuery}".
+                                                    </p>
+                                                </div>
+                                            );
+                                        })()}
+
+                                        {!chapterSearchQuery && (
+                                            <>
+                                                {(book.frontmatterPdfs?.['About the Contributors']?.pdfKey || (book.frontmatterPdfs?.['About the Contributors'] as any)?.publishedFileId) && (
+                                                    <div className="toc-frontmatter-row">
+                                                        <span className="row-title">About the Contributors</span>
+                                                        <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'About the Contributors'), '_blank')}>
+                                                            <PictureAsPdfIcon fontSize="small" /> View PDF
+                                                        </button>
+                                                    </div>
+                                                )}
+                                                {(book.frontmatterPdfs?.['Index']?.pdfKey || (book.frontmatterPdfs?.['Index'] as any)?.publishedFileId) && (
+                                                    <div className="toc-frontmatter-row">
+                                                        <span className="row-title">Index</span>
+                                                        <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Index'), '_blank')}>
+                                                            <PictureAsPdfIcon fontSize="small" /> View PDF
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>
-
-                            <div className="abstract-content">
-                                <h3>Abstract</h3>
-                                <p>{chapter.abstract}</p>
-                                <p className="extended-abstract">
-                                    {/* Dummy text to simulate a full abstract as per screenshot 
-                                    This chapter provides an exhaustive review of the historical context, current challenges, and future directions within this field of study. The discourse is oriented around the need to continue to address the key issues. The chapter which is framed by the literature reviews traces the need to accommodate all the best practices. As standard procedures are very vital to the enhancement of the overall pedagogy, the quest for qualitative output ensures that this framework dictates higher standards. It reveals the core challenges faced across different scales and defines robust criteria for establishing sustainable guidelines for global educators.*/}
-                                </p>
-                            </div>
                         </div>
-
-                        {/* Complete Chapter List */}
-                        <div className="complete-chapter-list">
-                            <h3>Complete Chapter List</h3>
-                            <div className="toc-search-bar">
-                                <input
-                                    type="text"
-                                    placeholder="Search this book's list of contents..."
-                                    value={chapterSearchQuery}
-                                    onChange={(e) => setChapterSearchQuery(e.target.value)}
-                                />
-                                <button>Search</button>
-                            </div>
-
-                            <div className="toc-list">
-                                {/* Frontmatter Rows - Hidden when searching */}
-                                {!chapterSearchQuery && (
-                                    <>
-                                        {(book.frontmatterPdfs?.['Dedication']?.pdfKey || (book.frontmatterPdfs?.['Dedication'] as any)?.publishedFileId) && (
-                                            <div className="toc-frontmatter-row">
-                                                <span className="row-title">Dedication</span>
-                                                <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Dedication'), '_blank')}>
-                                                    <PictureAsPdfIcon fontSize="small" /> View PDF
-                                                </button>
-                                            </div>
-                                        )}
-                                        {(book.frontmatterPdfs?.['Detailed Table of Contents']?.pdfKey || (book.frontmatterPdfs?.['Detailed Table of Contents'] as any)?.publishedFileId) && (
-                                            <div className="toc-frontmatter-row">
-                                                <span className="row-title">Detailed Table of Contents</span>
-                                                <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Detailed Table of Contents'), '_blank')}>
-                                                    <PictureAsPdfIcon fontSize="small" /> View PDF
-                                                </button>
-                                            </div>
-                                        )}
-
-                                    </>
-                                )}
-
-                                {/* Iterating Chapters */}
-                                {(() => {
-                                    const filteredChapters = book.chapters?.filter(chap => {
-                                        if (!chapterSearchQuery) return true;
-                                        const query = chapterSearchQuery.toLowerCase();
-                                        const titleMatch = chap.title?.toLowerCase().includes(query) || false;
-                                        const authorMatch = chap.authors?.toLowerCase().includes(query) || false;
-                                        return titleMatch || authorMatch;
-                                    });
-
-                                    return filteredChapters && filteredChapters.length > 0 ? (
-                                        <>
-                                            {[...filteredChapters].sort((a, b) =>
-                                                a.chapterNumber.toString().localeCompare(b.chapterNumber.toString(), undefined, { numeric: true })
-                                            ).map((ch) => (
-                                                <div key={ch.id} className={`toc-chapter-card ${String(ch.id) === String(chapter.id) ? 'active-chapter' : ''}`}>
-                                                    <div className="chapter-card-left">
-                                                        <span className="chapter-badge">{ch.chapterNumber}</span>
-                                                        <h4 className="chapter-title">
-                                                            <span className="chapter-link-span" onClick={() => handleViewChapter(ch)}>{ch.title}</span>
-                                                            {ch.pages && <span className="chapter-pages"> (pages {ch.pages})</span>}
-                                                        </h4>
-                                                        <p className="chapter-authors">{renderAuthors(ch.authors)}</p>
-                                                        <p className="chapter-abstract">{ch.abstract}</p>
-                                                    </div>
-                                                    <div className="chapters-actions-area">
-                                                        <div className="ch-price-box">
-                                                            <span>Download This Chapter</span>
-                                                        </div>
-                                                        {ch.pdfUrl && (
-                                                            <button
-                                                                className="btn-view-pdf-alt"
-                                                                onClick={() => handleViewPdf(ch)}
-                                                            >
-                                                                <PictureAsPdfIcon fontSize="small" /> View PDF
-                                                            </button>
-                                                        )}
-                                                        <button
-
-                                                            className="btn-preview"
-                                                            onClick={() => handleViewChapter(ch)}
-                                                        >
-                                                            Preview Chapter
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </>
-                                    ) : (
-                                        <div className="toc-fallback">
-                                            <p style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
-                                                No chapters found matching "{chapterSearchQuery}".
-                                            </p>
-                                        </div>
-                                    );
-                                })()}
-
-                                {/* Backmatter Rows - Hidden when searching */}
-                                {!chapterSearchQuery && (
-                                    <>
-                                        {(book.frontmatterPdfs?.['About the Contributors']?.pdfKey || (book.frontmatterPdfs?.['About the Contributors'] as any)?.publishedFileId) && (
-                                            <div className="toc-frontmatter-row">
-                                                <span className="row-title">About the Contributors</span>
-                                                <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'About the Contributors'), '_blank')}>
-                                                    <PictureAsPdfIcon fontSize="small" /> View PDF
-                                                </button>
-                                            </div>
-                                        )}
-                                        {(book.frontmatterPdfs?.['Index']?.pdfKey || (book.frontmatterPdfs?.['Index'] as any)?.publishedFileId) && (
-                                            <div className="toc-frontmatter-row">
-                                                <span className="row-title">Index</span>
-                                                <button className="btn-view-pdf" onClick={() => window.open(getExtraPdfUrl(book.id, 'Index'), '_blank')}>
-                                                    <PictureAsPdfIcon fontSize="small" /> View PDF
-                                                </button>
-                                            </div>
-                                        )}
-
-                                    </>
-                                )}
-                            </div>
-                        </div>
-
-                    </div>
-
-                    {/* Right Sidebar Area 
-                    <div className="chapter-sidebar">
-                        <div className="buy-card">
-                            <h4>Buy Instant Access to This Chapter</h4>
-                            <div className="sidebar-price-row">
-                                <label><input type="radio" checked readOnly /> OnDemand</label>
-                                <strong>${chapter.price ? Number(chapter.price).toFixed(2) : '0.00'}</strong>
-                            </div>
-                            <button className="btn-add-cart-sidebar">
-                                <ShoppingCartIcon fontSize="small" /> Add to Cart
-                            </button>
-                        </div>
-
-                        <div className="sidebar-accordions">
-                            <div className="acc-item">
-                                <span>+ Share</span>
-                            </div>
-                            <div className="acc-item">
-                                <span>+ Free Access</span>
-                            </div>
-                            <div className="acc-item">
-                                <span>+ More Information</span>
-                            </div>
-                        </div>
-
-                        <div className="sidebar-librarians">
-                            <h4>For Librarians</h4>
-                            <ul>
-                                <li><a href="#">Recommend to Reference Librarian</a></li>
-                                <li><a href="#">View in SCOPUS</a></li>
-                                <li><a href="#">Report an Issue / Bug</a></li>
-                            </ul>
-                        </div>
-                    </div> */}
-
-                </div>
-            </section>
-        </main >
+                    </section>
+                </main>
+            )}
+        </>
     );
 };
 

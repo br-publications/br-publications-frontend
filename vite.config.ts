@@ -51,7 +51,7 @@ export default defineConfig(async () => {
     const res = await fetch('https://api.brpublications.com/api/book-chapter-publishing?limit=100');
     if (res.ok) {
       const json = (await res.json()) as any;
-      const list = json.data?.chapters || json.data || json.chapters || [];
+      const list = json.data?.items || json.data?.chapters || (Array.isArray(json.data) ? json.data : []) || json.chapters || [];
       if (Array.isArray(list)) {
         list.forEach((item: any) => {
           if (item?.id && item?.isbn) {
