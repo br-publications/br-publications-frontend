@@ -182,51 +182,52 @@ const ChapterDetail: React.FC = () => {
             <Helmet>
                 <title>{displayTitle}</title>
                 <meta name="description" content={metaDescription} />
-                {chapter && book && (
-                    <>
-                        <meta name="keywords" content={`${chapter.title}, ${authorNames}, ${book.title}, ${book.isbn}, book chapter, academic research, BR Publications`} />
-                        <meta property="og:title" content={displayTitle} />
-                        <meta property="og:description" content={metaDescription} />
-                        <meta property="og:image" content={book.coverImage} />
-                        <meta property="og:url" content={canonicalUrlFull} />
-                        <meta property="og:type" content="article" />
-                        <link rel="canonical" href={canonicalUrlFull} />
-
-                        {/* Google Scholar / Academic Metadata */}
-                        <meta name="citation_title" content={chapter.title} />
-                        {chapter.authorDetails && chapter.authorDetails.length > 0 ? (
-                            chapter.authorDetails.map(a => (
-                                <meta name="citation_author" content={a.name} key={a.id} />
-                            ))
-                        ) : (
-                            chapter.authors && <meta name="citation_author" content={chapter.authors} />
-                        )}
-                        {(book.publishedDate || book.releaseDate) && (
-                            <meta name="citation_publication_date" content={book.publishedDate || book.releaseDate} />
-                        )}
-                        <meta name="citation_inbook_title" content={book.title} />
-                        {book.editors && book.editors.map(name => (
-                            <meta name="citation_editor" content={name} key={name} />
-                        ))}
-                        <meta name="citation_publisher" content="BR Publications" />
-                        <meta name="citation_isbn" content={book.isbn} />
-                        <meta name="citation_language" content="en" />
-                        <meta name="citation_abstract_html_url" content={canonicalUrlFull} />
-                        {chapter.pages && chapter.pages.includes('-') ? (
-                            <>
-                                <meta name="citation_firstpage" content={chapter.pages.split('-')[0].trim()} />
-                                <meta name="citation_lastpage" content={chapter.pages.split('-')[1].trim()} />
-                            </>
-                        ) : (
-                            chapter.pages && <meta name="citation_firstpage" content={chapter.pages} />
-                        )}
-                        <meta name="citation_pdf_url" content={`https://api.brpublications.com/api/book-chapter-publishing/${id}/pdf`} />
-                        {chapter.doi && <meta name="citation_doi" content={chapter.doi} />}
-                        {schemaData && <script type="application/ld+json">{JSON.stringify(schemaData)}</script>}
-                    </>
-                )}
                 {error && <meta name="robots" content="noindex, follow" />}
             </Helmet>
+            
+            {chapter && book && (
+                <Helmet>
+                    <meta name="keywords" content={`${chapter.title}, ${authorNames}, ${book.title}, ${book.isbn}, book chapter, academic research, BR Publications`} />
+                    <meta property="og:title" content={displayTitle} />
+                    <meta property="og:description" content={metaDescription} />
+                    <meta property="og:image" content={book.coverImage} />
+                    <meta property="og:url" content={canonicalUrlFull} />
+                    <meta property="og:type" content="article" />
+                    <link rel="canonical" href={canonicalUrlFull} />
+
+                    {/* Google Scholar / Academic Metadata */}
+                    <meta name="citation_title" content={chapter.title} />
+                    {chapter.authorDetails && chapter.authorDetails.length > 0 ? (
+                        chapter.authorDetails.map(a => (
+                            <meta name="citation_author" content={a.name} key={a.id} />
+                        ))
+                    ) : (
+                        chapter.authors && <meta name="citation_author" content={chapter.authors} />
+                    )}
+                    {(book.publishedDate || book.releaseDate) && (
+                        <meta name="citation_publication_date" content={book.publishedDate || book.releaseDate} />
+                    )}
+                    <meta name="citation_inbook_title" content={book.title} />
+                    {book.editors && book.editors.map(name => (
+                        <meta name="citation_editor" content={name} key={name} />
+                    ))}
+                    <meta name="citation_publisher" content="BR Publications" />
+                    <meta name="citation_isbn" content={book.isbn} />
+                    <meta name="citation_language" content="en" />
+                    <meta name="citation_abstract_html_url" content={canonicalUrlFull} />
+                    {chapter.pages && chapter.pages.includes('-') ? (
+                        [
+                            <meta key="firstpage" name="citation_firstpage" content={chapter.pages.split('-')[0].trim()} />,
+                            <meta key="lastpage" name="citation_lastpage" content={chapter.pages.split('-')[1].trim()} />
+                        ]
+                    ) : (
+                        chapter.pages && <meta name="citation_firstpage" content={chapter.pages} />
+                    )}
+                    <meta name="citation_pdf_url" content={`https://api.brpublications.com/api/book-chapter-publishing/${id}/pdf`} />
+                    {chapter.doi && <meta name="citation_doi" content={chapter.doi} />}
+                    {schemaData && <script type="application/ld+json">{JSON.stringify(schemaData)}</script>}
+                </Helmet>
+            )}
 
             {loading && (!book || !chapter) ? (
                 <div className="loading-container">

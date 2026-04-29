@@ -309,38 +309,39 @@ const BookChapterDetail: React.FC = () => {
       <Helmet>
         <title>{displayTitle}</title>
         <meta name="description" content={metaDescription} />
-        {book && (
-          <>
-            <meta name="keywords" content={`${book.title}, ${(book.editors ?? []).join(', ')}, book chapter, ${book.isbn}, BR Publications, academic research`} />
-            <meta property="og:title" content={displayTitle} />
-            <meta property="og:description" content={metaDescription} />
-            <meta property="og:image" content={book.coverImage} />
-            <meta property="og:url" content={canonicalUrlFull} />
-            <meta property="og:type" content="book" />
-            <link rel="canonical" href={canonicalUrlFull} />
-
-            {/* Google Scholar / Academic Metadata */}
-            <meta name="citation_title" content={book.title} />
-            {Array.isArray(book.editors) && book.editors.length > 0 ? (
-              book.editors.map(name => (
-                <meta name="citation_author" content={name} key={name} />
-              ))
-            ) : (
-              book.author && <meta name="citation_author" content={book.author} />
-            )}
-            {(book.publishedDate || book.releaseDate) && (
-              <meta name="citation_publication_date" content={book.publishedDate || book.releaseDate} />
-            )}
-            <meta name="citation_isbn" content={book.isbn} />
-            <meta name="citation_publisher" content="BR ResNova Academic Press" />
-            <meta name="citation_language" content="en" />
-            <meta name="citation_abstract_html_url" content={canonicalUrlFull} />
-            {book.doi && <meta name="citation_doi" content={book.doi} />}
-            {schemaData && <script type="application/ld+json">{JSON.stringify(schemaData)}</script>}
-          </>
-        )}
         {error && <meta name="robots" content="noindex, follow" />}
       </Helmet>
+      
+      {book && (
+        <Helmet>
+          <meta name="keywords" content={`${book.title}, ${(book.editors ?? []).join(', ')}, book chapter, ${book.isbn}, BR Publications, academic research`} />
+          <meta property="og:title" content={displayTitle} />
+          <meta property="og:description" content={metaDescription} />
+          <meta property="og:image" content={book.coverImage} />
+          <meta property="og:url" content={canonicalUrlFull} />
+          <meta property="og:type" content="book" />
+          <link rel="canonical" href={canonicalUrlFull} />
+
+          {/* Google Scholar / Academic Metadata */}
+          <meta name="citation_title" content={book.title} />
+          {Array.isArray(book.editors) && book.editors.length > 0 ? (
+            book.editors.map(name => (
+              <meta name="citation_author" content={name} key={name} />
+            ))
+          ) : (
+            book.author && <meta name="citation_author" content={book.author} />
+          )}
+          {(book.publishedDate || book.releaseDate) && (
+            <meta name="citation_publication_date" content={book.publishedDate || book.releaseDate} />
+          )}
+          <meta name="citation_isbn" content={book.isbn} />
+          <meta name="citation_publisher" content="BR ResNova Academic Press" />
+          <meta name="citation_language" content="en" />
+          <meta name="citation_abstract_html_url" content={canonicalUrlFull} />
+          {book.doi && <meta name="citation_doi" content={book.doi} />}
+          {schemaData && <script type="application/ld+json">{JSON.stringify(schemaData)}</script>}
+        </Helmet>
+      )}
       {loading && !book ? (
         <div className="loading-container">
           <div className="loading-spinner"></div>
