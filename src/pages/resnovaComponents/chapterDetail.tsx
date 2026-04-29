@@ -184,7 +184,7 @@ const ChapterDetail: React.FC = () => {
                 <meta name="description" content={metaDescription} />
                 {error && <meta name="robots" content="noindex, follow" />}
             </Helmet>
-            
+
             {chapter && book && (
                 <Helmet>
                     <meta name="keywords" content={`${chapter.title}, ${authorNames}, ${book.title}, ${book.isbn}, book chapter, academic research, BR Publications`} />
@@ -215,6 +215,7 @@ const ChapterDetail: React.FC = () => {
                     <meta name="citation_isbn" content={book.isbn} />
                     <meta name="citation_language" content="en" />
                     <meta name="citation_abstract_html_url" content={canonicalUrlFull} />
+                    <meta name="citation_fulltext_html_url" content={canonicalUrlFull} />
                     {chapter.pages && chapter.pages.includes('-') ? (
                         [
                             <meta key="firstpage" name="citation_firstpage" content={chapter.pages.split('-')[0].trim()} />,
