@@ -124,7 +124,7 @@ interface OptionalDeliveryAddressFormProps {
 const OptionalDeliveryAddressForm: React.FC<OptionalDeliveryAddressFormProps> = ({
     submissionId = 0,
     type = 'textbook',
-    onSuccess = (savedAddress: any) => console.log('Optional Form submission successful!', savedAddress),
+    onSuccess,
     onCancel
 }) => {
     const [activeTab, setActiveTab] = useState<TabType>('recipient');
