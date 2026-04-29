@@ -116,10 +116,11 @@ const BookChapterManuscript: React.FC = () => {
     message: ''
   });
 
-  // Check authentication and fetch book titles on component mount
   useEffect(() => {
-    checkAuthentication();
-    fetchBookTitles();
+    const isAuth = checkAuthentication();
+    if (isAuth) {
+      fetchBookTitles();
+    }
 
     // Click outside dropdown handler
     const handleClickOutside = (event: MouseEvent) => {
@@ -142,7 +143,7 @@ const BookChapterManuscript: React.FC = () => {
       setTimeout(() => {
         navigate('/login');
       }, 2000);
-      return;
+      return false;
     }
 
     try {
@@ -161,7 +162,7 @@ const BookChapterManuscript: React.FC = () => {
         setTimeout(() => {
           navigate('/');
         }, 3000);
-        return;
+        return false;
       }
 
       setCurrentUser({
@@ -182,6 +183,7 @@ const BookChapterManuscript: React.FC = () => {
 
       setIsAuthenticated(true);
       setIsCheckingAuth(false);
+      return true;
     } catch (error) {
       console.error('❌ Error parsing user data:', error);
       setIsAuthenticated(false);
@@ -190,6 +192,7 @@ const BookChapterManuscript: React.FC = () => {
       setTimeout(() => {
         navigate('/login');
       }, 2000);
+      return false;
     }
   };
 
