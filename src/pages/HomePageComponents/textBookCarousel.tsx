@@ -84,10 +84,6 @@ export default function TextBookCarousel() {
     // Gap between items in pixels (must match CSS .textbook-carousel-track gap)
     const gap = 10;
 
-    if (books.length === 0) {
-        return null; // Don't render if no books
-    }
-
     const handleBookClick = (book: Book) => {
         const slug = generateUniqueSlug(book.isbn, book.releaseDate);
         navigate(`/book/${book.id}/${slug}`, {
@@ -97,92 +93,94 @@ export default function TextBookCarousel() {
 
     return (
         <section className="textbook-carousel-section">
-            <div className="textbook-carousel-container">
-                {/* Section Header */}
-                <h2 className="textbook-carousel-title">
-                    Text Books
-                </h2>
-                <div className="textbook-carousel-underline"></div>
+            {books.length > 0 && (
+                <div className="textbook-carousel-container">
+                    {/* Section Header */}
+                    <h2 className="textbook-carousel-title">
+                        Text Books
+                    </h2>
+                    <div className="textbook-carousel-underline"></div>
 
-                {/* Carousel Container */}
-                <div
-                    className="textbook-carousel-wrapper"
-                    onMouseEnter={() => setIsPaused(true)}
-                    onMouseLeave={() => setIsPaused(false)}
-                >
+                    {/* Carousel Container */}
                     <div
-                        className="textbook-carousel-track"
-                        style={{ transform: `translateX(calc(-${currentIndex} * (100% + ${gap}px) / ${visibleCount}))` }}
+                        className="textbook-carousel-wrapper"
+                        onMouseEnter={() => setIsPaused(true)}
+                        onMouseLeave={() => setIsPaused(false)}
                     >
-                        {books.map((book, index) => (
-                            <div key={index} className="textbook-card">
-                                {/* Book Cover */}
-                                <div className="textbook-cover">
-                                    <img
-                                        src={book.image}
-                                        alt={book.title}
-                                        className="textbook-image"
-                                        loading={index === 0 ? 'eager' : 'lazy'}
-                                        fetchPriority={index === 0 ? 'high' : 'auto'}
-                                        decoding="async"
-                                        width="160"
-                                        height="220"
-                                        onError={(e) => {
-                                            e.currentTarget.src = '/placeholder-book.png';
-                                        }}
-                                    />
-                                </div>
+                        <div
+                            className="textbook-carousel-track"
+                            style={{ transform: `translateX(calc(-${currentIndex} * (125% + ${gap}px) / ${visibleCount}))` }}
+                        >
+                            {books.map((book, index) => (
+                                <div key={index} className="textbook-card">
+                                    {/* Book Cover */}
+                                    <div className="textbook-cover">
+                                        <img
+                                            src={book.image}
+                                            alt={book.title}
+                                            className="textbook-image"
+                                            loading={index === 0 ? 'eager' : 'lazy'}
+                                            fetchPriority={index === 0 ? 'high' : 'auto'}
+                                            decoding="async"
+                                            width="160"
+                                            height="220"
+                                            onError={(e) => {
+                                                e.currentTarget.src = '/placeholder-book.png';
+                                            }}
+                                        />
+                                    </div>
 
-                                {/* Book Info */}
-                                <div className="textbook-info">
-                                    <h3 className="textbook-title">
-                                        {book.title}
-                                    </h3>
-                                    <p className="textbook-author">
-                                        {book.author}
-                                        {book["co-authors"] && (
-                                            <span className="co-authors-text">
-                                                {", "}
-                                                {book["co-authors"]}
-                                            </span>
-                                        )}
-                                    </p>
+                                    {/* Book Info */}
+                                    <div className="textbook-info">
+                                        <h3 className="textbook-title">
+                                            {book.title}
+                                        </h3>
+                                        <p className="textbook-author">
+                                            {book.author}
+                                            {book["co-authors"] && (
+                                                <span className="co-authors-text">
+                                                    {", "}
+                                                    {book["co-authors"]}
+                                                </span>
+                                            )}
+                                        </p>
 
-                                    {/* Buttons */}
-                                    <div className="textbook-actions">
-                                        <button
-                                            className="textbook-action-btn"
-                                            onClick={() => handleBookClick(book)}
-                                        >
-                                            Preview
-                                        </button>
-                                        <button
-                                            className="textbook-action-btn"
-                                            onClick={() => handleBookClick(book)}
-                                        >
-                                            Buy
-                                        </button>
+                                        {/* Buttons */}
+                                        <div className="textbook-actions">
+                                            <button
+                                                className="textbook-action-btn"
+                                                onClick={() => handleBookClick(book)}
+                                            >
+                                                Preview
+                                            </button>
+                                            <button
+                                                className="textbook-action-btn"
+                                                onClick={() => handleBookClick(book)}
+                                            >
+                                                Buy
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
-                </div>
 
-                {/* Navigation Dots */}
-                {books.length > visibleCount && (
-                    <div className="textbook-carousel-dots">
-                        {Array.from({ length: Math.max(0, books.length - visibleCount + 1) }).map((_, index) => (
-                            <button
-                                key={index}
-                                onClick={() => setCurrentIndex(index)}
-                                className={`textbook-dot ${currentIndex === index ? 'active' : ''}`}
-                                aria-label={`Go to slide ${index + 1}`}
-                            />
-                        ))}
-                    </div>
-                )}
-            </div>
+                    {/* Navigation Dots */}
+                    {books.length > visibleCount && (
+                        <div className="textbook-carousel-dots">
+                            {Array.from({ length: Math.max(0, books.length - visibleCount + 1) }).map((_, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => setCurrentIndex(index)}
+                                    className={`textbook-dot ${currentIndex === index ? 'active' : ''}`}
+                                    aria-label={`Go to slide ${index + 1}`}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
         </section>
     );
 }

@@ -80,15 +80,16 @@
 
 @media (min-width: 1280px) {
     .textbook-card {
-        flex: 0 0 calc(20% - 10px);
+        /* flex: 0 0 calc(25% - 0px); */
+        align-items: center;
     }
 
     /* 5 items as requested */
 }
 
 .textbook-cover {
-    width: 100%;
-    height: 180px;
+    width: 80%;
+    height: 100%;
     /* Smaller height for compactness */
     overflow: hidden;
     background-color: #f3f4f6;
@@ -137,11 +138,6 @@
     margin-top: 0;
     line-height: 1.4;
     font-style: italic;
-    display: -webkit-box;
-    line-clamp: 2;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
 }
 
 .co-authors-text {
@@ -186,9 +182,8 @@
     display: flex;
     justify-content: center;
     gap: 6px;
-    /* Reduced gap */
     margin-top: 10px;
-    /* Reduced spacing */
+    margin-bottom: 10px;
 }
 
 .textbook-dot {

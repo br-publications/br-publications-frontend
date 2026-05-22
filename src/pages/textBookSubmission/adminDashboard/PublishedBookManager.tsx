@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-// import { useNavigate } from 'react-router-dom'; // Unused
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import * as publishedBookService from '../../../services/publishedBookService';
 import type { PublishedBook } from '../../../services/publishedBookService';
 import {
@@ -15,8 +14,113 @@ import UploadCoverModal from './UploadCoverModal';
 import AlertPopup from '../../../components/common/alertPopup';
 import { BookOpen } from 'lucide-react';
 
+const StatusBadge = memo(({ isHidden }: { isHidden: boolean }) => (
+    <span
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            isHidden ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'
+        }`}
+    >
+        {isHidden ? 'Hidden' : 'Visible'}
+    </span>
+));
+
+interface BookRowProps {
+    book: PublishedBook;
+    onEdit: (book: PublishedBook) => void;
+    onCover: (book: PublishedBook) => void;
+    onToggleVisibility: (book: PublishedBook) => void;
+    onToggleFeatured: (book: PublishedBook) => void;
+    onDelete: (id: number) => void;
+}
+
+const BookRow = memo(({ book, onEdit, onCover, onToggleVisibility, onToggleFeatured, onDelete }: BookRowProps) => (
+    <tr className="hover:bg-gray-50 transition-colors">
+        <td className="px-4 py-2">
+            <div className="flex items-center">
+                <div className="h-16 w-12 flex-shrink-0 mr-4 bg-gray-200 rounded overflow-hidden relative group">
+                    {book.coverImage ? (
+                        <img
+                            className="h-full w-full object-cover"
+                            src={book.coverImage}
+                            alt=""
+                            loading="lazy"
+                        />
+                    ) : (
+                        <div className="flex items-center justify-center h-full w-full text-gray-400">
+                            <ImageIcon size={20} />
+                        </div>
+                    )}
+                    <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                        <button
+                            onClick={() => onCover(book)}
+                            className="text-white p-2 hover:bg-white/20 rounded-full transition-colors"
+                            title="Change Cover"
+                        >
+                            <Edit2 size={20} />
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <div className="text-sm font-medium text-gray-900 line-clamp-1">{book.title}</div>
+                    <div className="text-sm text-gray-500">{book.author}</div>
+                    <div className="text-xs text-gray-400 mt-0.5">ISBN: {book.isbn}</div>
+                </div>
+            </div>
+        </td>
+        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+            {book.category}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+            <StatusBadge isHidden={book.isHidden} />
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+            <button
+                onClick={() => onToggleFeatured(book)}
+                className={`p-1 rounded-full transition-colors ${
+                    book.isFeatured ? 'text-amber-400 hover:text-amber-500' : 'text-gray-300 hover:text-gray-400'
+                }`}
+                title={book.isFeatured ? 'Remove from Carousel' : 'Add to Carousel'}
+            >
+                <Star size={20} fill={book.isFeatured ? 'currentColor' : 'none'} />
+            </button>
+        </td>
+        <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
+            <div className="flex items-center justify-end gap-2">
+                <button
+                    onClick={() => onToggleVisibility(book)}
+                    className={`p-1.5 rounded-md transition-colors ${
+                        book.isHidden
+                            ? 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                            : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'
+                    }`}
+                    title={book.isHidden ? 'Show in Library' : 'Hide from Library'}
+                >
+                    {book.isHidden ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+
+                <button
+                    onClick={() => onEdit(book)}
+                    className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                    title="Edit Details"
+                >
+                    <Edit2 size={18} />
+                </button>
+
+                <button
+                    onClick={() => onDelete(book.id)}
+                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                    title="Delete Book"
+                >
+                    <Trash2 size={18} />
+                </button>
+            </div>
+        </td>
+    </tr>
+));
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const PublishedBookManager: React.FC = () => {
-    // const navigate = useNavigate(); // Unused
     const [books, setBooks] = useState<PublishedBook[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -32,60 +136,60 @@ const PublishedBookManager: React.FC = () => {
     const [page, setPage] = useState(1);
     const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
 
-    const fetchBooks = async () => {
+    const fetchBooks = useCallback(async () => {
         setLoading(true);
         try {
             const data = await publishedBookService.getAllBooks({
                 page,
                 limit: 20,
                 search: searchQuery,
-                category: categoryFilter,
-                includeHidden: true
+                category: categoryFilter !== 'All' ? categoryFilter : undefined,
+                includeHidden: true,
+                ...(featuredFilter === 'Featured' ? { featured: true } : {}),
             });
 
-            // Client-side filtering for Visibility and Featured (since API might not support all combos yet)
             let filteredBooks = data.books;
-
             if (visibilityFilter === 'Visible') {
                 filteredBooks = filteredBooks.filter(b => !b.isHidden);
             } else if (visibilityFilter === 'Hidden') {
                 filteredBooks = filteredBooks.filter(b => b.isHidden);
             }
 
-            if (featuredFilter === 'Featured') {
-                filteredBooks = filteredBooks.filter(b => b.isFeatured);
-            }
-
             setBooks(filteredBooks);
             setPagination(data.pagination);
             setError(null);
-        } catch (err: any) {
+        } catch (err) {
             setError('Failed to fetch books');
             console.error(err);
         } finally {
             setLoading(false);
         }
-    };
+    }, [page, searchQuery, categoryFilter, visibilityFilter, featuredFilter]);
 
-    const fetchCategories = async () => {
+    const fetchCategories = useCallback(async () => {
         try {
             const cats = await publishedBookService.getCategories();
-            setCategories(cats);
+            setCategories(['All', ...cats.filter(c => c !== 'All')]);
         } catch (err) {
             console.error('Failed to fetch categories', err);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchCategories();
-    }, []);
+    }, [fetchCategories]);
 
     useEffect(() => {
         const debounce = setTimeout(() => {
             fetchBooks();
         }, 300);
         return () => clearTimeout(debounce);
-    }, [page, searchQuery, categoryFilter, visibilityFilter, featuredFilter]);
+    }, [fetchBooks]);
+
+    // Reset to page 1 when filters change (prevents empty pages)
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery, categoryFilter, visibilityFilter, featuredFilter]);
 
     // Modal State
     const [selectedBook, setSelectedBook] = useState<PublishedBook | null>(null);
@@ -107,75 +211,73 @@ const PublishedBookManager: React.FC = () => {
         message: ''
     });
 
-    const closeAlert = () => setAlertConfig(prev => ({ ...prev, isOpen: false }));
+    const closeAlert = useCallback(() => setAlertConfig(prev => ({ ...prev, isOpen: false })), []);
 
-    const showAlert = (type: 'success' | 'error' | 'warning' | 'info', title: string, message: string, showCancel = false, onConfirm?: () => void) => {
-        setAlertConfig({
-            isOpen: true,
-            type,
-            title,
-            message,
-            showCancel,
-            onConfirm
-        });
-    };
+    const showAlert = useCallback((
+        type: 'success' | 'error' | 'warning' | 'info',
+        title: string,
+        message: string,
+        showCancel = false,
+        onConfirm?: () => void
+    ) => {
+        setAlertConfig({ isOpen: true, type, title, message, showCancel, onConfirm });
+    }, []);
 
-    // Actions
-    const handleEditClick = (book: PublishedBook) => {
+    const handleEditClick = useCallback((book: PublishedBook) => {
         setSelectedBook(book);
         setIsEditModalOpen(true);
-    };
+    }, []);
 
-    const handleCoverClick = (book: PublishedBook) => {
+    const handleCoverClick = useCallback((book: PublishedBook) => {
         setSelectedBook(book);
         setIsCoverModalOpen(true);
-    };
+    }, []);
 
-    const handleSaveBook = async (id: number, data: Partial<PublishedBook>) => {
+    const handleSaveBook = useCallback(async (id: number, data: Partial<PublishedBook>) => {
         try {
             const updatedBook = await publishedBookService.updateBookDetails(id, data);
-            setBooks(books.map(b => b.id === id ? updatedBook : b));
+            setBooks(prev => prev.map(b => b.id === id ? updatedBook : b));
             setIsEditModalOpen(false);
             showAlert('success', 'Success', 'Book details updated successfully');
         } catch (err) {
             console.error('Failed to update book', err);
             showAlert('error', 'Error', 'Failed to update book details');
         }
-    };
+    }, [showAlert]);
 
-    const handleSaveCover = async (id: number, file: File) => {
+    const handleSaveCover = useCallback(async (id: number, file: File) => {
         try {
             const result = await publishedBookService.updateBookCover(id, file);
-            setBooks(books.map(b => b.id === id ? { ...b, coverImage: result.coverImage } : b));
+            setBooks(prev => prev.map(b => b.id === id ? { ...b, coverImage: result.coverImage } : b));
             setIsCoverModalOpen(false);
             showAlert('success', 'Success', 'Cover image updated successfully');
         } catch (err) {
             console.error('Failed to update cover', err);
             showAlert('error', 'Error', 'Failed to update cover image');
         }
-    };
+    }, [showAlert]);
 
-    const handleToggleVisibility = async (book: PublishedBook) => {
+    const handleToggleVisibility = useCallback(async (book: PublishedBook) => {
         try {
             const updated = await publishedBookService.updateVisibility(book.id, !book.isHidden);
-            setBooks(books.map(b => b.id === book.id ? { ...b, isHidden: updated.isHidden } : b));
+            setBooks(prev => prev.map(b => b.id === book.id ? { ...b, isHidden: updated.isHidden } : b));
             showAlert('success', 'Success', `Book is now ${updated.isHidden ? 'hidden' : 'visible'}`);
         } catch (err) {
-            showAlert('error', 'Error', 'Failed to update visibility');
+            showAlert('error', 'Error', 'Failed to update visibility' + err);
         }
-    };
+    }, [showAlert]);
 
-    const handleToggleFeatured = async (book: PublishedBook) => {
+    const handleToggleFeatured = useCallback(async (book: PublishedBook) => {
         try {
             const updated = await publishedBookService.updateFeatured(book.id, !book.isFeatured);
-            setBooks(books.map(b => b.id === book.id ? { ...b, isFeatured: updated.isFeatured } : b));
+            setBooks(prev => prev.map(b => b.id === book.id ? { ...b, isFeatured: updated.isFeatured } : b));
             showAlert('success', 'Success', `Book is now ${updated.isFeatured ? 'featured' : 'removed from featured'}`);
         } catch (err) {
-            showAlert('error', 'Error', 'Failed to update featured status');
+            showAlert('error', 'Error', 'Failed to update featured status' + err);
         }
-    };
+    }, [showAlert]);
 
-    const handleDelete = async (bookId: number) => {
+    const handleDelete = useCallback(async (bookId: number) => {
         showAlert(
             'warning',
             'Delete Book',
@@ -184,24 +286,16 @@ const PublishedBookManager: React.FC = () => {
             async () => {
                 try {
                     await publishedBookService.deleteBook(bookId);
-                    setBooks(books.filter(b => b.id !== bookId));
+                    setBooks(prev => prev.filter(b => b.id !== bookId));
                     closeAlert();
                     showAlert('success', 'Success', 'Book deleted successfully');
                 } catch (err) {
                     closeAlert();
-                    showAlert('error', 'Error', 'Failed to delete book');
+                    showAlert('error', 'Error', 'Failed to delete book' + err);
                 }
             }
         );
-    };
-
-    // Render Helper
-    const StatusBadge = ({ isHidden }: { isHidden: boolean }) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isHidden ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'
-            }`}>
-            {isHidden ? 'Hidden' : 'Visible'}
-        </span>
-    );
+    }, [showAlert, closeAlert]);
 
     return (
         <div className="p-4 bg-gray-50 min-h-screen">
@@ -241,13 +335,13 @@ const PublishedBookManager: React.FC = () => {
                 <div className="flex items-center gap-2 border-l pl-4 border-gray-200">
                     <span className="text-sm font-medium text-gray-600">Visibility:</span>
                     <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
-                        {['All', 'Visible', 'Hidden'].map((opt) => (
+                        {(['All', 'Visible', 'Hidden'] as const).map((opt) => (
                             <button
                                 key={opt}
-                                // @ts-ignore
                                 onClick={() => setVisibilityFilter(opt)}
-                                className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${visibilityFilter === opt ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'
-                                    }`}
+                                className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                                    visibilityFilter === opt ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'
+                                }`}
                             >
                                 {opt}
                             </button>
@@ -258,13 +352,13 @@ const PublishedBookManager: React.FC = () => {
                 <div className="flex items-center gap-2 border-l pl-4 border-gray-200">
                     <span className="text-sm font-medium text-gray-600">Featured:</span>
                     <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
-                        {['All', 'Featured'].map((opt) => (
+                        {(['All', 'Featured'] as const).map((opt) => (
                             <button
                                 key={opt}
-                                // @ts-ignore
                                 onClick={() => setFeaturedFilter(opt)}
-                                className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${featuredFilter === opt ? 'bg-white shadow text-amber-600' : 'text-gray-500 hover:text-gray-700'
-                                    }`}
+                                className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                                    featuredFilter === opt ? 'bg-white shadow text-amber-600' : 'text-gray-500 hover:text-gray-700'
+                                }`}
                             >
                                 {opt}
                             </button>
@@ -305,81 +399,15 @@ const PublishedBookManager: React.FC = () => {
                                     </tr>
                                 ) : (
                                     books.map((book) => (
-                                        <tr key={book.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-4 py-2">
-                                                <div className="flex items-center">
-                                                    <div className="h-16 w-12 flex-shrink-0 mr-4 bg-gray-200 rounded overflow-hidden relative group">
-                                                        {book.coverImage ? (
-                                                            <img className="h-full w-full object-cover" src={book.coverImage} alt="" />
-                                                        ) : (
-                                                            <div className="flex items-center justify-center h-full w-full text-gray-400">
-                                                                <ImageIcon size={20} />
-                                                            </div>
-                                                        )}
-                                                        <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                                                            <button
-                                                                onClick={() => handleCoverClick(book)}
-                                                                className="text-white p-2 hover:bg-white/20 rounded-full transition-colors"
-                                                                title="Change Cover"
-                                                            >
-                                                                <Edit2 size={20} />
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-sm font-medium text-gray-900 line-clamp-1">{book.title}</div>
-                                                        <div className="text-sm text-gray-500">{book.author}</div>
-                                                        <div className="text-xs text-gray-400 mt-0.5">ISBN: {book.isbn}</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                                                {book.category}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <StatusBadge isHidden={book.isHidden} />
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <button
-                                                    onClick={() => handleToggleFeatured(book)}
-                                                    className={`p-1 rounded-full transition-colors ${book.isFeatured ? 'text-amber-400 hover:text-amber-500' : 'text-gray-300 hover:text-gray-400'
-                                                        }`}
-                                                    title={book.isFeatured ? "Remove from Carousel" : "Add to Carousel"}
-                                                >
-                                                    <Star size={20} fill={book.isFeatured ? "currentColor" : "none"} />
-                                                </button>
-                                            </td>
-                                            <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <button
-                                                        onClick={() => handleToggleVisibility(book)}
-                                                        className={`p-1.5 rounded-md transition-colors ${book.isHidden
-                                                            ? 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-                                                            : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'
-                                                            }`}
-                                                        title={book.isHidden ? "Show in Library" : "Hide from Library"}
-                                                    >
-                                                        {book.isHidden ? <EyeOff size={18} /> : <Eye size={18} />}
-                                                    </button>
-
-                                                    <button
-                                                        onClick={() => handleEditClick(book)}
-                                                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                                                        title="Edit Details"
-                                                    >
-                                                        <Edit2 size={18} />
-                                                    </button>
-
-                                                    <button
-                                                        onClick={() => handleDelete(book.id)}
-                                                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                                                        title="Delete Book"
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                        <BookRow
+                                            key={book.id}
+                                            book={book}
+                                            onEdit={handleEditClick}
+                                            onCover={handleCoverClick}
+                                            onToggleVisibility={handleToggleVisibility}
+                                            onToggleFeatured={handleToggleFeatured}
+                                            onDelete={handleDelete}
+                                        />
                                     ))
                                 )}
                             </tbody>
@@ -410,6 +438,7 @@ const PublishedBookManager: React.FC = () => {
                     </button>
                 </div>
             )}
+
             {selectedBook && (
                 <EditPublishedBookModal
                     book={selectedBook}

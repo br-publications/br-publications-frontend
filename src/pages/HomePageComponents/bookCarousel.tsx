@@ -91,88 +91,92 @@ export default function BookCarousel() {
 
   return (
     <section className="book-carousel-section">
-      <div className="carousel-container">
-        {/* Section Header */}
-        <h2 className="carousel-title">
-          Academic Books
-        </h2>
-        <div className="book-carousel-underline"></div>
+      {books.length > 0 && (
+        <div className="carousel-container">
+          {/* Section Header */}
+          <h2 className="carousel-title">
+            Academic Books
+          </h2>
+          <div className="book-carousel-underline"></div>
 
-        {/* Carousel Container */}
-        <div
-          className="carousel-wrapper"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-        >
+          {/* Carousel Container */}
           <div
-            className="carousel-track"
-            style={{ transform: `translateX(calc(-${currentIndex} * (100% + ${gap}px) / ${visibleCount}))` }}
+            className="carousel-wrapper"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
           >
-            {books.map((book, index) => (
-              <div key={index} className="book-card">
-                {/* Book Cover */}
-                <div className="book-cover">
-                  <img
-                    src={book.image}
-                    alt={book.title}
-                    className="book-image"
-                    loading={index === 0 ? 'eager' : 'lazy'}
-                    fetchPriority={index === 0 ? 'high' : 'auto'}
-                    decoding="async"
-                    width="160"
-                    height="220"
-                    onError={(e) => {
-                      e.currentTarget.src = '/placeholder-book.png';
-                    }}
-                  />
-                </div>
+            <div
+              className="carousel-track"
+              style={{ transform: `translateX(calc(-${currentIndex} * (125% + ${gap}px) / ${visibleCount}))` }}
+            >
+              {books.map((book, index) => (
+                <div key={index} className="book-card">
+                  {/* Book Cover */}
+                  <div className="book-cover">
+                    <img
+                      src={book.image}
+                      alt={book.title}
+                      className="book-image"
+                      loading={index === 0 ? 'eager' : 'lazy'}
+                      fetchPriority={index === 0 ? 'high' : 'auto'}
+                      decoding="async"
+                      width="160"
+                      height="220"
+                      onError={(e) => {
+                        e.currentTarget.src = '/placeholder-book.png';
+                      }}
+                    />
+                  </div>
 
-                {/* Book Info */}
-                <div className="book-info">
-                  <h3 className="book-title">
-                    {book.title}
-                  </h3>
-                  <p className="book-author">
-                    {Array.isArray(book.editors) && book.editors.length > 0
-                      ? `${book.editors.join(', ')}`
-                      : `${book.author}`}
-                  </p>
+                  {/* Book Info */}
+                  <div className="book-info">
+                    <h3 className="book-title">
+                      {book.title}
+                    </h3>
+                    <p className="book-author">
+                      {
+                        typeof book.editors === 'string'
+                          ? book.editors.replace(/[\[\]"]/g, '')
+                          : book.editors?.join(', ')
+                      }
+                    </p>
 
-                  {/* Buttons */}
-                  <div className="book-actions">
-                    <button
-                      className="action-btn"
-                      onClick={() => handleBookClick(book)}
-                    >
-                      Preview
-                    </button>
-                    <button
-                      className="action-btn"
-                      onClick={() => handleBookClick(book)}
-                    >
-                      Buy
-                    </button>
+                    {/* Buttons */}
+                    <div className="book-actions">
+                      <button
+                        className="action-btn"
+                        onClick={() => handleBookClick(book)}
+                      >
+                        Preview
+                      </button>
+                      <button
+                        className="action-btn"
+                        onClick={() => handleBookClick(book)}
+                      >
+                        Buy
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Navigation Dots */}
-        {books.length > visibleCount && (
-          <div className="carousel-dots">
-            {Array.from({ length: Math.max(0, books.length - visibleCount + 1) }).map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`dot ${currentIndex === index ? 'active' : ''}`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+          {/* Navigation Dots */}
+          {books.length > visibleCount && (
+            <div className="carousel-dots">
+              {Array.from({ length: Math.max(0, books.length - visibleCount + 1) }).map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={`dot ${currentIndex === index ? 'active' : ''}`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </section>
   );
 }

@@ -3,7 +3,7 @@
     font-family: sans-serif;
 }
 
-.carousel-container {
+.carousel-container { 
     max-width: 1316px;
     margin: 0 auto;
     padding: 0 10px;
@@ -80,13 +80,14 @@
 
 @media (min-width: 1280px) {
     .book-card {
-        flex: 0 0 calc(20% - 10px);
+        /* flex: 0 0 calc(20% - 10px); */
+        align-items: center;
     }
 }
 
 .book-cover {
-    width: 100%;
-    height: 180px;
+    width: 80%;
+    height: 100%;
     /* Smaller height for compactness */
     overflow: hidden;
     background-color: #f3f4f6;
@@ -114,11 +115,9 @@
 
 .book-title {
     font-size: 12px;
-    /* Next size down */
     font-weight: 600;
     color: #333;
     margin-bottom: 4px;
-    /* Reduced spacing */
     margin-top: 0;
     display: -webkit-box;
     line-clamp: 2;
@@ -130,10 +129,8 @@
 
 .book-author {
     font-size: 12px;
-    /* Smaller font */
     color: #666;
     margin-bottom: 8px;
-    /* Reduced spacing */
     margin-top: 0;
     line-height: 1.2;
 }
@@ -176,9 +173,8 @@
     display: flex;
     justify-content: center;
     gap: 6px;
-    /* Reduced gap */
     margin-top: 10px;
-    /* Reduced spacing */
+    margin-bottom: 10px;
 }
 
 .dot {
