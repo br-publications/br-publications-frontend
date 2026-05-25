@@ -7,7 +7,8 @@ import { contactService, type ContactDetails } from '../../services/contactServi
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import PhoneIcon from '@mui/icons-material/Phone';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Quote } from 'lucide-react';
+import CitationModal from '../../components/common/CitationModal';
 import './bookChapterDetail.css';
 import { sanitizeUrl } from '../../utils/urlValidation';
 import { generateUniqueSlug } from '../../utils/stringUtils';
@@ -36,6 +37,7 @@ const BookChapterDetail: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('synopsis');
+  const [isCitationOpen, setIsCitationOpen] = useState<boolean>(false);
   const [contactInfo, setContactInfo] = useState<ContactDetails | null>(null);
   const [tocSearchQuery, setTocSearchQuery] = useState<string>('');
   const [resolvedEditors, setResolvedEditors] = useState<PublishedEditor[]>([]);
@@ -422,6 +424,14 @@ const BookChapterDetail: React.FC = () => {
                         <span>{book.author}</span>
                       )}
                     </p>
+
+                    <button
+                      onClick={() => setIsCitationOpen(true)}
+                      className="cite-trigger-btn"
+                      title="Generate citation for this book"
+                    >
+                      <Quote size={14} /> Cite this Book Chapter
+                    </button>
 
                     <div className="meta-info">
                       {book.indexedIn && (
@@ -920,6 +930,24 @@ const BookChapterDetail: React.FC = () => {
             </div>
           </div>
         </section>
+      )}
+
+      {book && (
+        <CitationModal
+          isOpen={isCitationOpen}
+          onClose={() => setIsCitationOpen(false)}
+          item={{
+            type: 'book',
+            title: book.title,
+            authors: [],
+            editors: book.editors || [],
+            year: book.releaseDate ? book.releaseDate.split('-')[0] : book.publishedDate ? book.publishedDate.split('-')[0] : book.copyright ? book.copyright.replace(/[^\d]/g, '') : '',
+            publisher: 'BR ResNova Academic Press',
+            isbn: book.isbn,
+            doi: book.doi,
+            pages: book.pages ? String(book.pages) : undefined
+          }}
+        />
       )}
     </>
   );

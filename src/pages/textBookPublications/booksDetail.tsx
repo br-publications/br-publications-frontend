@@ -5,6 +5,8 @@ import productBooksService from '../../services/productbooksservice';
 import { contactService, type ContactDetails } from '../../services/contactService';
 import PhoneIcon from '@mui/icons-material/Phone';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import { Quote } from 'lucide-react';
+import CitationModal from '../../components/common/CitationModal';
 import './booksDetail.css';
 import { sanitizeUrl } from '../../utils/urlValidation';
 import { Helmet } from 'react-helmet-async';
@@ -18,6 +20,7 @@ const BooksDetail: React.FC = () => {
   const [contactDetails, setContactDetails] = useState<ContactDetails | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCitationOpen, setIsCitationOpen] = useState<boolean>(false);
 
   /**
    * Load book details and contact info on component mount
@@ -217,6 +220,14 @@ const BooksDetail: React.FC = () => {
                         )}
                       </p>
 
+                      <button
+                        onClick={() => setIsCitationOpen(true)}
+                        className="cite-trigger-btn"
+                        title="Generate citation for this book"
+                      >
+                        <Quote size={14} /> Cite this Book
+                      </button>
+
                       <div className="meta-info">
                         {book.indexedIn && (
                           <div className="meta-item">
@@ -389,6 +400,23 @@ const BooksDetail: React.FC = () => {
             </div>
           </section>
         </main>
+      )}
+
+      {book && (
+        <CitationModal
+          isOpen={isCitationOpen}
+          onClose={() => setIsCitationOpen(false)}
+          item={{
+            type: 'book',
+            title: book.title,
+            authors: book.author,
+            year: book.releaseDate ? book.releaseDate.split('-')[0] : book.publishedDate ? book.publishedDate.split('-')[0] : book.copyright ? book.copyright.replace(/[^\d]/g, '') : '',
+            publisher: 'BR Publications',
+            isbn: book.isbn,
+            doi: book.doi,
+            pages: book.pages ? String(book.pages) : undefined
+          }}
+        />
       )}
     </>
   );

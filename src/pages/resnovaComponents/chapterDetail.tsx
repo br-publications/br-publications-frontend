@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Quote } from 'lucide-react';
 import { bookChapterService } from '../../services/bookChapterService';
 import { getExtraPdfUrl, incrementChapterViews } from '../../services/bookChapterPublishing.service';
 import type { Book, Chapter, PublishedAuthor } from '../../types/bookTypes';
 import { generateUniqueSlug } from '../../utils/stringUtils';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { sanitizeUrl } from '../../utils/urlValidation';
+import CitationModal from '../../components/common/CitationModal';
 import './chapterDetail.css';
 import { Helmet } from 'react-helmet-async';
 
@@ -29,6 +30,7 @@ const ChapterDetail: React.FC = () => {
     const [chapterSearchQuery, setChapterSearchQuery] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isCitationOpen, setIsCitationOpen] = useState<boolean>(false);
 
     const renderAuthors = (authors: string, details?: PublishedAuthor[]) => {
         if (!details || details.length === 0) return authors;
@@ -278,6 +280,15 @@ const ChapterDetail: React.FC = () => {
                                             <h1 className="main-chapter-title">{chapter.title}</h1>
                                             <p className="main-chapter-authors">{renderAuthors(chapter.authors, chapter.authorDetails)}</p>
 
+                                            <button
+                                                onClick={() => setIsCitationOpen(true)}
+                                                className="cite-trigger-btn"
+                                                title="Generate citation for this chapter"
+                                                style={{ marginTop: '6px', marginBottom: '14px' }}
+                                            >
+                                                <Quote size={14} /> Cite this Chapter
+                                            </button>
+
                                             <div className="meta-details-grid">
                                                 <div className="meta-info-item clickable"><strong>Source Title:</strong> <span onClick={() => navigate(-1)}>{book.title}</span></div>
                                                 <div className="meta-info-item"><strong>Copyright:</strong> <span>{book.copyright || 'N/A'}</span></div>
@@ -415,6 +426,24 @@ const ChapterDetail: React.FC = () => {
                         </div>
                     </section>
                 </main>
+            )}
+
+            {book && chapter && (
+                <CitationModal
+                    isOpen={isCitationOpen}
+                    onClose={() => setIsCitationOpen(false)}
+                    item={{
+                        type: 'chapter',
+                        title: chapter.title,
+                        authors: chapter.authors || [],
+                        containerTitle: book.title,
+                        year: book.releaseDate ? book.releaseDate.split('-')[0] : book.publishedDate ? book.publishedDate.split('-')[0] : book.copyright ? book.copyright.replace(/[^\d]/g, '') : '',
+                        publisher: 'BR ResNova Academic Press',
+                        isbn: book.isbn,
+                        doi: chapter.doi || book.doi || undefined,
+                        pages: chapter.pages || undefined
+                    }}
+                />
             )}
         </>
     );
