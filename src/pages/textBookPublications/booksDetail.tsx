@@ -77,10 +77,14 @@ const BooksDetail: React.FC = () => {
    * only after data is loaded and page-specific metadata is set.
    */
   useEffect(() => {
-    if (!loading) {
-      setTimeout(() => document.dispatchEvent(new Event('prerender-ready')), 500);
+    if (!loading && book) {
+      setTimeout(() => {
+        document.dispatchEvent(new Event('prerender-ready'));
+        document.dispatchEvent(new Event('ZoteroItemUpdated'));
+        window.dispatchEvent(new Event('ZoteroItemUpdated'));
+      }, 500);
     }
-  }, [loading]);
+  }, [loading, book]);
 
   const handleBackClick = () => {
     navigate('/books');
@@ -98,9 +102,29 @@ const BooksDetail: React.FC = () => {
     });
   };
 
+  // Helper to split author strings by comma, 'and', etc.
+  const getAuthorsList = (authorStr?: string, coAuthorStr?: string): string[] => {
+    const list: string[] = [];
+    if (authorStr) {
+      authorStr.split(/, and | and |,/).forEach(a => {
+        const trimmed = a.trim();
+        if (trimmed) list.push(trimmed);
+      });
+    }
+    if (coAuthorStr) {
+      coAuthorStr.split(/, and | and |,/).forEach(a => {
+        const trimmed = a.trim();
+        if (trimmed) list.push(trimmed);
+      });
+    }
+    return list;
+  };
+
+  const authorsList = book ? getAuthorsList(book.author, book["co-authors"]) : [];
+
   // SEO and Metadata logic
   const displayTitle = book
-    ? `${book.title} by ${book.author} | BR Publications`
+    ? `${book.title} | BR Publications`
     : (id ? `Book Details | BR Publications` : 'Book Details');
   const metaDescription = book?.synopsis
     ? Object.values(book.synopsis).join(' ').replace(/<[^>]+>/g, '').slice(0, 150)
@@ -112,7 +136,7 @@ const BooksDetail: React.FC = () => {
     '@context': 'https://schema.org',
     '@type': 'Book',
     'name': book.title,
-    'author': { '@type': 'Person', 'name': book.author },
+    'author': authorsList.map(name => ({ '@type': 'Person', 'name': name })),
     'isbn': book.isbn,
     'publisher': {
       '@type': 'Organization',
@@ -123,8 +147,39 @@ const BooksDetail: React.FC = () => {
     'url': canonicalUrlFull,
     'description': metaDescription,
     'inLanguage': 'en',
+    'numberOfPages': book.pages ? Number(book.pages) : undefined,
+    ...(book.doi ? { 'identifier': book.doi } : {}),
     ...(book.publishedDate ? { 'datePublished': book.publishedDate } : {})
   } : null;
+
+  // Generate COinS title parameter
+  const getCoinsTitle = (bk: Book, authsList: string[]): string => {
+    const params = new URLSearchParams();
+    params.append('ctx_ver', 'Z39.88-2004');
+    params.append('rft_val_fmt', 'info:ofi/fmt:kev:mtx:book');
+    params.append('rft.genre', 'book');
+    params.append('rft.btitle', bk.title);
+    params.append('rft.pub', 'BR Publications');
+
+    authsList.forEach(auth => {
+      params.append('rft.au', auth);
+    });
+
+    const year = bk.releaseDate 
+      ? bk.releaseDate.split('-')[0] 
+      : bk.publishedDate 
+        ? bk.publishedDate.split('-')[0] 
+        : bk.copyright 
+          ? bk.copyright.replace(/[^\d]/g, '') 
+          : '';
+    if (year) params.append('rft.date', year);
+    if (bk.isbn) params.append('rft.isbn', bk.isbn);
+    if (bk.pages) params.append('rft.pages', String(bk.pages));
+    if (bk.doi) {
+      params.append('rft_id', `info:doi/${bk.doi}`);
+    }
+    return params.toString();
+  };
 
   return (
     <>
@@ -146,9 +201,8 @@ const BooksDetail: React.FC = () => {
 
           {/* Google Scholar / Academic Metadata */}
           <meta name="citation_title" content={book.title} />
-          <meta name="citation_author" content={book.author} />
-          {book["co-authors"] && book["co-authors"].split(',').map(name => (
-            <meta name="citation_author" content={name.trim()} key={name} />
+          {authorsList.map((name, index) => (
+            <meta name="citation_author" content={name} key={`author-${index}`} />
           ))}
           {book.publishedDate && <meta name="citation_publication_date" content={book.publishedDate} />}
           <meta name="citation_isbn" content={book.isbn} />
@@ -157,6 +211,19 @@ const BooksDetail: React.FC = () => {
           <meta name="citation_abstract_html_url" content={canonicalUrlFull} />
           <meta name="citation_fulltext_html_url" content={canonicalUrlFull} />
           {book.doi && <meta name="citation_doi" content={book.doi} />}
+
+          {/* Dublin Core Metadata */}
+          <meta name="dc.title" content={book.title} />
+          {authorsList.map((name, index) => (
+            <meta name="dc.creator" content={name} key={`dc-creator-${index}`} />
+          ))}
+          <meta name="dc.publisher" content="BR Publications" />
+          {book.publishedDate && <meta name="dc.date" content={book.publishedDate} />}
+          <meta name="dc.identifier" content={book.isbn} />
+          {book.doi && <meta name="dc.identifier" content={book.doi} />}
+          <meta name="dc.type" content="Book" />
+          <meta name="dc.language" content="en" />
+
           {schemaData && <script type="application/ld+json">{JSON.stringify(schemaData)}</script>}
         </Helmet>
       )}
@@ -180,6 +247,8 @@ const BooksDetail: React.FC = () => {
       ) : (
         <main className="content">
           <section id="resNovaPage" className="resNova-page">
+            {/* COinS Metadata Span for reference extraction tools like Zotero */}
+            <span className="Z3988" style={{ display: 'none' }} title={getCoinsTitle(book, authorsList)}></span>
             {/* Hero Section */}
             <section className="product-hero">
               <div className="hero-content">
@@ -409,7 +478,7 @@ const BooksDetail: React.FC = () => {
           item={{
             type: 'book',
             title: book.title,
-            authors: book.author,
+            authors: authorsList,
             year: book.releaseDate ? book.releaseDate.split('-')[0] : book.publishedDate ? book.publishedDate.split('-')[0] : book.copyright ? book.copyright.replace(/[^\d]/g, '') : '',
             publisher: 'BR Publications',
             isbn: book.isbn,
