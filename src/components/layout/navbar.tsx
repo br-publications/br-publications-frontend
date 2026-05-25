@@ -11,7 +11,7 @@ export default function Navbar() {
   const menuItems = [
     { name: 'Home', link: '/' },
     {
-      name: 'Journals & Publications',
+      name: 'Journals',
       dropdown: ['JAMES']
     },
     {
@@ -20,7 +20,7 @@ export default function Navbar() {
       dropdown: ['Author Guidelines', 'Submit Book Chapter', 'Recent Advances']
     },
     {
-      name: 'Book Publications',
+      name: 'Books',
       link: '/bookpublications',
       dropdown: ['Author Guidelines', 'Submit Book Content', 'Our Products']
     },
@@ -111,7 +111,7 @@ export default function Navbar() {
       if (subItem === 'Internship & Projects') return '/students-internship-program';
     }
 
-    if (menuName === 'Journals & Publications') {
+    if (menuName === 'Journals') {
       if (subItem === 'JAMES') return 'https://james.brpublications.com/index.php/James/index';
     }
 
@@ -121,7 +121,7 @@ export default function Navbar() {
       if (subItem === 'Recent Advances') return '/bookchapters';
     }
 
-    if (menuName === 'Book Publications') {
+    if (menuName === 'Books') {
       if (subItem === 'Author Guidelines') return '/bookpublications#books-guidelines';
       if (subItem === 'Submit Book Content') return '/book-manuscript';
       if (subItem === 'Our Products') return '/books';

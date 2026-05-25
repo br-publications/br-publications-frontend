@@ -105,7 +105,7 @@ export default function Footer() {
             <ul className="list-none p-0">
               <li className="flex items-center mb-[8px]">
                 <ChevronRight size={14} className="text-[#1e5292] mr-[8px]" />
-                <a href="https://brpublications.com/index.php/James/index" target="_blank" rel="noopener noreferrer" className="text-black no-underline text-[12px] transition-all duration-300 hover:text-[#1e5292] hover:pl-[5px]">Journals & Publications</a>
+                <a href='https://james.brpublications.com/index.php/James/index' target="_blank" rel="noopener noreferrer" className="text-black no-underline text-[12px] transition-all duration-300 hover:text-[#1e5292] hover:pl-[5px]">Journals</a>
               </li>
               <li className="flex items-center mb-[8px]">
                 <ChevronRight size={14} className="text-[#1e5292] mr-[8px]" />
@@ -113,7 +113,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center mb-[8px]">
                 <ChevronRight size={14} className="text-[#1e5292] mr-[8px]" />
-                <a href="/bookpublications" className="text-black no-underline text-[12px] transition-all duration-300 hover:text-[#1e5292] hover:pl-[5px]">Book Publications</a>
+                <a href="/bookpublications" className="text-black no-underline text-[12px] transition-all duration-300 hover:text-[#1e5292] hover:pl-[5px]">Books</a>
               </li>
             </ul>
           </div>
@@ -168,4 +168,4 @@ export default function Footer() {
       </footer>
     </>
   )
-}
+}
