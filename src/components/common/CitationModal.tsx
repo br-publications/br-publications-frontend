@@ -77,7 +77,7 @@ const getCite = () => {
 };
 
 const CitationModal: React.FC<CitationModalProps> = ({ isOpen, onClose, item }) => {
-  const [style, setStyle] = useState<string>('harvard1');
+  const [style, setStyle] = useState<string>('mla');
   const [loadingStyle, setLoadingStyle] = useState<boolean>(false);
   const [citationHtml, setCitationHtml] = useState<string>('');
   const [citationText, setCitationText] = useState<string>('');
@@ -127,19 +127,19 @@ const CitationModal: React.FC<CitationModalProps> = ({ isOpen, onClose, item }) 
         const templates = Cite.plugins.config.get('@csl').templates;
 
         // Dynamically fetch and register external CSL styles if not already cached
-        if (style === 'ieee' && !templates.has('ieee')) {
-          setLoadingStyle(true);
-          const res = await fetch('https://cdn.jsdelivr.net/gh/citation-style-language/styles@master/ieee.csl');
-          if (!res.ok) throw new Error('Failed to fetch IEEE style XML');
-          const xml = await res.text();
-          templates.add('ieee', xml);
-          setLoadingStyle(false);
-        } else if (style === 'mla' && !templates.has('mla')) {
+        if (style === 'mla' && !templates.has('mla')) {
           setLoadingStyle(true);
           const res = await fetch('https://cdn.jsdelivr.net/gh/citation-style-language/styles@master/modern-language-association.csl');
           if (!res.ok) throw new Error('Failed to fetch MLA style XML');
           const xml = await res.text();
           templates.add('mla', xml);
+          setLoadingStyle(false);
+        } else if (style === 'chicago' && !templates.has('chicago')) {
+          setLoadingStyle(true);
+          const res = await fetch('https://cdn.jsdelivr.net/gh/citation-style-language/styles@master/chicago-author-date.csl');
+          if (!res.ok) throw new Error('Failed to fetch Chicago style XML');
+          const xml = await res.text();
+          templates.add('chicago', xml);
           setLoadingStyle(false);
         }
 
@@ -206,7 +206,7 @@ const CitationModal: React.FC<CitationModalProps> = ({ isOpen, onClose, item }) 
   // Reset local style state when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setStyle('harvard1');
+      setStyle('mla');
       setCitationHtml('');
       setCitationText('');
       setError(null);
@@ -281,10 +281,10 @@ const CitationModal: React.FC<CitationModalProps> = ({ isOpen, onClose, item }) 
                 onChange={(e) => setStyle(e.target.value)}
                 disabled={loadingStyle}
               >
-                <option value="harvard1">Harvard (Default)</option>
+                <option value="mla">MLA (Default)</option>
                 <option value="apa">APA</option>
-                <option value="mla">MLA</option>
-                <option value="ieee">IEEE</option>
+                <option value="chicago">Chicago</option>
+                <option value="harvard1">Harvard</option>
                 <option value="vancouver">Vancouver</option>
               </select>
             </div>
