@@ -157,7 +157,7 @@ const BooksDetail: React.FC = () => {
 
   const identifier = book?.uid 
     ? book.uid.toLowerCase() 
-    : (book?.id ?? (/^\d+$/.test(id) ? id : id.toLowerCase()));
+    : (book?.id ?? id!);
   const bookSlug = book?.title ? toBookNameSlug(book.title) : '';
   const canonicalUrlFull = bookSlug 
     ? `https://www.brpublications.com/book/${identifier}/${bookSlug}`

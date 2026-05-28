@@ -17,6 +17,7 @@ import { isValidPhoneNumber } from '../../utils/phoneValidation';
 import { isValidUrl } from '../../utils/urlValidation';
 import { isValidEmail } from '../../utils/emailValidation';
 import { usePublishingDraft } from '../../hooks/usePublishingDraft';
+import { generateNextBookChapterUID } from '../../utils/bookChapterUIDGenerator';
 import './publishChapterWizard.css';
 import '../../pages/textBookSubmission/publishing/imageCropper.css';
 
@@ -80,6 +81,7 @@ interface FormState {
     flipkartLink?: string;
     amazonLink?: string;
     editors: string[];
+    uid: string;
     // Step 3
     synopses: string[];
     // Step 4
@@ -128,7 +130,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
         submissionId: submission.id,
         wizardType: 'CHAPTER',
         enabled: isOpen,
-        onDraftLoaded: (payload) => {
+        onDraftLoaded: async (payload) => {
             if (payload.form) {
                 // Ensure editors and coAuthors are handled correctly if they were stringified
                 const parsedForm = { ...payload.form };
@@ -138,6 +140,8 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                 if (typeof parsedForm.coAuthors === 'string') {
                     try { parsedForm.coAuthors = JSON.parse(parsedForm.coAuthors); } catch (e) { parsedForm.coAuthors = []; }
                 }
+                const latestUid = await generateNextBookChapterUID();
+                parsedForm.uid = latestUid;
                 setForm(parsedForm);
             }
             if (payload.scopeItems) setScopeItems(payload.scopeItems);
@@ -227,6 +231,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                 submission.assignedEditor?.fullName
             ].filter(Boolean) as string[])),
         frontmatterPdfs: {},
+        uid: '',
     });
 
     const extraPdfTypes = [
@@ -323,7 +328,14 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                     submission.assignedEditor?.fullName
                 ].filter(Boolean) as string[])),
             frontmatterPdfs: {},
+            uid: '',
         });
+
+        const fetchUID = async () => {
+            const nextUid = await generateNextBookChapterUID();
+            setForm(prev => ({ ...prev, uid: nextUid }));
+        };
+        fetchUID();
         setScopeItems(['']);
         setEditorBiographies([]);
 
@@ -586,6 +598,8 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                 if (!form.category.trim()) return 'Category is required.';
                 if (!form.description.trim()) return 'Short description / abstract is required.';
                 if (!form.isbn.trim()) return 'ISBN is required.';
+                if (!form.uid || !form.uid.trim()) return 'UID is required.';
+                if (!form.keywords || form.keywords.length === 0 || form.keywords.every(k => !k.trim())) return 'Keywords are required.';
                 if (!form.publishedDate.trim()) return 'Published year is required.';
                 if (!form.pages || form.pages <= 0) return 'Number of pages must be a positive integer.';
                 if (!form.indexedIn.trim()) return 'Indexed In is required.';
@@ -966,6 +980,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                 category: form.category,
                 description: form.description,
                 isbn: form.isbn,
+                uid: form.uid,
                 publishedDate: form.publishedDate,
                 pages: Number(form.pages),
                 keywords: form.keywords.map(k => k.trim()).filter(Boolean),
@@ -1522,6 +1537,10 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                         </select>
                                     </div>
                                     <div className="pcw-field">
+                                        <label className="pcw-label">UID <span className="req">*</span></label>
+                                        <input className="pcw-input" name="uid" value={form.uid || ''} onChange={handleFormChange} placeholder="e.g. A01" />
+                                    </div>
+                                    <div className="pcw-field">
                                         <label className="pcw-label">ISBN <span className="req">*</span></label>
                                         <input className="pcw-input" name="isbn" value={form.isbn} onChange={handleFormChange} placeholder="978-x-xxxxx-xxx-x" />
                                     </div>
@@ -1988,6 +2007,7 @@ const PublishChapterWizard: React.FC<PublishChapterWizardProps> = ({
                                         <div className="pcw-review-row"><span className="pcw-review-key">Title</span><span className="pcw-review-val">{form.title || '–'}</span></div>
                                         <div className="pcw-review-row"><span className="pcw-review-key">Editors</span><span className="pcw-review-val">{Array.isArray(form.editors) ? form.editors.join(', ') : (form.editors || '–')}</span></div>
                                         <div className="pcw-review-row"><span className="pcw-review-key">Category</span><span className="pcw-review-val">{form.category || '–'}</span></div>
+                                        <div className="pcw-review-row"><span className="pcw-review-key">UID</span><span className="pcw-review-val">{form.uid || '–'}</span></div>
                                         <div className="pcw-review-row"><span className="pcw-review-key">ISBN</span><span className={`pcw-review-val ${!form.isbn ? 'missing' : ''}`}>{form.isbn || 'Not set!'}</span></div>
                                         <div className="pcw-review-row"><span className="pcw-review-key">DOI</span><span className="pcw-review-val">{form.doi || '–'}</span></div>
                                         <div className="pcw-review-row"><span className="pcw-review-key">Pages</span><span className="pcw-review-val">{form.pages || '–'}</span></div>

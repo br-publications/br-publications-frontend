@@ -17,6 +17,7 @@ import { isValidUrl } from '../../utils/urlValidation';
 import { isValidEmail } from '../../utils/emailValidation';
 import { usePublishingDraft } from '../../hooks/usePublishingDraft';
 import { publishDraftService, type PublishingDraft } from '../../services/publishDraftService';
+import { generateNextBookChapterUID } from '../../utils/bookChapterUIDGenerator';
 import './individualPublishChapterWizard.css';
 import '../../pages/textBookSubmission/publishing/imageCropper.css';
 
@@ -76,6 +77,7 @@ interface FormState {
     googleLink?: string;
     flipkartLink?: string;
     amazonLink?: string;
+    uid: string;
     // Step 3
     synopses: string[];
     // Step 4
@@ -168,6 +170,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
         scopeIntro: '',
         coverImage: '',
         frontmatterPdfs: {},
+        uid: '',
     });
 
     const extraPdfTypes = [
@@ -209,7 +212,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
         submissionId: form.submissionId, // Uses the generated or restored submissionId
         wizardType: 'INDIVIDUAL',
         enabled: isOpen,
-        onDraftLoaded: (payload) => {
+        onDraftLoaded: async (payload) => {
             if (payload.form) {
                 // Ensure editors and coAuthors are handled correctly if they were stringified
                 const parsedForm = { ...payload.form };
@@ -219,6 +222,8 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                 if (typeof parsedForm.coAuthors === 'string') {
                     try { parsedForm.coAuthors = JSON.parse(parsedForm.coAuthors); } catch (e) { parsedForm.coAuthors = []; }
                 }
+                const latestUid = await generateNextBookChapterUID();
+                parsedForm.uid = latestUid;
                 setForm(parsedForm);
             }
             if (payload.scopeItems) setScopeItems(payload.scopeItems);
@@ -334,6 +339,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
             coverImage: '',
             keywords: [],
             frontmatterPdfs: {},
+            uid: '',
         });
         setScopeItems(['']);
         setTocChapters([{ title: '', chapterNumber: '01' }]);
@@ -343,7 +349,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
         setArchiveItems(['']);
         setOriginalImage('');
 
-        // Auto-generate 6-digit Submission ID: (lastId + 1) + timestamp
+        // Auto-generate 6-digit Submission ID and UID
         const autoGenerateId = async () => {
             try {
                 const response = await bookChapterAdminService.getAdminSubmissions({ page: 1, limit: 1 });
@@ -356,16 +362,19 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                 const tsFragment = Date.now().toString().slice(-4);
 
                 // Concatenate and trim/pad to exactly 6 digits
-                let combined = nextBaseId + tsFragment;
+                const combined = nextBaseId + tsFragment;
                 const generatedId = combined.length > 6
                     ? combined.slice(-6)     // keep the most-recent (most unique) digits
                     : combined.padStart(6, '0');
 
-                setForm(p => ({ ...p, submissionId: generatedId }));
+                const generatedUID = await generateNextBookChapterUID();
+
+                setForm(p => ({ ...p, submissionId: generatedId, uid: generatedUID }));
             } catch (err) {
                 console.error('Failed to auto-generate submission ID:', err);
+                const generatedUID = await generateNextBookChapterUID();
                 // Fallback: 6 digits purely from timestamp
-                setForm(p => ({ ...p, submissionId: Date.now().toString().slice(-6) }));
+                setForm(p => ({ ...p, submissionId: Date.now().toString().slice(-6), uid: generatedUID }));
             }
         };
 
@@ -520,6 +529,8 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
             case 'metadata':
                 if (!form.title.trim()) return 'Book title is required.';
                 if (!form.category.trim()) return 'Category is required.';
+                if (!form.uid || !form.uid.trim()) return 'UID is required.';
+                if (!form.keywords || form.keywords.length === 0 || form.keywords.every(k => !k.trim())) return 'Keywords are required.';
                 if (!form.description.trim()) return 'Short description / abstract is required.';
                 if (!form.isbn.trim()) return 'ISBN is required.';
                 if (!form.publishedDate.trim()) return 'Published year is required.';
@@ -887,6 +898,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                 category: form.category,
                 description: form.description,
                 isbn: form.isbn,
+                uid: form.uid,
                 publishedDate: form.publishedDate,
                 pages: Number(form.pages),
                 keywords: form.keywords.map(k => k.trim()).filter(Boolean),
@@ -1361,6 +1373,10 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                                                     </select>
                                                 </div>
                                                 <div className="pcw-field">
+                                                    <label className="pcw-label">UID <span className="req">*</span></label>
+                                                    <input className="pcw-input" name="uid" value={form.uid || ''} onChange={handleFormChange} placeholder="e.g. A01" />
+                                                </div>
+                                                <div className="pcw-field">
                                                     <label className="pcw-label">ISBN <span className="req">*</span></label>
                                                     <input className="pcw-input" name="isbn" value={form.isbn} onChange={handleFormChange} placeholder="978-x-xxxxx-xxx-x" />
                                                 </div>
@@ -1708,6 +1724,7 @@ const IndividualPublishChapterWizard: React.FC<IndividualPublishChapterWizardPro
                                                     <div className="pcw-review-row"><span className="pcw-review-key">Title</span><span className="pcw-review-val">{form.title || '–'}</span></div>
                                                     <div className="pcw-review-row"><span className="pcw-review-key">Editors</span><span className={`pcw-review-val ${!Array.isArray(form.editors) || form.editors.filter(Boolean).length === 0 ? 'missing' : ''}`}>{Array.isArray(form.editors) && form.editors.filter(Boolean).length > 0 ? form.editors.join(', ') : 'Not set!'}</span></div>
                                                     <div className="pcw-review-row"><span className="pcw-review-key">Category</span><span className="pcw-review-val">{form.category || '–'}</span></div>
+                                                    <div className="pcw-review-row"><span className="pcw-review-key">UID</span><span className="pcw-review-val">{form.uid || '–'}</span></div>
                                                     <div className="pcw-review-row"><span className="pcw-review-key">ISBN</span><span className={`pcw-review-val ${!form.isbn ? 'missing' : ''}`}>{form.isbn || 'Not set!'}</span></div>
                                                     <div className="pcw-review-row"><span className="pcw-review-key">DOI</span><span className="pcw-review-val">{form.doi || '–'}</span></div>
                                                     <div className="pcw-review-row"><span className="pcw-review-key">Pages</span><span className="pcw-review-val">{form.pages || '–'}</span></div>

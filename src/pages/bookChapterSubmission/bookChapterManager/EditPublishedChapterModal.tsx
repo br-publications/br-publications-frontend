@@ -82,6 +82,7 @@ interface FormState {
     coverImage: string;
     keywords: string[];
     frontmatterPdfs: Record<string, { pdfKey?: string; mimeType?: string; name?: string }>;
+    uid?: string;
 }
 
 // ============================================================
@@ -151,6 +152,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
         editors: [],
         primaryEditor: '',
         frontmatterPdfs: {},
+        uid: '',
     });
 
     const extraPdfTypes = [
@@ -302,6 +304,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                 editors: Array.isArray(bookData.editors) ? bookData.editors : (typeof bookData.editors === 'string' ? parseJson(bookData.editors) || bookData.editors.split(',').map((s: string) => s.trim()) : prev.editors),
                 primaryEditor: bookData.primaryEditor || prev.primaryEditor || '',
                 frontmatterPdfs: parseJson(bookData.frontmatterPdfs) || prev.frontmatterPdfs || {},
+                uid: bookData.uid || prev.uid || '',
             }));
 
             if (scItems.length > 0) setScopeItems(scItems);
@@ -440,6 +443,9 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
             case 'metadata':
                 if (!form.title.trim()) return 'Book title is required.';
                 if (!form.isbn.trim()) return 'ISBN is required.';
+                if (!form.uid || !form.uid.trim()) return 'UID is required.';
+                if (!form.description || !form.description.trim()) return 'Abstract / Description is required.';
+                if (!form.keywords || form.keywords.length === 0 || form.keywords.every(k => !k.trim())) return 'Keywords are required.';
                 if (form.priceSoftCopy === undefined || form.priceSoftCopy <= 0) return 'Soft Copy Price is required and must be positive.';
                 if (form.priceHardCopy === undefined || form.priceHardCopy <= 0) return 'Hard Copy Price is required and must be positive.';
                 if (form.priceCombined === undefined || form.priceCombined <= 0) return 'Soft + Hard Price is required and must be positive.';
@@ -628,6 +634,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                 category: form.category,
                 description: form.description,
                 isbn: form.isbn,
+                uid: form.uid,
                 publishedDate: form.publishedDate,
                 pages: Number(form.pages),
                 indexedIn: form.indexedIn || undefined,
@@ -924,6 +931,10 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                                             <option value="Medical & Health Sciences">Medical &amp; Health Sciences</option>
                                             <option value="Interdisciplinary Sciences">Interdisciplinary Sciences</option>
                                         </select>
+                                    </div>
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">UID <span className="req">*</span></label>
+                                        <input className="pcw-input" name="uid" value={form.uid || ''} onChange={handleFormChange} placeholder="e.g. A01" />
                                     </div>
                                     <div className="pcw-field">
                                         <label className="pcw-label">ISBN <span className="req">*</span></label>

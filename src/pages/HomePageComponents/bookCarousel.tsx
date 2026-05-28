@@ -135,8 +135,8 @@ export default function BookCarousel() {
                     </h3>
                     <p className="book-author">
                       {
-                        typeof book.editors === 'string'
-                          ? book.editors.replace(/[\[\]"]/g, '')
+                        typeof (book.editors as any) === 'string'
+                          ? (book.editors as any).replace(/[\[\]"]/g, '')
                           : book.editors?.join(', ')
                       }
                     </p>

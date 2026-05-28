@@ -94,6 +94,7 @@ export interface PublishBookChapterPayload {
     releaseDate?: string;
     copyright?: string;
     doi?: string;
+    uid?: string;
     synopsis?: Record<string, string>;
     scope?: Record<string, string>;
     tableContents?: TocChapterPayload[];
