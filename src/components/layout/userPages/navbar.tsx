@@ -81,7 +81,9 @@ export default function DashboardNavbar({
     setActiveDropdown(activeDropdown === itemName ? null : itemName);
 
   const handleLogout = async () => {
-    try { await authService.logout(); } catch { }
+    try { await authService.logout(); } catch(e) {
+      console.error('Error during logout:', e);
+    }
     finally {
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');

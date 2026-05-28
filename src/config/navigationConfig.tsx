@@ -125,7 +125,7 @@ export const adminNavbarItems: MenuItem[] = [
     children: [
       { name: 'Add Book Chapters', link: '/dashboard/admin/book-chapters' },
       { name: 'publish Book Chapters', link: '/dashboard/admin/individualbookchapterpublish' },
-      { name: 'Bulk Uploads', link: '/dashboard/admin/bookchapterbulkupload' },
+      // { name: 'Bulk Uploads', link: '/dashboard/admin/bookchapterbulkupload' },
       { name: 'Manage Published Chapters', link: '/dashboard/admin/bookchaptermanager' },
     ],
   },
