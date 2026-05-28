@@ -66,6 +66,7 @@ export interface PublishingFormData {
     keywords: string[];
     category: string;
     description: string;
+    uid: string | null;
 
     // Pricing (admin-entered)
     pricing: PublishingPricing;

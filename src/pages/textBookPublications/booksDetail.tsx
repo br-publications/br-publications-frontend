@@ -10,6 +10,7 @@ import CitationModal from '../../components/common/CitationModal';
 import './booksDetail.css';
 import { sanitizeUrl } from '../../utils/urlValidation';
 import { Helmet } from 'react-helmet-async';
+import { toBookNameSlug } from '../../utils/stringUtils';
 
 const BooksDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -49,9 +50,33 @@ const BooksDetail: React.FC = () => {
         }
 
         if (id) {
-          const bookData = await productBooksService.getBookById(parseInt(id));
-          if (bookData) {
-            setBook(bookData);
+          let numericId: number | null = null;
+          const isNumeric = /^\d+$/.test(id);
+
+          if (isNumeric) {
+            numericId = parseInt(id);
+          } else if (stateBook && stateBook.id) {
+            numericId = stateBook.id;
+          } else {
+            // Fallback: Resolve UID to numeric ID by matching from the books list
+            try {
+              const allBooks = await productBooksService.getAllBooks();
+              const matchedBook = allBooks.find(b => b.uid && b.uid.toLowerCase() === id.toLowerCase());
+              if (matchedBook) {
+                numericId = matchedBook.id;
+              }
+            } catch (resolveErr) {
+              console.error('Error resolving book UID:', resolveErr);
+            }
+          }
+
+          if (numericId) {
+            const bookData = await productBooksService.getBookById(numericId);
+            if (bookData) {
+              setBook(bookData);
+            } else if (!stateBook) {
+              setError('Book not found');
+            }
           } else if (!stateBook) {
             setError('Book not found');
           }
@@ -130,7 +155,13 @@ const BooksDetail: React.FC = () => {
     ? Object.values(book.synopsis).join(' ').replace(/<[^>]+>/g, '').slice(0, 150)
     : book ? `${book.title} by ${book.author} — published by BR Publications.` : 'Detailed information about academic books and research publications from BR Publications.';
 
-  const canonicalUrlFull = `https://www.brpublications.com/book/${id}`;
+  const identifier = book?.uid 
+    ? book.uid.toLowerCase() 
+    : (book?.id ?? (/^\d+$/.test(id) ? id : id.toLowerCase()));
+  const bookSlug = book?.title ? toBookNameSlug(book.title) : '';
+  const canonicalUrlFull = bookSlug 
+    ? `https://www.brpublications.com/book/${identifier}/${bookSlug}`
+    : `https://www.brpublications.com/book/${identifier}`;
 
   const schemaData = book ? {
     '@context': 'https://schema.org',

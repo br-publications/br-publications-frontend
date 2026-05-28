@@ -30,3 +30,25 @@ export const generateUniqueSlug = (isbn: string, releaseDate?: string): string =
   const sixDigit = (positiveHash % 1000000).toString().padStart(6, '0');
   return `uid=${sixDigit}`;
 };
+
+/**
+ * Converts a book title into a clean SEO-friendly slug.
+ * Truncates at max 60 characters and aligns to natural word boundaries.
+ */
+export const toBookNameSlug = (text: string): string => {
+  if (!text) return '';
+  const slug = toSlug(text);
+  if (slug.length <= 60) return slug;
+  
+  // Truncate to 60 characters
+  let truncated = slug.slice(0, 60);
+  
+  // Back up to the last complete word/hyphen boundary to avoid cutting a word in half
+  const lastHyphenIndex = truncated.lastIndexOf('-');
+  if (lastHyphenIndex > 0) {
+    truncated = truncated.slice(0, lastHyphenIndex);
+  }
+  
+  return truncated.replace(/-+$/, '');
+};
+

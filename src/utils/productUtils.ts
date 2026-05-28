@@ -1,13 +1,17 @@
 import type { NavigateFunction } from 'react-router-dom';
+import { toBookNameSlug } from './stringUtils';
 
 /**
  * Get the local path for a product detail page
- * @param id - The product ID
+ * @param id - The product ID or UID
  * @param type - Product type ('book' or 'chapter')
+ * @param title - Optional product title to generate SEO slug
  */
-export const getProductDetailPath = (id: number | string, type: 'book' | 'chapter'): string => {
+export const getProductDetailPath = (id: number | string, type: 'book' | 'chapter', title?: string): string => {
   if (type === 'book') {
-    return `/book/${id}`;
+    const cleanId = typeof id === 'string' ? id.toLowerCase() : id;
+    const slug = title ? `/${toBookNameSlug(title)}` : '';
+    return `/book/${cleanId}${slug}`;
   }
   return `/bookchapter/${id}`;
 };
@@ -25,6 +29,7 @@ export const navigateToProduct = (
   navigate: NavigateFunction,
   productData?: any
 ) => {
-  const path = getProductDetailPath(id, type);
+  const title = type === 'book' ? productData?.title : undefined;
+  const path = getProductDetailPath(id, type, title);
   navigate(path, { state: { product: productData } });
 };

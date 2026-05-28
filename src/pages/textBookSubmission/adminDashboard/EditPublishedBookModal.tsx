@@ -34,6 +34,7 @@ const EditPublishedBookModal: React.FC<EditPublishedBookModalProps> = ({ book, i
         keywords: [],
         category: '',
         description: '',
+        uid: '',
         pricing: { softCopyPrice: 0, hardCopyPrice: 0, bundlePrice: 0 },
         googleLink: '',
         flipkartLink: '',
@@ -42,6 +43,7 @@ const EditPublishedBookModal: React.FC<EditPublishedBookModalProps> = ({ book, i
 
     const [loading, setLoading] = useState(false);
     const [isbnError, setIsbnError] = useState<string | null>(null);
+    const [keywordInput, setKeywordInput] = useState('');
 
     // Alert State
     const [alertConfig, setAlertConfig] = useState<{
@@ -91,6 +93,20 @@ const EditPublishedBookModal: React.FC<EditPublishedBookModalProps> = ({ book, i
 
             const indexedInList = book.indexedIn ? book.indexedIn.split(',').map(s => s.trim()) : [];
 
+            let keywordsList: string[] = [];
+            if (book.keywords) {
+                if (Array.isArray(book.keywords)) {
+                    keywordsList = book.keywords;
+                } else if (typeof book.keywords === 'string') {
+                    try {
+                        const parsed = JSON.parse(book.keywords);
+                        keywordsList = Array.isArray(parsed) ? parsed : [book.keywords];
+                    } catch {
+                        keywordsList = book.keywords.split(',').map(s => s.trim()).filter(Boolean);
+                    }
+                }
+            }
+
             setFormData({
                 title: book.title || '',
                 authorFirstName: authorFirstName || '',
@@ -105,9 +121,10 @@ const EditPublishedBookModal: React.FC<EditPublishedBookModalProps> = ({ book, i
                 copyright: book.copyright || '',
                 releaseDate: book.releaseDate || '',
                 indexedIn: indexedInList,
-                keywords: [],
+                keywords: keywordsList,
                 category: book.category || '',
                 description: book.description || '',
+                uid: book.uid || '',
                 pricing: book.pricing || { softCopyPrice: 0, hardCopyPrice: 0, bundlePrice: 0 },
                 googleLink: book.googleLink || '',
                 flipkartLink: book.flipkartLink || '',
@@ -155,6 +172,17 @@ const EditPublishedBookModal: React.FC<EditPublishedBookModalProps> = ({ book, i
         handleInputChange('indexedIn', newIndexedIn);
     };
 
+    const handleAddKeyword = () => {
+        if (keywordInput.trim() && !(formData.keywords || []).includes(keywordInput.trim())) {
+            handleInputChange('keywords', [...(formData.keywords || []), keywordInput.trim()]);
+            setKeywordInput('');
+        }
+    };
+
+    const handleRemoveKeyword = (keyword: string) => {
+        handleInputChange('keywords', (formData.keywords || []).filter((k: string) => k !== keyword));
+    };
+
     const handleIsbnBlur = async () => {
         const isbn = formData.isbn.trim();
         if (!isbn) {
@@ -182,7 +210,7 @@ const EditPublishedBookModal: React.FC<EditPublishedBookModalProps> = ({ book, i
     };
 
     const validateForm = (): boolean => {
-        const { title, pricing, pages, copyright, releaseDate, category } = formData;
+        const { title, pricing, pages, copyright, releaseDate, category, description, uid } = formData;
 
         if (!title.trim()) {
             setAlertConfig({ isOpen: true, type: 'warning', title: 'Missing Field', message: 'Book Title is required' });
@@ -190,6 +218,18 @@ const EditPublishedBookModal: React.FC<EditPublishedBookModalProps> = ({ book, i
         }
         if (!category.trim()) {
             setAlertConfig({ isOpen: true, type: 'warning', title: 'Missing Field', message: 'Category is required' });
+            return false;
+        }
+        if (!description || !description.trim()) {
+            setAlertConfig({ isOpen: true, type: 'warning', title: 'Missing Field', message: 'Description is required' });
+            return false;
+        }
+        if (!uid || !uid.trim()) {
+            setAlertConfig({ isOpen: true, type: 'warning', title: 'Missing Field', message: 'Unique ID is required' });
+            return false;
+        }
+        if (!formData.keywords || formData.keywords.length === 0) {
+            setAlertConfig({ isOpen: true, type: 'warning', title: 'Missing Field', message: 'At least one keyword is required' });
             return false;
         }
         if (!copyright.trim()) {
@@ -250,6 +290,8 @@ const EditPublishedBookModal: React.FC<EditPublishedBookModalProps> = ({ book, i
                 indexedIn: formData.indexedIn.join(', '),
                 category: formData.category,
                 description: formData.description,
+                uid: formData.uid,
+                keywords: formData.keywords,
                 pricing: formData.pricing,
                 googleLink: formData.googleLink,
                 flipkartLink: formData.flipkartLink,
@@ -502,6 +544,16 @@ const EditPublishedBookModal: React.FC<EditPublishedBookModalProps> = ({ book, i
                                         required
                                     />
                                 </div>
+                                <div className="form-group">
+                                    <label>Unique ID *</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter unique ID"
+                                        value={formData.uid || ''}
+                                        onChange={e => handleInputChange('uid', e.target.value)}
+                                        required
+                                    />
+                                </div>
                                 <div className="form-group full-width">
                                     <label>Indexed In</label>
                                     <div className="checkbox-group">
@@ -518,12 +570,42 @@ const EditPublishedBookModal: React.FC<EditPublishedBookModalProps> = ({ book, i
                                     </div>
                                 </div>
                                 <div className="form-group full-width">
-                                    <label>Description</label>
+                                    <label>Keywords *</label>
+                                    <div className="keyword-input-container">
+                                        <input
+                                            type="text"
+                                            value={keywordInput}
+                                            onChange={(e) => setKeywordInput(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddKeyword())}
+                                            placeholder="Type a keyword and press Enter"
+                                        />
+                                        <button type="button" onClick={handleAddKeyword} className="btn-add-keyword">
+                                            Add
+                                        </button>
+                                    </div>
+                                    <div className="keywords-list">
+                                        {(formData.keywords || []).map((keyword: string) => (
+                                            <span key={keyword} className="keyword-tag">
+                                                {keyword}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveKeyword(keyword)}
+                                                    className="remove-keyword"
+                                                >
+                                                    ×
+                                                </button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="form-group full-width">
+                                    <label>Description *</label>
                                     <textarea
                                         placeholder="Provide a brief summary of the book content"
                                         value={formData.description}
                                         onChange={e => handleInputChange('description', e.target.value)}
                                         rows={4}
+                                        required
                                     />
                                 </div>
                             </div>

@@ -39,6 +39,7 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
         keywords: [],
         category: '',
         description: '',
+        uid: '',
         pricing: {
             softCopyPrice: 0,
             hardCopyPrice: 0,
@@ -129,6 +130,16 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
                     }
                 }
             });
+        }
+
+        if (!data.keywords || data.keywords.length === 0) {
+            newErrors.keywords = 'At least one keyword is required';
+        }
+        if (!data.description.trim()) {
+            newErrors.description = 'Description is required';
+        }
+        if (!data.uid || !data.uid.trim()) {
+            newErrors.uid = 'Unique ID is required';
         }
 
         // Allow either cropped or original cover image
@@ -246,19 +257,43 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
 
     const handleAddKeyword = () => {
         if (keywordInput.trim() && !formData.keywords.includes(keywordInput.trim())) {
-            setFormData((prev) => ({
-                ...prev,
-                keywords: [...prev.keywords, keywordInput.trim()],
-            }));
+            const newKeywords = [...formData.keywords, keywordInput.trim()];
+            const newData = {
+                ...formData,
+                keywords: newKeywords,
+            };
+            setFormData(newData);
             setKeywordInput('');
+
+            // Clear keyword error if resolved
+            const currentErrors = getErrors(newData);
+            setErrors((prev) => {
+                const newState = { ...prev };
+                if (!currentErrors.keywords) delete newState.keywords;
+                return newState;
+            });
         }
     };
 
     const handleRemoveKeyword = (keyword: string) => {
-        setFormData((prev) => ({
-            ...prev,
-            keywords: prev.keywords.filter((k) => k !== keyword),
-        }));
+        const newKeywords = formData.keywords.filter((k) => k !== keyword);
+        const newData = {
+            ...formData,
+            keywords: newKeywords,
+        };
+        setFormData(newData);
+
+        // Show/clear error based on new state
+        const currentErrors = getErrors(newData);
+        setErrors((prev) => {
+            const newState = { ...prev };
+            if (currentErrors.keywords) {
+                newState.keywords = currentErrors.keywords;
+            } else {
+                delete newState.keywords;
+            }
+            return newState;
+        });
     };
 
     const handleIsbnBlur = async () => {
@@ -699,6 +734,19 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
                                     />
                                     {errors.category && <span className="error-text">{errors.category}</span>}
                                 </div>
+
+                                <div className="form-group">
+                                    <label>Unique ID *</label>
+                                    <input
+                                        type="text"
+                                        value={formData.uid || ''}
+                                        onChange={(e) => handleInputChange('uid', e.target.value)}
+                                        onBlur={() => handleBlur('uid')}
+                                        className={errors.uid ? 'input-error' : ''}
+                                        placeholder="Enter unique ID"
+                                    />
+                                    {errors.uid && <span className="error-text">{errors.uid}</span>}
+                                </div>
                             </div>
                         </section>
 
@@ -771,7 +819,7 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
                             </div>
 
                             <div className="form-group full-width">
-                                <label>Keywords</label>
+                                <label>Keywords *</label>
                                 <div className="keyword-input-container">
                                     <input
                                         type="text"
@@ -803,10 +851,11 @@ const TextBookPublishingForm: React.FC<TextBookPublishingFormProps> = ({
                             </div>
 
                             <div className="form-group full-width">
-                                <label>Description</label>
+                                <label>Description *</label>
                                 <textarea
                                     value={formData.description}
                                     onChange={(e) => handleInputChange('description', e.target.value)}
+                                    onBlur={() => handleBlur('description')}
                                     className={errors.description ? 'input-error' : ''}
                                     placeholder="Enter book description or abstract"
                                     rows={4}

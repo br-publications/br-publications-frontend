@@ -10,6 +10,7 @@ export interface PublishedBook {
     coverImage: string | null;
     category: string;
     description: string;
+    keywords?: string[] | string | null;
     isbn: string;
     publishedDate: string;
     pages: number;
@@ -17,6 +18,7 @@ export interface PublishedBook {
     releaseDate: string | null;
     copyright: string | null;
     doi: string | null;
+    uid: string | null;
     pricing: Record<string, number> | null;
     googleLink: string | null;
     flipkartLink: string | null;

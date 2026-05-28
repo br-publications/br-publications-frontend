@@ -2,6 +2,7 @@
 
 export interface CSVTemplateData {
     book_title: string;
+    uid: string;
     main_author_first_name: string;
     main_author_last_name: string;
     main_author_email: string;
@@ -60,6 +61,7 @@ export interface CSVTemplateData {
 
 const CSV_HEADERS: (keyof CSVTemplateData)[] = [
     'book_title',
+    'uid',
     'main_author_first_name',
     'main_author_last_name',
     'main_author_email',
@@ -118,6 +120,7 @@ const CSV_HEADERS: (keyof CSVTemplateData)[] = [
 
 const SAMPLE_DATA: CSVTemplateData = {
     book_title: 'Introduction to Machine Learning',
+    uid: 'G87',
     main_author_first_name: 'John',
     main_author_last_name: 'Doe',
     main_author_email: 'john.doe@university.edu',

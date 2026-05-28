@@ -6,6 +6,7 @@ import { isValidPhoneNumber } from './phoneValidation';
 export interface ParsedBookEntry {
     rowNumber: number;
     bookTitle: string;
+    uid: string;
     mainAuthor: {
         firstName: string;
         lastName: string;
@@ -95,6 +96,7 @@ export function validateBookEntry(
 
     // Required fields check
     if (!entry.bookTitle?.trim()) errors.bookTitle = 'Book Title is required';
+    if (!entry.uid?.trim()) errors.uid = 'UID is required';
     if (!entry.mainAuthor.firstName?.trim()) errors.mainAuthorFirstName = 'Main Author First Name is required';
 
     // ISBN validation
@@ -233,6 +235,7 @@ export function parseCSVRow(row: CSVTemplateData, rowNumber: number): ParsedBook
     return {
         rowNumber,
         bookTitle: row.book_title || '',
+        uid: row.uid || '',
         mainAuthor: {
             firstName: row.main_author_first_name || '',
             lastName: row.main_author_last_name || '',

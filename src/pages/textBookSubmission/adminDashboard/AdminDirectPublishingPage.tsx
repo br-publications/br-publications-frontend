@@ -105,7 +105,8 @@ const AdminDirectPublishingPage: React.FC = () => {
                 pricing: formData.pricing,
                 googleLink: formData.googleLink,
                 flipkartLink: formData.flipkartLink,
-                amazonLink: formData.amazonLink
+                amazonLink: formData.amazonLink,
+                uid: formData.uid
             };
 
 

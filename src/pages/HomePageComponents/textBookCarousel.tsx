@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './textBookCarousel.css';
-import { generateUniqueSlug } from '../../utils/stringUtils';
+import { toBookNameSlug } from '../../utils/stringUtils';
 
 // Book type definition
 interface Book {
     id?: number;
+    uid?: string;
     title: string;
     author: string;
     "co-authors"?: string;
@@ -85,8 +86,9 @@ export default function TextBookCarousel() {
     const gap = 10;
 
     const handleBookClick = (book: Book) => {
-        const slug = generateUniqueSlug(book.isbn, book.releaseDate);
-        navigate(`/book/${book.id}/${slug}`, {
+        const identifier = book.uid ? book.uid.toLowerCase() : book.id;
+        const bookName = toBookNameSlug(book.title);
+        navigate(`/book/${identifier}/${bookName}`, {
             state: { book }
         });
     };

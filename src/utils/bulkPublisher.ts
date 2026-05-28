@@ -117,6 +117,9 @@ export async function publishBooksSequentially(
 
             const publicationDetails = {
                 bookTitle: entry.bookTitle,
+                uid: entry.uid,
+                uId: entry.uid, // Compatibility
+                UID: entry.uid, // Compatibility
                 author: `${processedMainAuthor.firstName} ${processedMainAuthor.lastName}`.trim(),
                 mainAuthor: processedMainAuthor,
                 coAuthors: processedCoAuthors,

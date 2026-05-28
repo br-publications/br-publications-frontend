@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import type { Book } from '../../types/bookTypes';
 import productBooksService from '../../services/productbooksservice';
 import { Helmet } from 'react-helmet-async';
+import { toBookNameSlug } from '../../utils/stringUtils';
 import './productBooks.css';
 
 const ProductBooks: React.FC = () => {
@@ -142,7 +143,9 @@ const ProductBooks: React.FC = () => {
    * Handle book preview/details navigation
    */
   const handleBookClick = (book: Book) => {
-    navigate(`/book/${book.id}`, {
+    const identifier = book.uid ? book.uid.toLowerCase() : book.id;
+    const bookName = toBookNameSlug(book.title);
+    navigate(`/book/${identifier}/${bookName}`, {
       state: { book }
     });
   };
@@ -176,8 +179,8 @@ const ProductBooks: React.FC = () => {
       // Show first page, current page range, and last page
       pages.push(1);
 
-      let startPage = Math.max(2, currentPage - 1);
-      let endPage = Math.min(totalPages - 1, currentPage + 1);
+      const startPage = Math.max(2, currentPage - 1);
+      const endPage = Math.min(totalPages - 1, currentPage + 1);
 
       if (startPage > 2) pages.push(-1); // -1 represents ellipsis
 
