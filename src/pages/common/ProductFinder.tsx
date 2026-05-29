@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import productBooksService from '../../services/productbooksservice';
 import bookChapterService from '../../services/bookChapterService';
 import { Loader2, Search, BookX } from 'lucide-react';
-import { generateUniqueSlug, toBookNameSlug } from '../../utils/stringUtils';
+import { toBookNameSlug } from '../../utils/stringUtils';
 
 const ProductFinder: React.FC = () => {
     const { isbn } = useParams<{ isbn: string }>();
@@ -46,8 +46,9 @@ const ProductFinder: React.FC = () => {
                         c.isbn === isbn || (c.isbn && c.isbn.replace(/[\s-]/g, '') === cleanIsbn)
                     ) || chapters[0];
 
-                    const slug = generateUniqueSlug(exactMatch.isbn, exactMatch.releaseDate);
-                    navigate(`/bookchapter/${exactMatch.id}/${slug}`, { replace: true, state: { book: exactMatch } });
+                    const identifier = exactMatch.uid ? exactMatch.uid.toLowerCase() : exactMatch.id;
+                    const slug = exactMatch.title ? toBookNameSlug(exactMatch.title) : '';
+                    navigate(`/bookchapter/${identifier}/${slug}`, { replace: true, state: { book: exactMatch } });
                     return;
                 }
 

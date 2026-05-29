@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import './authorDetail.css';
 import { Helmet } from 'react-helmet-async';
+import { toBookNameSlug } from '../../../utils/stringUtils';
 
 interface Author {
     id: number;
@@ -28,6 +29,7 @@ interface Author {
         abstract: string | null;
         book: {
             id: number;
+            uid?: string;
             title: string;
             isbn: string;
         };
@@ -332,7 +334,11 @@ const AuthorDetail: React.FC = () => {
                                 <div
                                     key={chapter.id}
                                     className="chapter-card"
-                                    onClick={() => navigate(`/bookchapter/${chapter.book.id}`)}
+                                    onClick={() => {
+                                        const identifier = chapter.book.uid ? chapter.book.uid.toLowerCase() : chapter.book.id;
+                                        const slug = chapter.book.title ? toBookNameSlug(chapter.book.title) : '';
+                                        navigate(`/bookchapter/${identifier}/${slug}`);
+                                    }}
                                 >
                                     {/* Book cover thumbnail */}
                                     <div className="chapter-cover">

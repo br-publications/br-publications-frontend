@@ -1,4 +1,4 @@
-import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation, useParams } from "react-router-dom";
 import Dashboard from "../components/layout/dashboard";
 import Home from "../pages/components/home";
 import Login from "../components/common/login";
@@ -89,6 +89,15 @@ function TrailingSlashHandler() {
   return null;
 }
 
+// Dispatcher to determine if route is for a book detail page or a chapter detail page
+function BookOrChapterDetailDispatcher() {
+  const { param1 } = useParams<{ param1?: string }>();
+  if (param1 && param1.toLowerCase().startsWith('chapter-')) {
+    return <ChapterDetail />;
+  }
+  return <BooksDetail />;
+}
+
 export default function AppRoutes() {
   return (
     <Suspense fallback={<div className="prerender-loading">Loading BR Publications...</div>}>
@@ -103,8 +112,8 @@ export default function AppRoutes() {
           <Route path="/resnova" element={<ResNova />} />
           <Route path="/bookchapter/:id/:slug?" element={<BookChapterDetail />} />
           <Route path="/book/:id/chapter/:chapterId" element={<ChapterDetail />} />
+          <Route path="/book/:id/:param1?/:param2?" element={<BookOrChapterDetailDispatcher />} />
           <Route path="/bookchapters" element={<ProductBookChapter />} />
-          <Route path="/book/:id/:slug?" element={<BooksDetail />} />
           <Route path="/bookpublications" element={<BookPublications />} />
           <Route path="/books" element={<ProductBooks />} />
           <Route path="/product/find/:isbn" element={<ProductFinder />} />

@@ -9,7 +9,7 @@ import {
     ChevronUp,
 } from 'lucide-react';
 import { getEditorById, type PublishedEditor } from '../../../services/bookChapterPublishing.service';
-import { generateUniqueSlug } from '../../../utils/stringUtils';
+import { toBookNameSlug } from '../../../utils/stringUtils';
 import './editorDetail.css';
 import { Helmet } from 'react-helmet-async';
 
@@ -231,7 +231,11 @@ const EditorDetail: React.FC = () => {
                                 <div
                                     key={book.id}
                                     className="chapter-card"
-                                    onClick={() => navigate(`/bookchapter/${book.id}/${generateUniqueSlug(book.isbn, (book as any).publishedDate || (book as any).releaseDate)}`)}
+                                    onClick={() => {
+                                        const identifier = book.uid ? book.uid.toLowerCase() : book.id;
+                                        const slug = book.title ? toBookNameSlug(book.title) : '';
+                                        navigate(`/bookchapter/${identifier}/${slug}`);
+                                    }}
                                 >
                                     <div className="chapter-cover">
                                         <img

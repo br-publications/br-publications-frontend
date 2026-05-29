@@ -11,7 +11,7 @@ import { ArrowLeft, Quote } from 'lucide-react';
 import CitationModal from '../../components/common/CitationModal';
 import './bookChapterDetail.css';
 import { sanitizeUrl } from '../../utils/urlValidation';
-import { generateUniqueSlug } from '../../utils/stringUtils';
+import { toBookNameSlug } from '../../utils/stringUtils';
 import { Helmet } from 'react-helmet-async';
 
 type TabType = 'synopsis' | 'scope' | 'toc' | 'biographies' | 'archives';
@@ -82,10 +82,33 @@ const BookChapterDetail: React.FC = () => {
 
         // Fetch the full details from service using ID
         if (id) {
-          const bookData = await bookChapterService.getBookById(parseInt(id));
+          let numericId: number | null = null;
+          const isNumeric = /^\d+$/.test(id);
 
-          if (bookData) {
-            setBook(bookData);
+          if (isNumeric) {
+            numericId = parseInt(id);
+          } else if (stateBook && stateBook.id) {
+            numericId = stateBook.id;
+          } else {
+            // Fallback: Resolve UID to numeric ID by matching from the books list
+            try {
+              const allBooks = await bookChapterService.getAllBooks();
+              const matchedBook = allBooks.find(b => b.uid && b.uid.toLowerCase() === id.toLowerCase());
+              if (matchedBook) {
+                numericId = matchedBook.id;
+              }
+            } catch (resolveErr) {
+              console.error('Error resolving book chapter UID:', resolveErr);
+            }
+          }
+
+          if (numericId) {
+            const bookData = await bookChapterService.getBookById(numericId);
+            if (bookData) {
+              setBook(bookData);
+            } else if (!stateBook) {
+              setError('Book not found');
+            }
           } else if (!stateBook) {
             setError('Book not found');
           }
@@ -197,7 +220,11 @@ const BookChapterDetail: React.FC = () => {
     }
 
     if (action === 'view') {
-      navigate(`/book/${book?.id}/chapter/${chap.chapterNumber}`);
+      const bookIdentifier = book?.uid ? book.uid.toLowerCase() : book?.id;
+      const cleanNum = String(chap.chapterNumber).toLowerCase().trim().replace(/^chapter[-_ \s]*/, '');
+      const chapterSlugSegment = /^\d+$/.test(cleanNum) ? `chapter-${cleanNum.padStart(2, '0')}` : `chapter-${cleanNum}`;
+      const chapterTitleSlug = chap.title ? toBookNameSlug(chap.title) : '';
+      navigate(`/book/${bookIdentifier}/${chapterSlugSegment}/${chapterTitleSlug}`);
     } else {
       if (chap.pdfUrl) {
         window.open(chap.pdfUrl, '_blank');
@@ -239,8 +266,11 @@ const BookChapterDetail: React.FC = () => {
     ? Object.values(book.synopsis).join(' ').replace(/<[^>]+>/g, '').slice(0, 150)
     : book ? `${book.title}. ${editorsStr} Published by BR ResNova Academic Press.` : 'Detailed information about academic book chapters and research publications from BR Publications.';
 
-  const slug = book ? generateUniqueSlug(book.isbn, book.releaseDate) : (id ? `id=${id}` : '');
-  const canonicalUrlFull = `https://www.brpublications.com/bookchapter/${id}/${slug}`;
+  const identifier = book?.uid ? book.uid.toLowerCase() : (book?.id ?? id!);
+  const bookSlug = book?.title ? toBookNameSlug(book.title) : '';
+  const canonicalUrlFull = bookSlug
+    ? `https://www.brpublications.com/bookchapter/${identifier}/${bookSlug}`
+    : `https://www.brpublications.com/bookchapter/${identifier}`;
 
   const schemaData = book ? {
     "@context": "https://schema.org",

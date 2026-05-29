@@ -4,12 +4,20 @@ import { ChevronRight, Quote } from 'lucide-react';
 import { bookChapterService } from '../../services/bookChapterService';
 import { getExtraPdfUrl, incrementChapterViews } from '../../services/bookChapterPublishing.service';
 import type { Book, Chapter, PublishedAuthor } from '../../types/bookTypes';
-import { generateUniqueSlug } from '../../utils/stringUtils';
+import { toBookNameSlug } from '../../utils/stringUtils';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { sanitizeUrl } from '../../utils/urlValidation';
 import CitationModal from '../../components/common/CitationModal';
 import './chapterDetail.css';
 import { Helmet } from 'react-helmet-async';
+
+const formatChapterNumberSlug = (chapterNum: string | number): string => {
+    const clean = String(chapterNum).toLowerCase().trim().replace(/^chapter[-_ \s]*/, '');
+    if (/^\d+$/.test(clean)) {
+        return `chapter-${clean.padStart(2, '0')}`;
+    }
+    return `chapter-${clean}`;
+};
 
 /**
  * Helper to truncate text to a specific number of words
@@ -23,7 +31,7 @@ const truncateWords = (text: string, count: number) => {
 
 const ChapterDetail: React.FC = () => {
 
-    const { id, chapterId } = useParams<{ id: string; chapterId: string }>();
+    const { id, chapterId, param1 } = useParams<{ id: string; chapterId?: string; param1?: string }>();
     const navigate = useNavigate();
     const [book, setBook] = useState<Book | null>(null);
     const [chapter, setChapter] = useState<Chapter | null>(null);
@@ -60,19 +68,54 @@ const ChapterDetail: React.FC = () => {
         const fetchBookAndChapter = async () => {
             try {
                 setLoading(true);
-                if (!id || !chapterId) {
+                const resolvedChapterParam = chapterId || param1;
+                if (!id || !resolvedChapterParam) {
                     setError('Invalid routing parameters.');
                     return;
                 }
 
-                const fetchedBook = await bookChapterService.getBookById(Number(id));
+                let numericId: number | null = null;
+                const isNumeric = /^\d+$/.test(id);
+
+                if (isNumeric) {
+                    numericId = parseInt(id);
+                } else {
+                    // Fallback: Resolve UID to numeric ID by matching from the books list
+                    try {
+                        const allBooks = await bookChapterService.getAllBooks();
+                        const matchedBook = allBooks.find(b => b.uid && b.uid.toLowerCase() === id.toLowerCase());
+                        if (matchedBook) {
+                            numericId = matchedBook.id;
+                        }
+                    } catch (resolveErr) {
+                        console.error('Error resolving book UID:', resolveErr);
+                    }
+                }
+
+                if (!numericId) {
+                    setError('Book not found.');
+                    return;
+                }
+
+                const fetchedBook = await bookChapterService.getBookById(numericId);
                 setBook(fetchedBook);
 
                 if (fetchedBook && fetchedBook.chapters) {
-                    const normalizedParam = String(chapterId).toLowerCase().trim();
-                    const foundChapter = fetchedBook.chapters.find(c =>
-                        String(c.chapterNumber).toLowerCase().trim() === normalizedParam
-                    );
+                    const rawParam = resolvedChapterParam.toLowerCase().trim();
+                    const cleanParam = rawParam.replace(/^chapter[-_ \s]*/, '');
+                    const parsedParamInt = parseInt(cleanParam, 10);
+
+                    const foundChapter = fetchedBook.chapters.find(c => {
+                        const rawChapNum = String(c.chapterNumber).toLowerCase().trim();
+                        const cleanChapNum = rawChapNum.replace(/^chapter[-_ \s]*/, '').replace(/\s+/g, '');
+                        const parsedChapInt = parseInt(cleanChapNum, 10);
+
+                        return (
+                            rawChapNum === rawParam ||
+                            cleanChapNum === cleanParam ||
+                            (!isNaN(parsedParamInt) && !isNaN(parsedChapInt) && parsedParamInt === parsedChapInt)
+                        );
+                    });
 
                     if (foundChapter) {
                         setChapter(foundChapter);
@@ -91,7 +134,7 @@ const ChapterDetail: React.FC = () => {
         };
 
         fetchBookAndChapter();
-    }, [id, chapterId]);
+    }, [id, chapterId, param1]);
 
     /**
      * Dispatch prerender-ready event so Puppeteer snapshots the page
@@ -114,7 +157,10 @@ const ChapterDetail: React.FC = () => {
         } else {
             setChapter(prev => prev ? { ...prev, views: (prev.views || 0) + 1 } : null);
         }
-        navigate(`/book/${book?.id}/chapter/${chap.chapterNumber}`);
+        const bookIdentifier = book?.uid ? book.uid.toLowerCase() : book?.id;
+        const chapterSlugSegment = formatChapterNumberSlug(chap.chapterNumber);
+        const chapterTitleSlug = chap.title ? toBookNameSlug(chap.title) : '';
+        navigate(`/book/${bookIdentifier}/${chapterSlugSegment}/${chapterTitleSlug}`);
     };
 
     const handleViewPdf = async (chap: Chapter) => {
@@ -141,11 +187,17 @@ const ChapterDetail: React.FC = () => {
         ? chapter.authorDetails.map(a => a.name).join(', ')
         : chapter?.authors || '';
 
-    const displayTitle = (chapter && book) ? `${chapter.title} by ${authorNames} | ${book.title} — BR Publications` : (id && chapterId ? `Chapter ${chapterId} Details | BR Publications` : 'Chapter Details');
+    const displayTitle = (chapter && book) ? `${chapter.title} by ${authorNames} | ${book.title} — BR Publications` : (id && (chapterId || param1) ? `Chapter ${chapterId || param1} Details | BR Publications` : 'Chapter Details');
     const metaDescription = chapter?.abstract
         ? chapter.abstract.slice(0, 155)
         : (chapter && book) ? `${chapter.title} — a chapter from "${book.title}" published by BR Publications.` : 'Detailed information about academic research chapters from BR Publications.';
-    const canonicalUrlFull = (book && chapter) ? `https://www.brpublications.com/book/${book.id}/chapter/${String(chapter.chapterNumber).padStart(2, '0')}` : `https://www.brpublications.com/book/${id}/chapter/${chapterId}`;
+
+    const bookIdentifier = book?.uid ? book.uid.toLowerCase() : (book?.id ?? id!);
+    const chapterSlugSegment = chapter ? formatChapterNumberSlug(chapter.chapterNumber) : (chapterId || param1 ? formatChapterNumberSlug(chapterId || param1 || '') : '');
+    const chapterTitleSlug = chapter?.title ? toBookNameSlug(chapter.title) : '';
+    const canonicalUrlFull = chapterTitleSlug
+        ? `https://www.brpublications.com/book/${bookIdentifier}/${chapterSlugSegment}/${chapterTitleSlug}`
+        : `https://www.brpublications.com/book/${bookIdentifier}/${chapterSlugSegment}`;
 
     const schemaData = (book && chapter) ? {
         '@context': 'https://schema.org',
@@ -171,7 +223,7 @@ const ChapterDetail: React.FC = () => {
                 'url': 'https://www.brpublications.com'
             },
             'image': book.coverImage,
-            'url': `https://www.brpublications.com/bookchapter/${book.id}/${generateUniqueSlug(book.isbn, book.releaseDate)}`
+            'url': `https://www.brpublications.com/bookchapter/${book.uid ? book.uid.toLowerCase() : book.id}/${book.title ? toBookNameSlug(book.title) : ''}`
         },
         'url': canonicalUrlFull,
         'inLanguage': 'en',
@@ -253,7 +305,7 @@ const ChapterDetail: React.FC = () => {
                         <div className="breadcrumbs">
                             <Link to="/bookchapters">Books</Link>
                             <ChevronRight size={14} className="breadcrumb-separator" />
-                            <Link to={`/bookchapter/${book.id}/${generateUniqueSlug(book.isbn, book.releaseDate)}`}>
+                            <Link to={`/bookchapter/${book.uid ? book.uid.toLowerCase() : book.id}/${book.title ? toBookNameSlug(book.title) : ''}`}>
                                 {truncateWords(book.title, 4)}
                             </Link>
 

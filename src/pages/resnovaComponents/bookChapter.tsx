@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { findEditors, type PublishedEditor } from '../../services/bookChapterPublishing.service';
 import type { Book } from '../../types/bookTypes';
 import bookChapterService from '../../services/bookChapterService';
-import { generateUniqueSlug } from '../../utils/stringUtils';
+import { toBookNameSlug } from '../../utils/stringUtils';
 import { Helmet } from 'react-helmet-async';
 import './bookChapter.css';
 
@@ -222,8 +222,9 @@ const ProductBookChapter: React.FC = () => {
    * Handle book preview/details navigation
    */
   const handleBookClick = (book: Book) => {
-    const slug = generateUniqueSlug(book.isbn, book.releaseDate);
-    navigate(`/bookchapter/${book.id}/${slug}`, {
+    const identifier = book.uid ? book.uid.toLowerCase() : book.id;
+    const slug = book.title ? toBookNameSlug(book.title) : '';
+    navigate(`/bookchapter/${identifier}/${slug}`, {
       state: { book }
     });
   };

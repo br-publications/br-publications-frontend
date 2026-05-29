@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './bookCarousel.css';
-import { generateUniqueSlug } from '../../utils/stringUtils';
+import { toBookNameSlug } from '../../utils/stringUtils';
 
 // Book type definition
 interface Book {
   id?: number;
+  uid?: string;
   title: string;
   author: string;
   editors?: string[];
@@ -27,7 +28,6 @@ export default function BookCarousel() {
       try {
         const { getAllPublishedChapters, getCoverUrl } = await import('../../services/bookChapterPublishing.service');
         const response = await getAllPublishedChapters({ featured: true, limit: 10 });
-
         const items = response.items || [];
         const apiBooks = items.map((book: any) => ({
           title: book.title || 'Untitled',
@@ -35,6 +35,7 @@ export default function BookCarousel() {
           editors: book.editors || [],
           image: book.hasCoverImage ? getCoverUrl(book.id) : '/placeholder-book.png',
           id: book.id,
+          uid: book.uid,
           isbn: book.isbn,
           releaseDate: book.releaseDate
         }));
@@ -83,8 +84,9 @@ export default function BookCarousel() {
   const gap = 10;
 
   const handleBookClick = (book: Book) => {
-    const slug = generateUniqueSlug(book.isbn, book.releaseDate);
-    navigate(`/bookchapter/${book.id}/${slug}`, {
+    const identifier = book.uid ? book.uid.toLowerCase() : book.id;
+    const slug = book.title ? toBookNameSlug(book.title) : '';
+    navigate(`/bookchapter/${identifier}/${slug}`, {
       state: { book }
     });
   };
