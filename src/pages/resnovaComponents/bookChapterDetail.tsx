@@ -436,7 +436,7 @@ const BookChapterDetail: React.FC = () => {
                             <React.Fragment key={index}>
                               {editorDetail ? (
                                 <>
-                                  <Link to={`/editor/${editorDetail.id}`} className="editor-link">
+                                  <Link to={`/editor/${String(editorDetail.id).padStart(2, '0')}/${toBookNameSlug(editorDetail.name)}`} className="editor-link">
                                     {editorName}
                                   </Link>
                                   {editorDetail.affiliation && (
@@ -790,7 +790,7 @@ const BookChapterDetail: React.FC = () => {
                                         {chapter.authorDetails && chapter.authorDetails.length > 0 ? (
                                           chapter.authorDetails.map((author, index) => (
                                             <React.Fragment key={author.id}>
-                                              <Link to={`/author/${author.id}`}>{author.name}</Link>
+                                              <Link to={`/author/${String(author.id).padStart(2, '0')}/${toBookNameSlug(author.name)}`}>{author.name}</Link>
                                               {index < chapter.authorDetails!.length - 1 ? ', ' : ''}
                                             </React.Fragment>
                                           ))
@@ -889,7 +889,7 @@ const BookChapterDetail: React.FC = () => {
                                 <p>
                                   <strong>
                                     {linkedAuthor ? (
-                                      <Link to={`/author/${linkedAuthor.id}`}>{(author as any).authorName || (author as any).name}</Link>
+                                      <Link to={`/author/${String(linkedAuthor.id).padStart(2, '0')}/${toBookNameSlug((author as any).authorName || (author as any).name)}`}>{(author as any).authorName || (author as any).name}</Link>
                                     ) : ((author as any).authorName || (author as any).name)}
                                   </strong> {(author as any).biography}
                                 </p>
@@ -921,7 +921,7 @@ const BookChapterDetail: React.FC = () => {
                               <p>
                                 <strong>
                                   {linkedEditor ? (
-                                    <Link to={`/editor/${linkedEditor.id}`}>{editorName}</Link>
+                                    <Link to={`/editor/${String(linkedEditor.id).padStart(2, '0')}/${toBookNameSlug(editorName)}`}>{editorName}</Link>
                                   ) : editorName}
                                 </strong> {(editor as any).biography}
                               </p>

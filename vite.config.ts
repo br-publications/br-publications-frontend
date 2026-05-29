@@ -6,6 +6,35 @@ import Renderer from '@prerenderer/renderer-puppeteer'
 
 // https://vite.dev/config/
 // NOTE: sitemap.xml is generated dynamically by the Express backend (sitemapRoutes.ts).
+const toSlug = (text: string): string => {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')           // Replace spaces with -
+    .replace(/[^\w-]+/g, '')       // Remove all non-word chars (except -)
+    .replace(/--+/g, '-')           // Replace multiple - with single -
+    .replace(/^-+/, '')             // Trim - from start of text
+    .replace(/-+$/, '');            // Trim - from end of text
+};
+
+const toBookNameSlug = (text: string): string => {
+  if (!text) return '';
+  const slug = toSlug(text);
+  if (slug.length <= 60) return slug;
+  
+  // Truncate to 60 characters
+  let truncated = slug.slice(0, 60);
+  
+  // Back up to the last complete word/hyphen boundary to avoid cutting a word in half
+  const lastHyphenIndex = truncated.lastIndexOf('-');
+  if (lastHyphenIndex > 0) {
+    truncated = truncated.slice(0, lastHyphenIndex);
+  }
+  
+  return truncated.replace(/-+$/, '');
+};
+
 const generateUniqueSlug = (isbn: string, releaseDate?: string): string => {
   const combined = `${isbn}${releaseDate || ''}`;
   let hash = 0;
@@ -94,7 +123,11 @@ export default defineConfig(async () => {
       const list = json.data || json.authors || [];
       if (Array.isArray(list)) {
         list.forEach((item: any) => {
-          if (item?.id) routes.push(`/author/${item.id}`);
+          if (item?.id) {
+            const paddedId = String(item.id).padStart(2, '0');
+            const nameSlug = item.name ? toBookNameSlug(item.name) : '';
+            routes.push(`/author/${paddedId}/${nameSlug}`);
+          }
         });
         console.log(`Queued ${list.length} author routes for pre-rendering`);
       }
@@ -109,7 +142,11 @@ export default defineConfig(async () => {
       const list = json.data || json.editors || [];
       if (Array.isArray(list)) {
         list.forEach((item: any) => {
-          if (item?.id) routes.push(`/editor/${item.id}`);
+          if (item?.id) {
+            const paddedId = String(item.id).padStart(2, '0');
+            const nameSlug = item.name ? toBookNameSlug(item.name) : '';
+            routes.push(`/editor/${paddedId}/${nameSlug}`);
+          }
         });
         console.log(`Queued ${list.length} editor routes for pre-rendering`);
       }

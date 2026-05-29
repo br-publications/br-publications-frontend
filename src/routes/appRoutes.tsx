@@ -132,8 +132,8 @@ export default function AppRoutes() {
           <Route path="/forms/projects-internships/mobile-development" element={<MobileDevelopmentForm />} />
           <Route path="/forms/projects-internships/student-internship" element={<StudentInternshipForm />} />
           <Route path="/recruitment" element={<RecruitmentForm />} />
-          <Route path="/author/:id" element={<AuthorDetail />} />
-          <Route path="/editor/:id" element={<EditorDetail />} />
+          <Route path="/author/:id/:slug?" element={<AuthorDetail />} />
+          <Route path="/editor/:id/:slug?" element={<EditorDetail />} />
 
         </Route>
 

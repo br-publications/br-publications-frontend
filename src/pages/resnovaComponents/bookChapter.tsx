@@ -402,7 +402,7 @@ const ProductBookChapter: React.FC = () => {
                                     <React.Fragment key={index}>
                                       {editorDetail ? (
                                         <Link
-                                          to={`/editor/${editorDetail.id}`}
+                                          to={`/editor/${String(editorDetail.id).padStart(2, '0')}/${toBookNameSlug(editorDetail.name)}`}
                                           className="editor-link"
                                           onClick={(e) => e.stopPropagation()}
                                         >

@@ -17,14 +17,14 @@ const EditorDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [editor, setEditor] = useState<PublishedEditor | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState<boolean>(!!id);
     const [error, setError] = useState<string | null>(null);
     const [showScrollTop, setShowScrollTop] = useState(false);
 
     /* ── Fetch ── */
     useEffect(() => {
+        if (!id) return;
         const fetchEditorDetails = async () => {
-            if (!id) return;
             try {
                 setLoading(true);
                 const data = await getEditorById(parseInt(id));
@@ -35,11 +35,7 @@ const EditorDetail: React.FC = () => {
                 setLoading(false);
             }
         };
-        if (id) {
-            fetchEditorDetails();
-        } else {
-            setLoading(false);
-        }
+        fetchEditorDetails();
     }, [id]);
 
     /**
@@ -98,7 +94,9 @@ const EditorDetail: React.FC = () => {
     )}&background=1e5292&color=fff&size=180`;
 
     /* ── SEO Logic ── */
-    const canonicalPath = `/editor/${editor.id}`;
+    const paddedId = String(editor.id).padStart(2, '0');
+    const nameSlug = editor.name ? toBookNameSlug(editor.name) : '';
+    const canonicalPath = `/editor/${paddedId}/${nameSlug}`;
     const description = editor.biography
         ? editor.biography.replace(/\n/g, ' ').slice(0, 155)
         : `${editor.name} is a verified academic editor at BR Publications${editor.affiliation ? `, affiliated with ${editor.affiliation}` : ''}.`;

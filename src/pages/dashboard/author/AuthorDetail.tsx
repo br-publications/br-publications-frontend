@@ -40,12 +40,13 @@ const AuthorDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [author, setAuthor] = useState<Author | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState<boolean>(!!id);
     const [error, setError] = useState<string | null>(null);
     const [showScrollTop, setShowScrollTop] = useState(false);
 
     /* ── Fetch ── */
     useEffect(() => {
+        if (!id) return;
         const fetchAuthorDetails = async () => {
             try {
                 setLoading(true);
@@ -61,8 +62,7 @@ const AuthorDetail: React.FC = () => {
                 setLoading(false);
             }
         };
-        if (id) fetchAuthorDetails();
-        else setLoading(false);
+        fetchAuthorDetails();
     }, [id]);
 
     /**
@@ -142,7 +142,9 @@ const AuthorDetail: React.FC = () => {
     //     : ['Research', 'Academic Writing', 'Publication'];
 
     /* ── SEO Logic ── */
-    const canonicalPath = `/author/${author.id}`;
+    const paddedId = String(author.id).padStart(2, '0');
+    const nameSlug = author.name ? toBookNameSlug(author.name) : '';
+    const canonicalPath = `/author/${paddedId}/${nameSlug}`;
     const description = author.biography
         ? author.biography.replace(/\n/g, ' ').slice(0, 155)
         : `${author.name} is a verified academic author published by BR Publications${author.affiliation ? `, affiliated with ${author.affiliation}` : ''}.`;

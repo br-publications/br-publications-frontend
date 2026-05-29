@@ -53,7 +53,7 @@ const ChapterDetail: React.FC = () => {
                 )}
                 {/* keep name + affiliation together so they never break mid-name */}
                 <span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>
-                    <Link to={`/author/${auth.id}`} className="author-link">{auth.name}</Link>
+                    <Link to={`/author/${String(auth.id).padStart(2, '0')}/${toBookNameSlug(auth.name)}`} className="author-link">{auth.name}</Link>
                     {auth.affiliation && (
                         <span className="author-affiliation">
                             {' '}{auth.affiliation.trim().startsWith('(') ? auth.affiliation : `(${auth.affiliation})`}
@@ -209,7 +209,7 @@ const ChapterDetail: React.FC = () => {
             ? chapter.authorDetails.map(a => ({
                 '@type': 'Person',
                 'name': a.name,
-                'url': `https://www.brpublications.com/author/${a.id}`,
+                'url': `https://www.brpublications.com/author/${String(a.id).padStart(2, '0')}/${toBookNameSlug(a.name)}`,
                 ...(a.affiliation ? { 'affiliation': { '@type': 'Organization', 'name': a.affiliation } } : {})
             }))
             : [{ '@type': 'Person', 'name': chapter.authors }],
