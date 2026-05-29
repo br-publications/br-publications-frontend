@@ -165,7 +165,11 @@ export default defineConfig(async () => {
           renderAfterDocumentEvent: 'prerender-ready',
           timeout: 120000,
           headless: true,
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          maxConcurrentRoutes: 2, // Limit parallel routes to prevent background tab resource throttling
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
+          launchOptions: {
+            protocolTimeout: 600000, // 10 minutes timeout for DevTools protocol actions to avoid timeouts under system load
+          },
           consoleHandler: (route: string, message: any) => {
             console.log(`[Puppeteer ${route}] ${message.type()}: ${message.text()}`);
           }

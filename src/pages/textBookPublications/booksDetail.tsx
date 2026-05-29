@@ -102,9 +102,16 @@ const BooksDetail: React.FC = () => {
    * only after data is loaded and page-specific metadata is set.
    */
   useEffect(() => {
-    if (!loading && book) {
+    if (!loading) {
       setTimeout(() => {
         document.dispatchEvent(new Event('prerender-ready'));
+      }, 500);
+    }
+  }, [loading]);
+
+  useEffect(() => {
+    if (!loading && book) {
+      setTimeout(() => {
         document.dispatchEvent(new Event('ZoteroItemUpdated'));
         window.dispatchEvent(new Event('ZoteroItemUpdated'));
       }, 500);
