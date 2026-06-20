@@ -1,0 +1,1 @@
+import{C as o}from"./countries-DIVgd44F.js";const l=t=>{if(!t||t.trim()===""||t.trim()==="+")return!0;const e=[...o].sort((r,i)=>i.code.length-r.code.length).find(r=>t.startsWith(r.code));if(!e)return!1;const s=t.slice(e.code.length).replace(/\D/g,"");return s.length===0?!0:s.length>=10};export{l as i};

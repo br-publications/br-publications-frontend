@@ -1,0 +1,323 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 0;
+}
+
+/* Header */
+.header {
+    padding: 8px 12px;
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    border-radius: 8px;
+    border-left: 4px solid #1e5292;
+    flex-shrink: 0;
+}
+
+.headerContent {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.headerContent svg {
+    color: #1e5292;
+}
+
+.title {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.subtitle {
+    margin: 0;
+    font-size: 10px;
+    color: #6b7280;
+}
+
+/* Loading State */
+.loading {
+    padding: 60px 20px;
+    text-align: center;
+    font-size: 14px;
+    color: #9ca3af;
+}
+
+/* Empty State */
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 12px;
+    color: #9ca3af;
+}
+
+.empty svg {
+    color: #e5e7eb;
+}
+
+.empty p {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+/* Timeline */
+.timeline {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.timelineItem {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    margin-bottom: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.timelineItem:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.timelineItem+.timelineItem {
+    margin-top: -1px;
+    border-radius: 0;
+}
+
+.timelineItem:first-child {
+    border-radius: 8px 8px 0 0;
+}
+
+.timelineItem:last-child {
+    border-radius: 0 0 8px 8px;
+}
+
+/* Connector Line */
+.connector {
+    position: absolute;
+    left: 28px;
+    top: 44px;
+    width: 2px;
+    height: calc(100% - 16px);
+    background: linear-gradient(to bottom, #e5e7eb, transparent);
+    pointer-events: none;
+}
+
+/* Icon Container */
+.iconContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #e5e7eb;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.timelineItem:hover .iconContainer {
+    border-color: #1e5292;
+}
+
+.iconSuccess {
+    color: #10b981;
+}
+
+.iconError {
+    color: #ef4444;
+}
+
+.iconClock {
+    color: #1e5292;
+    animation: none;
+}
+
+/* Content */
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 4px;
+}
+
+.contentHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.statusInfo {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.statusName {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.byLine {
+    margin: 0;
+    font-size: 10px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.changedBy {
+    font-weight: 600;
+}
+
+.role {
+    font-size: 10px;
+    color: #9ca3af;
+}
+
+.timestamp {
+    font-size: 10px;
+    color: #9ca3af;
+    white-space: nowrap;
+    text-align: right;
+}
+
+/* Comment */
+.comment {
+    padding: 8px 10px;
+    background-color: #f9fafb;
+    border-left: 3px solid #1e5292;
+    border-radius: 4px;
+}
+
+.commentText {
+    margin: 0;
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .timelineItem {
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .iconContainer {
+        width: 44px;
+        height: 44px;
+    }
+
+    .contentHeader {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .timestamp {
+        text-align: left;
+    }
+
+    .statusName {
+        font-size: 14px;
+    }
+
+    .byLine {
+        font-size: 12px;
+    }
+
+    .comment {
+        padding: 8px 10px;
+    }
+
+    .commentText {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 12px;
+    }
+
+    .headerContent {
+        gap: 10px;
+    }
+
+    .title {
+        font-size: 14px;
+    }
+
+    .subtitle {
+        font-size: 11px;
+    }
+
+    .timelineItem {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .timelineItem+.timelineItem {
+        margin-top: 0;
+    }
+
+    .connector {
+        left: 44px;
+    }
+
+    .iconContainer {
+        width: 40px;
+        height: 40px;
+    }
+
+    .iconContainer svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .statusName {
+        font-size: 13px;
+    }
+
+    .byLine {
+        font-size: 11px;
+        flex-wrap: wrap;
+    }
+
+    .role {
+        font-size: 10px;
+    }
+
+    .timestamp {
+        font-size: 11px;
+    }
+
+    .comment {
+        padding: 8px;
+        margin-top: 8px;
+    }
+
+    .commentText {
+        font-size: 11px;
+    }
+}

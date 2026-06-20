@@ -1,0 +1,429 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 100%;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px;
+    background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+    border-radius: 12px;
+    border-left: 4px solid #7c3aed;
+}
+
+.headerContent {
+    flex: 1;
+}
+
+.title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.subtitle {
+    margin: 4px 0 0 0;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.headerActions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.exportButton,
+.filterToggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background-color: #7c3aed;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.exportButton:hover,
+.filterToggle:hover {
+    background-color: #6d28d9;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+/* Search Bar */
+.searchBar {
+    padding: 12px 16px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+/* Tabs Row Container */
+.tabsRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #e5e7eb;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* Prevent vertical scrollbar */
+    padding-bottom: 0;
+    /* border-bottom removed */
+}
+
+.tabActions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding-bottom: 8px;
+}
+
+.tabs::-webkit-scrollbar {
+    height: 4px;
+}
+
+.tabs::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 2px;
+}
+
+.tab {
+    padding: 10px 12px;
+    background: none;
+    border: none;
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    position: relative;
+    /* bottom: -2px removed */
+}
+
+.tab:hover {
+    color: #7c3aed;
+}
+
+.tab.active {
+    color: #7c3aed;
+    border-bottom-color: #7c3aed;
+}
+
+.count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    background-color: #f3e8ff;
+    color: #6d28d9;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.tab.active .count {
+    background-color: #ddd6fe;
+    color: #5b21b6;
+}
+
+/* Stats Bar */
+.statsBar {
+    display: flex;
+    gap: 16px;
+    padding: 12px 16px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+
+.statItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.statIcon {
+    color: #7c3aed;
+}
+
+.statLabel {
+    font-size: 11px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.statValue {
+    font-size: 14px;
+    font-weight: 700;
+    color: #7c3aed;
+}
+
+/* Grid - Converted to List View */
+.grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Empty & Error States */
+.empty,
+.error {
+    grid-column: 1 / -1;
+    padding: 60px 20px;
+    text-align: center;
+    background: white;
+    border: 1px dashed #d1d5db;
+    border-radius: 12px;
+}
+
+.empty p,
+.error p {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.empty span {
+    display: block;
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.error p {
+    color: #ef4444;
+}
+
+.retryButton {
+    margin-top: 12px;
+    padding: 8px 16px;
+    background-color: #7c3aed;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.retryButton:hover {
+    background-color: #6d28d9;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .container {
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .headerActions {
+        width: 100%;
+    }
+
+    .exportButton,
+    .filterToggle {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .header {
+        padding: 12px;
+    }
+
+    .title {
+        font-size: 16px;
+    }
+
+    .subtitle {
+        font-size: 11px;
+    }
+
+    .searchBar {
+        padding: 10px;
+    }
+
+    .searchInput {
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+
+    .tabs {
+        gap: 4px;
+        margin: 0 -10px;
+        padding: 0 10px 0 10px;
+    }
+
+    .tab {
+        padding: 8px 10px;
+        font-size: 11px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .statsBar {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .statItem {
+        justify-content: space-between;
+    }
+
+    .headerActions {
+        gap: 8px;
+    }
+
+    .exportButton,
+    .filterToggle {
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 8px;
+        gap: 10px;
+    }
+
+    .header {
+        padding: 12px;
+        border-left-width: 3px;
+    }
+
+    .title {
+        font-size: 18px;
+    }
+
+    .subtitle {
+        font-size: 11px;
+        margin-top: 2px;
+    }
+
+    .searchBar {
+        padding: 10px;
+    }
+
+    .searchInput {
+        font-size: 13px;
+        padding: 8px 10px;
+    }
+
+    .tabs {
+        gap: 2px;
+        margin: 0;
+        padding: 0;
+    }
+
+    .tab {
+        padding: 8px 10px;
+        font-size: 11px;
+        gap: 4px;
+    }
+
+    .count {
+        min-width: 20px;
+        height: 20px;
+        font-size: 10px;
+        padding: 0 4px;
+    }
+
+    .statsBar {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .statLabel {
+        font-size: 12px;
+    }
+
+    .statValue {
+        font-size: 16px;
+    }
+
+    .grid {
+        gap: 10px;
+    }
+
+    .empty,
+    .error {
+        padding: 40px 12px;
+    }
+
+    .empty p,
+    .error p {
+        font-size: 14px;
+    }
+
+    .empty span {
+        font-size: 12px;
+    }
+}

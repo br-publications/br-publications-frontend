@@ -1,0 +1,487 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0;
+}
+
+/* Progress Summary */
+.progressSummary {
+  padding: 8px 10px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-radius: 8px;
+  border-left: 4px solid #1e5292;
+}
+
+.progressInfo {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.progressTitle {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.progressText {
+  margin: 0;
+  font-size: 10px;
+  color: #6b7280;
+}
+
+.progressBarContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progressBar {
+  flex: 1;
+  height: 6px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #1e5292 0%, #3b82f6 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progressPercent {
+  min-width: 40px;
+  text-align: right;
+  font-size: 10px;
+  font-weight: 600;
+  color: #1e5292;
+}
+
+/* Timeline */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.timelineItem {
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+  position: relative;
+}
+
+.timelineItem:not(:last-child) {
+  padding-bottom: 8px;
+}
+
+/* Connector Line */
+.connector {
+  position: absolute;
+  left: 13px;
+  top: 32px;
+  width: 2px;
+  height: calc(100% - 16px);
+  background-color: #e5e7eb;
+  transition: background-color 0.3s ease;
+}
+
+.connector.connectorCompleted {
+  background-color: #10b981;
+}
+
+/* Step Circle */
+.stepCircle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+  background: white;
+}
+
+.stepCircle.status-completed {
+  background-color: #10b981;
+  border-color: #10b981;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+}
+
+.stepCircle.status-active {
+  background-color: #1e5292;
+  border-color: #1e5292;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(30, 82, 146, 0.1);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(30, 82, 146, 0.1);
+  }
+
+  50% {
+    box-shadow: 0 0 0 8px rgba(30, 82, 146, 0.05);
+  }
+}
+
+.stepCircle.status-pending {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+  color: #9ca3af;
+}
+
+/* Step Content */
+.stepContent {
+  flex: 1;
+  padding-top: 4px;
+}
+
+.stepHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.stepTitle {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.stepDate {
+  font-size: 10px;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.stepDescription {
+  margin: 0 0 6px 0;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.stepDetails {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  background-color: #f9fafb;
+  border-left: 3px solid #1e5292;
+  border-radius: 4px;
+}
+
+.activeBadge {
+  display: inline-block;
+  padding: 3px 8px;
+  background-color: #dbeafe;
+  color: #1e40af;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.detailsText {
+  margin: 0;
+  font-size: 10px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  gap: 16px;
+  padding: 12px 16px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.legendIcon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.legendIcon.completed {
+  background-color: #10b981;
+  color: white;
+}
+
+.legendIcon.active {
+  background-color: #1e5292;
+  color: white;
+}
+
+.legendIcon.pending {
+  background-color: #e5e7eb;
+  color: #9ca3af;
+}
+
+/* Info Boxes */
+.infoBox {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background-color: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  color: #92400e;
+}
+
+.infoBox svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.infoBox h4 {
+  margin: 0 0 4px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.infoBox p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #78350f;
+}
+
+.infoBox.successBox {
+  background-color: #d1fae5;
+  border-left-color: #10b981;
+  color: #065f46;
+}
+
+.infoBox.successBox h4 {
+  color: #065f46;
+}
+
+.infoBox.successBox p {
+  color: #047857;
+}
+
+.infoBox.errorBox {
+  background-color: #fee2e2;
+  border-left-color: #ef4444;
+  color: #7f1d1d;
+}
+
+.infoBox.errorBox h4 {
+  color: #7f1d1d;
+}
+
+.infoBox.errorBox p {
+  color: #991b1b;
+}
+
+.infoBox.warningBox {
+  background-color: #eff6ff;
+  border-left-color: #1e5292;
+  color: #1e3a8a;
+}
+
+.infoBox.warningBox h4 {
+  color: #1e3a8a;
+}
+
+.infoBox.warningBox p {
+  color: #1e40af;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .progressSummary {
+    padding: 16px;
+  }
+
+  .progressTitle {
+    font-size: 14px;
+  }
+
+  .progressText {
+    font-size: 12px;
+  }
+
+  .timelineItem {
+    gap: 16px;
+    padding: 16px 0;
+  }
+
+  .timelineItem:not(:last-child) {
+    padding-bottom: 24px;
+  }
+
+  .connector {
+    left: 8px;
+    top: 48px;
+  }
+
+  .stepCircle {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .stepTitle {
+    font-size: 14px;
+  }
+
+  .stepDescription {
+    font-size: 12px;
+  }
+
+  .stepDate {
+    font-size: 11px;
+  }
+
+  .legend {
+    gap: 16px;
+    padding: 12px 16px;
+  }
+
+  .legendItem {
+    font-size: 12px;
+  }
+
+  .infoBox {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .infoBox h4 {
+    font-size: 13px;
+    margin-bottom: 2px;
+  }
+
+  .infoBox p {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .progressSummary {
+    padding: 12px;
+  }
+
+  .progressTitle {
+    font-size: 13px;
+  }
+
+  .progressText {
+    font-size: 11px;
+  }
+
+  .progressPercent {
+    min-width: 35px;
+    font-size: 12px;
+  }
+
+  .timelineItem {
+    gap: 12px;
+    padding: 12px 0;
+  }
+
+  .timelineItem:not(:last-child) {
+    padding-bottom: 18px;
+  }
+
+  .connector {
+    left: 6px;
+    top: 40px;
+  }
+
+  .stepCircle {
+    width: 32px;
+    height: 32px;
+  }
+
+  .stepCircle svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .stepTitle {
+    font-size: 13px;
+  }
+
+  .stepDescription {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+
+  .stepDate {
+    font-size: 10px;
+  }
+
+  .stepDetails {
+    flex-direction: column;
+    padding: 8px 10px;
+  }
+
+  .activeBadge {
+    padding: 2px 6px;
+    font-size: 10px;
+  }
+
+  .detailsText {
+    font-size: 11px;
+  }
+
+  .legend {
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .legendItem {
+    font-size: 11px;
+  }
+
+  .infoBox {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .infoBox h4 {
+    font-size: 12px;
+  }
+
+  .infoBox p {
+    font-size: 11px;
+  }
+}

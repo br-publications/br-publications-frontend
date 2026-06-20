@@ -1,0 +1,31 @@
+/* Chapters Container Styles */
+.chaptersContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.chapterProgress {
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 40px 20px;
+    color: #9ca3af;
+}
+
+.emptyState p {
+    margin: 0;
+    font-size: 14px;
+}

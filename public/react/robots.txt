@@ -1,0 +1,10 @@
+User-agent: bingbot
+Crawl-delay: 10
+
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /user/register
+Disallow: /user/login
+
+Sitemap: https://www.brpublications.com/sitemap.xml
