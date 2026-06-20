@@ -1,0 +1,22 @@
+Options -MultiViews
+RewriteEngine On
+
+# Force www
+RewriteCond %{HTTP_HOST} !^www\.brpublications\.com$ [NC]
+RewriteRule ^ https://www.brpublications.com%{REQUEST_URI} [L,R=301]
+
+# Proxy sitemap.xml to backend (fixes 0 pages in Search Console)
+RewriteRule ^sitemap\.xml$ https://api.brpublications.com/sitemap.xml [P,L]
+
+# Redirect old PHP/CMS URLs
+RewriteRule ^index\.php/James/about/submissions/?$ /submissions [R=301,L]
+RewriteRule ^index\.php/James/index/?$ / [R=301,L]
+
+# Remove trailing slash
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)/$ /$1 [L,R=301]
+
+# SPA fallback
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [QSA,L]

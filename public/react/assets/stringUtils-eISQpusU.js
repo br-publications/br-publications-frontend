@@ -1,0 +1,1 @@
+const n=e=>e.toString().toLowerCase().trim().replace(/\s+/g,"-").replace(/[^\w-]+/g,"").replace(/--+/g,"-").replace(/^-+/,"").replace(/-+$/,""),c=e=>{if(!e)return"";const r=n(e);if(r.length<=60)return r;let t=r.slice(0,60);const l=t.lastIndexOf("-");return l>0&&(t=t.slice(0,l)),t.replace(/-+$/,"")};export{c as t};

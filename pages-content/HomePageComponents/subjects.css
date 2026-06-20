@@ -1,0 +1,143 @@
+.subjects-section {
+    padding: 15px 0;
+    /* Reduced padding */
+    font-family: sans-serif;
+    margin: 5px 0;
+    /* Reduced margin */
+
+}
+
+.subjects-container {
+    width: 90%;
+    max-width: 1400px;
+    margin: auto;
+    display: flex;
+    gap: 15px;
+    /* Reduced gap */
+}
+
+.subjects-box {
+    background: #fff;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+    padding: 15px;
+    /* Reduced padding */
+    border-radius: 8px;
+    /* Slightly tighter border */
+    width: 30%;
+    min-width: 280px;
+    box-sizing: border-box;
+}
+
+.subjects-box h3 {
+    margin-top: 0;
+    font-size: 16px;
+    /* Max size requested */
+    margin-bottom: 10px;
+    /* Reduced margin */
+}
+
+.subject-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 10px;
+    /* Reduced spacing */
+}
+
+.subject-list li a {
+    color: #0066cc;
+    font-size: 12px;
+    /* Smaller font */
+    text-decoration: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.3s;
+    margin: 5px 0;
+    /* Reduced margin */
+}
+
+.subject-list li a:hover {
+    color: #ff6a00;
+    padding-left: 5px;
+}
+
+.subject-login-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    /* Reduced gap */
+    text-align: center;
+    background: #008e4f;
+    color: #fff;
+    padding: 8px;
+    /* Reduced padding */
+    border-radius: 4px;
+    /* Tighter border */
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 12px;
+    /* Set smaller font size */
+    transition: background 0.3s;
+}
+
+.subject-login-btn:hover {
+    background: #007a43;
+}
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    /* Reduced gap */
+    flex: 1;
+}
+
+.action-card {
+    background: #fff;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    /* Tighter border */
+    padding: 15px;
+    /* Reduced padding */
+    text-align: center;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-card .icon {
+    color: #003366;
+    margin-bottom: 5px;
+    /* Reduced spacing */
+    transition: color 0.3s;
+}
+
+.action-card span {
+    font-size: 12px;
+    /* Set smaller text font */
+    font-weight: 500;
+}
+
+.action-card:hover {
+    background: #003366;
+    transform: translateY(-5px);
+}
+
+.action-card:hover .icon,
+.action-card:hover span {
+    color: #fff;
+}
+
+@media (max-width: 992px) {
+    .subjects-container {
+        flex-direction: column;
+    }
+
+    .subjects-box {
+        width: 100%;
+    }
+}

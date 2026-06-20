@@ -1,0 +1,647 @@
+/* Recruitment Dashboard Styles */
+
+.recruitment_dashWrapper {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.recruitment_dashWrapper.detail-view {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.recruitment_dashHeader {
+    margin-bottom: 30px;
+}
+
+.recruitment_dashHeader h1 {
+    font-size: 16px;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.recruitment_dashHeader p {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.recruitment_cardContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.recruitment_appCard {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.recruitment_appCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.recruitment_cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.recruitment_cardRole {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    text-transform: capitalize;
+}
+
+.recruitment_statusBadge {
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.recruitment_statusBadge.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.recruitment_statusBadge.accepted {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.recruitment_statusBadge.rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.recruitment_cardBody {
+    margin-bottom: 16px;
+}
+
+.recruitment_infoRow {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    font-size: 12px;
+}
+
+.recruitment_infoLabel {
+    color: #64748b;
+}
+
+.recruitment_infoValue {
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.recruitment_adminNotes {
+    background: #f8fafc;
+    border-left: 4px solid #cbd5e1;
+    padding: 8px 12px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #475569;
+}
+
+.recruitment_adminNotes strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #1e293b;
+}
+
+.recruitment_viewDetailsBtn {
+    width: 100%;
+    padding: 8px;
+    background: white;
+    border: 1px solid #2563eb;
+    color: #2563eb;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.recruitment_viewDetailsBtn:hover {
+    background: #2563eb;
+    color: white;
+}
+
+.recruitment_noApps {
+    text-align: center;
+    padding: 40px;
+    background: white;
+    border-radius: 8px;
+    border: 2px dashed #e2e8f0;
+}
+
+.recruitment_noApps h2 {
+    font-size: 14px;
+    color: #1e293b;
+    margin-bottom: 8px;
+}
+
+.recruitment_noApps p {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 16px;
+}
+
+.recruitment_applyNowBtn {
+    background: #2563eb;
+    color: white;
+    padding: 8px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Admin Specific Redesign */
+.recruitment_adminFilters {
+    background: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #edf2f7;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.recruitment_searchGroup {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.recruitment_searchIcon {
+    position: absolute;
+    left: 12px;
+    color: #94a3b8;
+    font-size: 18px !important;
+}
+
+.recruitment_searchInput {
+    width: 100%;
+    padding: 10px 12px 10px 40px;
+    border: 1px solid #eef2f6;
+    border-radius: 8px;
+    background: #f8fafc;
+    font-size: 14px;
+    color: #475569;
+    transition: all 0.2s;
+}
+
+.recruitment_searchInput::placeholder {
+    color: #94a3b8;
+}
+
+.recruitment_searchInput:focus {
+    outline: none;
+    border-color: #2563eb;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.05);
+}
+
+.recruitment_filterGroup {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.recruitment_filterIcon {
+    color: #475569;
+    font-size: 18px !important;
+}
+
+.recruitment_filterSelect {
+    padding: 10px 32px 10px 12px;
+    border: 1px solid #eef2f6;
+    border-radius: 8px;
+    background: #f8fafc;
+    font-size: 14px;
+    color: #1e293b;
+    font-weight: 500;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='C19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 14px;
+    transition: all 0.2s;
+}
+
+.recruitment_filterSelect:hover {
+    border-color: #cbd5e1;
+}
+
+.recruitment_filterSelect:focus {
+    outline: none;
+    border-color: #2563eb;
+    background-color: white;
+}
+
+/* Role Assignment Section */
+.recruitment_roleAssignmentCard {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.recruitment_roleAssignmentHeader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+}
+
+.recruitment_roleAssignmentHeader h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.recruitment_roleSelector {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.recruitment_roleSelector label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    white-space: nowrap;
+}
+
+.recruitment_roleSelectInput {
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: white;
+    cursor: pointer;
+    width: auto;
+    min-width: 160px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.recruitment_roleSelectInput:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.recruitment_roleWarning {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    border-radius: 4px;
+    font-size: 10px;
+    color: #92400e;
+    line-height: 1.5;
+}
+
+.recruitment_roleWarning strong {
+    color: #78350f;
+}
+
+@media (max-width: 768px) {
+    .recruitment_cardContainer {
+        grid-template-columns: 1fr;
+    }
+
+    .recruitment_adminFilters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* Detail View Styles */
+.recruitment_backBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+    padding: 0;
+}
+
+.recruitment_backBtn:hover {
+    color: #2563eb;
+}
+
+.recruitment_detailHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: white;
+    border: 1px solid #edf2f7;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.recruitment_detailHero {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+}
+
+.recruitment_detailAvatar,
+.recruitment_detailAvatarPlaceholder {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.recruitment_detailAvatarPlaceholder {
+    background: #e2e8f0;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.recruitment_detailHeroInfo h1 {
+    font-size: 16px;
+    color: #1e293b;
+    margin: 0 0 6px 0;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.recruitment_detailSubInfo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.recruitment_detailRoleLabel {
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.recruitment_adminActions {
+    display: flex;
+    gap: 15px;
+}
+
+.recruitment_acceptBtn,
+.recruitment_rejectBtn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.recruitment_acceptBtn {
+    background: #2563eb;
+    color: white;
+    border: none;
+}
+
+.recruitment_acceptBtn:hover {
+    background: #1d4ed8;
+}
+
+.recruitment_rejectBtn {
+    background: white;
+    color: #dc2626;
+    border: 1.5px solid #dc2626;
+}
+
+.recruitment_rejectBtn:hover {
+    background: #fef2f2;
+}
+
+.recruitment_detailGrid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 24px;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.recruitment_detailSection {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.recruitment_detailSection h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: #1e293b;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+}
+
+.recruitment_infoDisplayGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    row-gap: 20px;
+}
+
+.recruitment_infoBox label {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    letter-spacing: 0.05em;
+}
+
+.recruitment_infoBox p {
+    color: #334155;
+    font-weight: 500;
+    font-size: 13px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    margin: 0;
+}
+
+.recruitment_infoBox.full {
+    grid-column: 1 / -1;
+}
+
+.recruitment_infoBox p {
+    color: #334155;
+    font-weight: 500;
+    font-size: 13px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    margin: 0;
+}
+
+.recruitment_sidebarInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.recruitment_sidebarRow {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+}
+
+.recruitment_sidebarRow label {
+    color: #64748b;
+}
+
+.recruitment_sidebarRow span {
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.recruitment_adminNotesForm label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #475569;
+    font-size: 12px;
+}
+
+.recruitment_adminNotesForm textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #f8fafc;
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.recruitment_userNotesDisplay {
+    background: #f0f9ff;
+    border-left: 4px solid #0ea5e9;
+    padding: 12px;
+    color: #0c4a6e;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+@media (max-width: 1100px) {
+    .recruitment_detailGrid {
+        grid-template-columns: 1fr 340px;
+    }
+
+    .recruitment_infoDisplayGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .recruitment_detailGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .recruitment_dashWrapper {
+        margin: 12px auto;
+        padding: 0 12px;
+    }
+
+    .recruitment_dashHeader {
+        margin-bottom: 16px;
+    }
+
+    .recruitment_detailHero {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .recruitment_detailSubInfo {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .recruitment_adminActions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .recruitment_acceptBtn,
+    .recruitment_rejectBtn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .recruitment_infoDisplayGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .recruitment_infoBox.full {
+        grid-column: span 1;
+    }
+
+    .recruitment_adminFilters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .recruitment_filterSelect {
+        width: 100%;
+    }
+}

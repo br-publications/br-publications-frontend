@@ -1,0 +1,1303 @@
+'use client';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Cropper from 'react-easy-crop';
+import type { Area, Point } from 'react-easy-crop';
+import { createPortal } from 'react-dom';
+import { toast } from 'react-hot-toast';
+import type { Author } from '../../../types/submissionTypes';
+import { DESIGNATIONS } from '../../../types/bookChapterManuscriptTypes';
+import {
+    uploadDirectTempPdf,
+    getCoverUrl,
+    getPublishedChapterById,
+    findAuthors,
+    getChapterPdfUrl,
+    getUniversalDownloadUrl
+} from '../../../services/bookChapterPublishing.service';
+import type { TocChapterPayload, AuthorBiographyPayload, EditorBiographyPayload } from '../../../services/bookChapterPublishing.service';
+import AuthorMultiSelect from '../../../components/common/AuthorMultiSelect';
+import AlertPopup, { type AlertType } from '../../../components/common/alertPopup';
+import PhoneNumberInput from '../../../components/common/PhoneNumberInput';
+import { isValidPhoneNumber } from '../../../utils/phoneValidation';
+import { isValidEmail } from '../../../utils/emailValidation';
+import '../../../components/submissions/individualPublishChapterWizard.css';
+import '../../textBookSubmission/publishing/imageCropper.css';
+
+// ============================================================
+// Types
+// ============================================================
+
+interface EditPublishedChapterModalProps {
+    book: any;
+    isOpen: boolean;
+    onClose: () => void;
+    onSave: (id: number, data: any) => Promise<void>;
+}
+
+type TabType = 'author' | 'editorBio' | 'metadata' | 'content' | 'toc' | 'bio' | 'review';
+
+interface TabDef {
+    id: TabType;
+    label: string;
+    num: number;
+}
+
+const TABS: TabDef[] = [
+    { id: 'author', label: 'Authors', num: 1 },
+    { id: 'editorBio', label: 'Editor Biography', num: 2 },
+    { id: 'metadata', label: 'Book Metadata', num: 3 },
+    { id: 'content', label: 'Content', num: 4 },
+    { id: 'toc', label: 'TOC & Assets', num: 5 },
+    { id: 'bio', label: 'Biographies', num: 6 },
+    { id: 'review', label: 'Cover & Review', num: 7 },
+];
+
+interface CoAuthorWithId extends Author {
+    tempId: string;
+}
+
+interface FormState {
+    submissionId: string;
+    mainAuthor: Author;
+    coAuthors: CoAuthorWithId[];
+    title: string;
+    category: string;
+    description: string;
+    editors: string[];
+    primaryEditor?: string;
+    isbn: string;
+    publishedDate: string;
+    pages: number;
+    indexedIn: string;
+    releaseDate: string;
+    copyright: string;
+    doi: string;
+    priceSoftCopy?: number;
+    priceHardCopy?: number;
+    priceCombined?: number;
+    googleLink?: string;
+    flipkartLink?: string;
+    amazonLink?: string;
+    synopses: string[];
+    scopeIntro: string;
+    coverImage: string;
+    keywords: string[];
+    frontmatterPdfs: Record<string, { pdfKey?: string; mimeType?: string; name?: string }>;
+    uid?: string;
+}
+
+// ============================================================
+// Component
+// ============================================================
+
+const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
+    book,
+    isOpen,
+    onClose,
+    onSave,
+}) => {
+    const [activeTab, setActiveTab] = useState<TabType>('author');
+    const pcwBodyRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (pcwBodyRef.current) {
+            pcwBodyRef.current.scrollTop = 0;
+        }
+    }, [activeTab]);
+    const [errors, setErrors] = useState<string>('');
+    const [loading, setLoading] = useState(false);
+    const [pdfUploading, setPdfUploading] = useState<Record<string | number, number | 'error'>>({});
+
+    const [alertConfig, setAlertConfig] = useState<{
+        isOpen: boolean;
+        type: AlertType;
+        title: string;
+        message: string;
+    }>({
+        isOpen: false,
+        type: 'info',
+        title: '',
+        message: '',
+    });
+
+    const createEmptyAuthor = (): Author => ({
+        firstName: '', lastName: '', designation: '', departmentName: '',
+        instituteName: '', city: '', state: '', country: '', email: '',
+        phoneNumber: '', isCorrespondingAuthor: false, otherDesignation: ''
+    });
+
+    const [form, setForm] = useState<FormState>({
+        submissionId: '',
+        mainAuthor: createEmptyAuthor(),
+        coAuthors: [],
+        title: '',
+        category: 'Engineering & Management',
+        description: '',
+        isbn: '',
+        publishedDate: new Date().getFullYear().toString(),
+        pages: 0,
+        indexedIn: 'Google Scholar',
+        releaseDate: new Date().toLocaleDateString('en-GB'),
+        copyright: `© ${new Date().getFullYear()}`,
+        doi: '',
+        priceSoftCopy: undefined,
+        priceHardCopy: undefined,
+        priceCombined: undefined,
+        googleLink: undefined,
+        flipkartLink: undefined,
+        amazonLink: undefined,
+        synopses: [''],
+        scopeIntro: '',
+        coverImage: '',
+        keywords: [],
+        editors: [],
+        primaryEditor: '',
+        frontmatterPdfs: {},
+        uid: '',
+    });
+
+    const extraPdfTypes = [
+        'Dedication', 'Frontmatter', 'Detailed Table of Contents',
+        'Preface', 'Acknowledgment', 'About the Contributors', 'Index'
+    ];
+
+    const [scopeItems, setScopeItems] = useState<string[]>(['']);
+    const [tocChapters, setTocChapters] = useState<TocChapterPayload[]>([]);
+    const [biographies, setBiographies] = useState<AuthorBiographyPayload[]>([]);
+    const [archiveIntro, setArchiveIntro] = useState('');
+    const [archiveItems, setArchiveItems] = useState<string[]>(['']);
+    const [editorBiographies, setEditorBiographies] = useState<EditorBiographyPayload[]>([]);
+
+    const [originalImage, setOriginalImage] = useState('');
+    const [showCropper, setShowCropper] = useState(false);
+    const [cropPos, setCropPos] = useState<Point>({ x: 0, y: 150 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+    const COVER_ASPECT_RATIO = 1.12 / 1.4;
+    const pdfInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
+    const extraPdfInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+    // Data Pre-filling Logic
+    useEffect(() => {
+        if (!isOpen || !book) return;
+
+        // Auto-sync editor names from biographies to form.editors
+        const currentNames = editorBiographies.map(b => b.editorName.trim()).filter(Boolean);
+        setForm(prev => {
+            const currentString = Array.isArray(prev.editors) ? prev.editors.join(', ') : '';
+            if (currentString === currentNames.join(', ')) return prev;
+            const updated = { ...prev, editors: currentNames };
+            if (prev.primaryEditor && !currentNames.includes(prev.primaryEditor)) {
+                updated.primaryEditor = '';
+            }
+            return updated;
+        });
+    }, [editorBiographies, isOpen]);
+
+    useEffect(() => {
+        const mainAuthorName = `${form.mainAuthor.firstName} ${form.mainAuthor.lastName}`.trim();
+        if (mainAuthorName && Array.isArray(biographies) && biographies.length > 0 && biographies[0].authorName === '') {
+            setBiographies(prev => prev.map((b, i) => i === 0 ? { ...b, authorName: mainAuthorName } : b));
+        }
+    }, [form.mainAuthor.firstName, form.mainAuthor.lastName]);
+
+    useEffect(() => {
+        if (!isOpen || !book) return;
+
+        let isMounted = true;
+
+        // Helper to parse JSON fields safely and heal exploded structures
+        const parseJson = (val: any) => {
+            if (!val) return null;
+            let current = val;
+
+            // Self-healing: if it's an object with numeric keys (exploded JSON string characters), reconstruct it
+            if (typeof current === 'object' && !Array.isArray(current)) {
+                const keys = Object.keys(current);
+                if (keys.length > 0 && keys.every(k => !isNaN(Number(k)))) {
+                    try {
+                        const sortedKeys = keys.map(Number).sort((a, b) => a - b);
+                        const str = sortedKeys.map(k => current[String(k)]).join('');
+                        current = str;
+                    } catch (err) {
+                        console.error("parseJson: Failed to reconstruct exploded object:", err);
+                    }
+                }
+            }
+
+            // Parse recursively in case of double stringification
+            let parseCount = 0;
+            while (typeof current === 'string' && parseCount < 5) {
+                try {
+                    current = JSON.parse(current);
+                    parseCount++;
+                } catch {
+                    break;
+                }
+            }
+            return current;
+        };
+
+        const processData = (bookData: any) => {
+            if (!bookData) return;
+
+            // Parse Main Author — prefer structured object, fall back to flat string
+            let parsedMainAuthor: Author = createEmptyAuthor();
+            if (bookData.mainAuthor && typeof bookData.mainAuthor === 'object') {
+                parsedMainAuthor = { ...createEmptyAuthor(), ...bookData.mainAuthor };
+            } else if (bookData.mainAuthor && typeof bookData.mainAuthor === 'string') {
+                try { parsedMainAuthor = { ...createEmptyAuthor(), ...JSON.parse(bookData.mainAuthor) }; } catch (_) { }
+            }
+            // Fall back to flat string name if structured data unavailable
+            if (!parsedMainAuthor.firstName && !parsedMainAuthor.lastName) {
+                const authorParts = (bookData.author || '').split(' ');
+                parsedMainAuthor.lastName = authorParts.length > 1 ? authorParts.pop()! : '';
+                parsedMainAuthor.firstName = authorParts.join(' ');
+                parsedMainAuthor.email = bookData.authorEmail || '';
+            }
+
+            // Parse Co-Authors — prefer structured array, fall back to flat string
+            let coAuthorsList: CoAuthorWithId[] = [];
+            if (Array.isArray(bookData.coAuthorsData) && bookData.coAuthorsData.length > 0) {
+                coAuthorsList = bookData.coAuthorsData.map((ca: any, idx: number) => ({
+                    ...createEmptyAuthor(),
+                    ...ca,
+                    tempId: `temp-${idx}-${Math.random()}`
+                }));
+            } else if (bookData.coAuthors && typeof bookData.coAuthors === 'string') {
+                coAuthorsList = bookData.coAuthors.split(',').map((name: string, idx: number) => {
+                    const parts = name.trim().split(' ');
+                    const lastName = parts.length > 1 ? parts.pop()! : '';
+                    const firstName = parts.join(' ');
+                    return { ...createEmptyAuthor(), firstName, lastName, tempId: `temp-${idx}-${Math.random()}` };
+                });
+            }
+
+            // Parse Synopses
+            const synopsisData = parseJson(bookData.synopsis) || {};
+            const synopses = Object.keys(synopsisData)
+                .sort((a, b) => {
+                    const aNum = parseInt(a.split('_')[1] || '0');
+                    const bNum = parseInt(b.split('_')[1] || '0');
+                    return aNum - bNum;
+                })
+                .map(key => synopsisData[key]);
+
+            // Parse Scope
+            const scopeData = parseJson(bookData.scope) || {};
+            const scIntro = scopeData.paragraph_1 || '';
+            const scItems = Object.keys(scopeData)
+                .filter(k => k.startsWith('list_'))
+                .sort((a, b) => a.localeCompare(b))
+                .map(k => scopeData[k]);
+
+            // Parse Archives
+            const archiveData = parseJson(bookData.archives) || {};
+            const archIntro = archiveData.paragraph_1 || '';
+            const archItems = Object.keys(archiveData)
+                .filter(k => k.startsWith('list_'))
+                .sort((a, b) => a.localeCompare(b))
+                .map(k => archiveData[k]);
+
+            // Parse Pricing
+            const pricingData = parseJson(bookData.pricing) || {};
+
+            setForm(prev => ({
+                ...prev,
+                submissionId: bookData.submissionId || prev.submissionId || '',
+                mainAuthor: parsedMainAuthor,
+                coAuthors: coAuthorsList,
+                title: bookData.title || prev.title || '',
+                category: bookData.category || prev.category || 'Engineering & Management',
+                description: bookData.description || prev.description || '',
+                isbn: bookData.isbn || prev.isbn || '',
+                publishedDate: bookData.publishedDate || prev.publishedDate || '',
+                pages: bookData.pages || prev.pages || 0,
+                indexedIn: bookData.indexedIn || prev.indexedIn || '',
+                releaseDate: bookData.releaseDate || prev.releaseDate || '',
+                copyright: bookData.copyright || prev.copyright || '',
+                doi: bookData.doi || prev.doi || '',
+                priceSoftCopy: pricingData.softCopyPrice,
+                priceHardCopy: pricingData.hardCopyPrice,
+                priceCombined: pricingData.combinedPrice,
+                googleLink: bookData.googleLink || prev.googleLink || '',
+                flipkartLink: bookData.flipkartLink || prev.flipkartLink || '',
+                amazonLink: bookData.amazonLink || prev.amazonLink || '',
+                synopses: synopses.length > 0 ? synopses : prev.synopses,
+                scopeIntro: scIntro || prev.scopeIntro,
+                coverImage: bookData.coverImage || prev.coverImage || '',
+                keywords: parseJson(bookData.keywords) || (typeof bookData.keywords === 'string' ? bookData.keywords.split(',').map((s: string) => s.trim()) : (Array.isArray(bookData.keywords) ? bookData.keywords : [])),
+                editors: Array.isArray(bookData.editors) ? bookData.editors : (typeof bookData.editors === 'string' ? parseJson(bookData.editors) || bookData.editors.split(',').map((s: string) => s.trim()) : prev.editors),
+                primaryEditor: bookData.primaryEditor || prev.primaryEditor || '',
+                frontmatterPdfs: parseJson(bookData.frontmatterPdfs) || prev.frontmatterPdfs || {},
+                uid: bookData.uid || prev.uid || '',
+            }));
+
+            if (scItems.length > 0) setScopeItems(scItems);
+            if (archIntro) setArchiveIntro(archIntro);
+            if (archItems.length > 0) setArchiveItems(archItems);
+            const tocData = parseJson(bookData.tableContents);
+            if (tocData && Array.isArray(tocData)) {
+                setTocChapters(tocData);
+            }
+
+            const bioData = parseJson(bookData.authorBiographies);
+            if (bioData && Array.isArray(bioData)) {
+                setBiographies(bioData);
+            }
+
+            const editorBioData = parseJson(bookData.editorBiographies);
+            if (editorBioData && Array.isArray(editorBioData)) {
+                setEditorBiographies(editorBioData);
+            }
+        };
+
+        const loadData = async () => {
+            setLoading(true);
+            try {
+                // Step 1: Populate with available 'book' data immediately for zero-lag UI
+                processData(book);
+
+                // Step 2: Fetch full details (TOC, Biographies, etc.)
+                const fullBookData = await getPublishedChapterById(book.id);
+
+                if (!isMounted) return;
+
+                if (fullBookData) {
+                    processData(fullBookData);
+                } else {
+                    console.warn("EditModal: API returned empty data for ID:", book.id);
+                }
+
+                setActiveTab('author');
+            } catch (err) {
+                console.error("Failed to load full chapter data", err);
+                // Even on failure, the form is already populated from 'book' prop in Step 1
+            } finally {
+                if (isMounted) setLoading(false);
+            }
+        };
+
+        loadData();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [isOpen, book]);
+
+    // ── Helpers ──────────────────────────────────────────────
+
+    const handleFormChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    ) => {
+        const { name, value } = e.target;
+        setForm((p) => ({ ...p, [name]: value }));
+    };
+
+    const handleMainAuthorChange = (field: keyof Author, value: any) => {
+        setForm((p) => ({
+            ...p,
+            mainAuthor: { ...p.mainAuthor, [field]: value }
+        }));
+    };
+
+    const handleCoAuthorChange = (tempId: string, field: keyof Author, value: any) => {
+        setForm((p) => ({
+            ...p,
+            coAuthors: p.coAuthors.map(ca => ca.tempId === tempId ? { ...ca, [field]: value } : ca)
+        }));
+    };
+
+    const addCoAuthor = () => {
+        setForm(p => ({
+            ...p,
+            coAuthors: [
+                ...p.coAuthors,
+                {
+                    ...createEmptyAuthor(),
+                    tempId: `temp-${Date.now()}`,
+                }
+            ]
+        }));
+    };
+
+    const removeCoAuthor = (tempId: string) => {
+        setForm(p => ({
+            ...p,
+            coAuthors: p.coAuthors.filter(ca => ca.tempId !== tempId)
+        }));
+    };
+
+    const addEditorBio = () => setEditorBiographies((p) => [...p, { editorName: '', affiliation: '', email: '', biography: '' }]);
+    const removeEditorBio = (i: number) => setEditorBiographies((p) => p.filter((_, idx) => idx !== i));
+    const updateEditorBio = (i: number, field: keyof EditorBiographyPayload, val: string) =>
+        setEditorBiographies((p) => p.map((b, idx) => (idx === i ? { ...b, [field]: val } : b)));
+
+    const handleEditorSearch = async (i: number) => {
+        const bio = editorBiographies[i];
+        if (!bio.editorName.trim()) return;
+        try {
+            const results = await findAuthors({ name: bio.editorName });
+            if (results && results.length > 0) {
+                const match = results[0];
+                setEditorBiographies(prev => prev.map((b, idx) => idx === i ? {
+                    ...b,
+                    editorName: match.name,
+                    affiliation: match.affiliation || b.affiliation,
+                    email: match.email || b.email,
+                    biography: match.biography || b.biography
+                } : b));
+            }
+        } catch (err) { console.error('Error searching editor details', err); }
+    };
+
+    const validateTab = (tab: TabType): string => {
+        switch (tab) {
+            case 'author':
+                // if (!form.mainAuthor.firstName.trim() || !form.mainAuthor.lastName.trim()) return 'Main Author first and last name are required.';
+                if (form.mainAuthor.phoneNumber && !isValidPhoneNumber(form.mainAuthor.phoneNumber)) return 'Main Author: Phone number must be at least 10 digits.';
+                for (const ca of form.coAuthors) {
+                    if (ca.phoneNumber && !isValidPhoneNumber(ca.phoneNumber)) return `Co-Author: ${ca.firstName} ${ca.lastName}'s phone number must be at least 10 digits.`;
+                }
+                break;
+            case 'editorBio':
+                if (form.editors.filter(e => e.trim()).length === 0) return 'At least one Editor is required.';
+                if (editorBiographies.some(b => !b.editorName.trim() || !b.biography.trim())) {
+                    return 'All editor biographies must have a name and biography text.';
+                }
+                break;
+            case 'metadata':
+                if (!form.title.trim()) return 'Book title is required.';
+                if (!form.isbn.trim()) return 'ISBN is required.';
+                if (!form.uid || !form.uid.trim()) return 'UID is required.';
+                if (!form.description || !form.description.trim()) return 'Abstract / Description is required.';
+                if (!form.keywords || form.keywords.length === 0 || form.keywords.every(k => !k.trim())) return 'Keywords are required.';
+                if (form.priceSoftCopy === undefined || form.priceSoftCopy <= 0) return 'Soft Copy Price is required and must be positive.';
+                if (form.priceHardCopy === undefined || form.priceHardCopy <= 0) return 'Hard Copy Price is required and must be positive.';
+                if (form.priceCombined === undefined || form.priceCombined <= 0) return 'Soft + Hard Price is required and must be positive.';
+                break;
+            case 'content':
+                if (form.synopses.some(s => !s.trim())) return 'All synopsis paragraphs must have content.';
+                break;
+            case 'toc':
+                if (tocChapters.length === 0) return 'At least one chapter must be added to the Table of Contents.';
+                if (tocChapters.some((c) => !c.title.trim() || !c.authors?.trim())) {
+                    return 'All chapters must have a title and authors.';
+                }
+                break;
+            case 'bio':
+                if (biographies.some(b => !b.authorName.trim() || !b.affiliation.trim() || !b.biography.trim())) {
+                    return 'All author biographies must have a name, affiliation, and biography text.';
+                }
+                if (biographies.some(b => b.email && !isValidEmail(b.email))) {
+                    return 'Please enter a valid email address for all biographies that have an email provided.';
+                }
+                break;
+        }
+        return '';
+    };
+
+    const handleNextTab = () => {
+        const order: TabType[] = ['author', 'editorBio', 'metadata', 'content', 'toc', 'bio', 'review'];
+        const err = validateTab(activeTab);
+        if (err) {
+            setErrors(err);
+            setAlertConfig({ isOpen: true, type: 'warning', title: 'Missing Information', message: err });
+            return;
+        }
+        setErrors('');
+        const idx = order.indexOf(activeTab);
+        if (idx < order.length - 1) {
+            setActiveTab(order[idx + 1]);
+        }
+    };
+
+    const handlePrevTab = () => {
+        const order: TabType[] = ['author', 'editorBio', 'metadata', 'content', 'toc', 'bio', 'review'];
+        setErrors('');
+        const idx = order.indexOf(activeTab);
+        if (idx > 0) setActiveTab(order[idx - 1]);
+    };
+
+    // ── TOC ──────────────────────────────────────────────────
+    const addTocChapter = () =>
+        setTocChapters((p) => [
+            ...p,
+            { title: '', chapterNumber: String(p.length + 1).padStart(2, '0') },
+        ]);
+
+    const removeTocChapter = (i: number) =>
+        setTocChapters((p) => p.filter((_, idx) => idx !== i));
+
+    const updateTocField = (i: number, field: keyof TocChapterPayload, val: string) =>
+        setTocChapters((p) => p.map((ch, idx) => (idx === i ? { ...ch, [field]: val } : ch)));
+
+    const handlePdfUpload = async (i: number, file: File) => {
+        setPdfUploading(p => ({ ...p, [i]: 0 }));
+        try {
+            const result = await uploadDirectTempPdf(file, (pct) => setPdfUploading(prev => ({ ...prev, [i]: pct })));
+            setTocChapters(p =>
+                p.map((ch, idx) =>
+                    idx === i
+                        ? { ...ch, pdfKey: result.fileKey, pdfMimeType: result.mimeType, pdfName: result.originalName }
+                        : ch
+                )
+            );
+            setPdfUploading(p => { const n = { ...p }; delete n[i]; return n; });
+        } catch (err: any) {
+            setPdfUploading(p => ({ ...p, [i]: 'error' }));
+            toast.error(`Failed to upload PDF: ${err.message}`);
+        }
+    };
+
+    const handleExtraPdfUpload = async (type: string, file: File) => {
+        setPdfUploading(p => ({ ...p, [type]: 0 }));
+        try {
+            const result = await uploadDirectTempPdf(file, (pct) => setPdfUploading(prev => ({ ...prev, [type]: pct })));
+            setForm(p => {
+                let existingPdfs = p.frontmatterPdfs;
+                if (typeof existingPdfs === 'string') {
+                    try {
+                        existingPdfs = JSON.parse(existingPdfs) || {};
+                    } catch {
+                        existingPdfs = {};
+                    }
+                }
+                return {
+                    ...p,
+                    frontmatterPdfs: {
+                        ...existingPdfs,
+                        [type]: { pdfKey: result.fileKey, mimeType: result.mimeType, name: result.originalName }
+                    }
+                };
+            });
+            setPdfUploading(p => { const n = { ...p }; delete n[type]; return n; });
+        } catch (err: any) {
+            setPdfUploading(p => ({ ...p, [type]: 'error' }));
+            toast.error(`Failed to upload ${type} PDF: ${err.message}`);
+        }
+    };
+
+    // ── Biographies ──────────────────────────────────────────
+    const addBio = () => setBiographies((p) => [...p, { authorName: '', affiliation: '', email: '', biography: '' }]);
+    const removeBio = (i: number) => setBiographies((p) => p.filter((_, idx) => idx !== i));
+    const updateBio = (i: number, field: keyof AuthorBiographyPayload, val: string) =>
+        setBiographies((p) => p.map((b, idx) => (idx === i ? { ...b, [field]: val } : b)));
+
+    // ── Scope / Archives ─────────────────────────────────────
+    const addItem = (setter: React.Dispatch<React.SetStateAction<string[]>>) => setter((p) => [...p, '']);
+    const removeItem = (setter: React.Dispatch<React.SetStateAction<string[]>>, i: number) =>
+        setter((p) => (p.length > 1 ? p.filter((_, idx) => idx !== i) : p));
+    const updateItem = (setter: React.Dispatch<React.SetStateAction<string[]>>, i: number, v: string) =>
+        setter((p) => p.map((x, idx) => (idx === i ? v : x)));
+
+    const addSynopsis = () => form.synopses.length < 4 && setForm(p => ({ ...p, synopses: [...p.synopses, ''] }));
+    const removeSynopsis = (i: number) => form.synopses.length > 1 && setForm(p => ({ ...p, synopses: p.synopses.filter((_, idx) => idx !== i) }));
+    const updateSynopsis = (i: number, val: string) => setForm(p => ({ ...p, synopses: p.synopses.map((s, idx) => idx === i ? val : s) }));
+
+    // ── Cover image crop ─────────────────────────────────────
+    const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            setOriginalImage(reader.result as string);
+            setCropPos({ x: 0, y: 150 });
+            setZoom(1);
+            setShowCropper(true);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const onCropComplete = useCallback((_: Area, croppedPixels: Area) => {
+        setCroppedAreaPixels(croppedPixels);
+    }, []);
+
+    const getCroppedImg = async (): Promise<string> => {
+        if (!croppedAreaPixels || !originalImage) return '';
+        const imageElement = new Image();
+        imageElement.src = originalImage;
+        return new Promise((resolve) => {
+            imageElement.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                if (!ctx) { resolve(''); return; }
+                canvas.width = croppedAreaPixels.width;
+                canvas.height = croppedAreaPixels.height;
+                ctx.drawImage(imageElement, croppedAreaPixels.x, croppedAreaPixels.y, croppedAreaPixels.width, croppedAreaPixels.height, 0, 0, croppedAreaPixels.width, croppedAreaPixels.height);
+                resolve(canvas.toDataURL('image/jpeg', 0.95));
+            };
+        });
+    };
+
+    const applyCrop = async () => {
+        const cropped = await getCroppedImg();
+        if (cropped) {
+            setForm((p) => ({ ...p, coverImage: cropped }));
+            setShowCropper(false);
+        }
+    };
+
+    const handleSkipCrop = () => {
+        setForm(p => ({ ...p, coverImage: originalImage }));
+        setShowCropper(false);
+    };
+
+    // ── Submit ───────────────────────────────────────────────
+
+    const handleSubmit = async () => {
+        setLoading(true);
+        try {
+            const scope: Record<string, string> = { paragraph_1: form.scopeIntro };
+            scopeItems.forEach((v, i) => { if (v.trim()) scope[`list_${i + 1}`] = v; });
+
+            const archives: Record<string, string> = { paragraph_1: archiveIntro };
+            archiveItems.forEach((v, i) => { if (v.trim()) archives[`list_${i + 1}`] = v; });
+
+            const formatAffiliation = (aff: string | undefined) => {
+                if (!aff?.trim()) return aff;
+                const trimmed = aff.trim();
+                return (trimmed.startsWith('(') && trimmed.endsWith(')')) ? trimmed : `(${trimmed})`;
+            };
+
+            const payload = {
+                title: form.title,
+                author: `${form.mainAuthor.firstName} ${form.mainAuthor.lastName}`.trim(),
+                mainAuthor: form.mainAuthor,
+                coAuthors: form.coAuthors.map(ca => `${ca.firstName} ${ca.lastName}`.trim()).join(', ') || undefined,
+                coAuthorsData: form.coAuthors.map(({ tempId, ...rest }) => rest),
+                coverImage: form.coverImage || undefined,
+                category: form.category,
+                description: form.description,
+                isbn: form.isbn,
+                uid: form.uid,
+                publishedDate: form.publishedDate,
+                pages: Number(form.pages),
+                indexedIn: form.indexedIn || undefined,
+                releaseDate: form.releaseDate || undefined,
+                copyright: form.copyright || undefined,
+                doi: form.doi || undefined,
+                pricing: {
+                    softCopyPrice: Number(form.priceSoftCopy) || 0,
+                    hardCopyPrice: Number(form.priceHardCopy) || 0,
+                    combinedPrice: Number(form.priceCombined) || 0,
+                },
+                googleLink: form.googleLink || undefined,
+                flipkartLink: form.flipkartLink || undefined,
+                amazonLink: form.amazonLink || undefined,
+                synopsis: form.synopses.reduce((acc, text, index) => {
+                    if (text.trim()) acc[`paragraph_${index + 1}`] = text;
+                    return acc;
+                }, {} as Record<string, string>),
+                scope,
+                tableContents: tocChapters.filter((c) => c.title.trim()),
+                authorBiographies: biographies.filter((b) => b.authorName.trim() || b.biography.trim()).map(b => ({
+                    ...b,
+                    affiliation: formatAffiliation(b.affiliation)
+                })),
+                editorBiographies: editorBiographies.filter((b) => b.editorName.trim() || b.biography.trim()).map(b => ({
+                    ...b,
+                    affiliation: formatAffiliation(b.affiliation)
+                })),
+                archives,
+                editors: form.editors,
+                primaryEditor: form.primaryEditor || undefined,
+                keywords: form.keywords,
+                frontmatterPdfs: form.frontmatterPdfs,
+            };
+
+            await onSave(book.id, payload);
+            onClose();
+            toast.success('🎉 Changes saved successfully!');
+        } catch (err: any) {
+            toast.error(err?.message || 'Failed to save changes.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="modal-overlay">
+            <div className="publish-chapter-form-wrapper">
+                <div className="pcw-form-container">
+                    <div className="pcw-header">
+                        <div>
+                            <h2>✏️ Edit Published Chapter</h2>
+                            <div className="pcw-header-sub">Update details for "{book.title}"</div>
+                        </div>
+                        <button onClick={onClose} className="pcw-close-btn">&times;</button>
+                    </div>
+
+                    <div className="form-tabs">
+                        {TABS.map(tab => (
+                            <button
+                                key={tab.id}
+                                type="button"
+                                className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
+                                onClick={() => {
+                                    setErrors('');
+                                    setActiveTab(tab.id);
+                                }}
+                            >
+                                <span>{tab.num}</span>
+                                <span>{tab.label}</span>
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="pcw-body" ref={pcwBodyRef}>
+                        {errors && <div className="pcw-error-banner">⚠ {errors}</div>}
+
+                        {activeTab === 'author' && (
+                            <div className="tab-pane active slide-in-bottom">
+                                <p className="pcw-step-title">Author Details</p>
+                                <div className="pcw-section-title">
+                                    <span>Main Author</span>
+                                    {form.mainAuthor.isCorrespondingAuthor && (
+                                        <span style={{ fontSize: '12px', background: '#e0e7ff', color: '#4338ca', padding: '2px 8px', borderRadius: '12px', fontWeight: 500, marginLeft: '8px' }}>
+                                            Corresponding Author
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="pcw-field-grid">
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">First Name</label>
+                                        <input className="pcw-input" value={form.mainAuthor.firstName} onChange={(e) => handleMainAuthorChange('firstName', e.target.value)} placeholder="e.g. John" />
+                                    </div>
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">Last Name</label>
+                                        <input className="pcw-input" value={form.mainAuthor.lastName} onChange={(e) => handleMainAuthorChange('lastName', e.target.value)} placeholder="e.g. Doe" />
+                                    </div>
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">Designation</label>
+                                        <select className="pcw-select" value={form.mainAuthor.designation} onChange={(e) => handleMainAuthorChange('designation', e.target.value)}>
+                                            <option value="">Select Designation</option>
+                                            {DESIGNATIONS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+                                        </select>
+                                    </div>
+                                    {form.mainAuthor.designation === 'other' && (
+                                        <div className="pcw-field">
+                                            <label className="pcw-label">Other Designation</label>
+                                            <input className="pcw-input" value={form.mainAuthor.otherDesignation || ''} onChange={(e) => handleMainAuthorChange('otherDesignation', e.target.value)} placeholder="e.g. Research Fellow" />
+                                        </div>
+                                    )}
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">Department Name</label>
+                                        <input className="pcw-input" value={form.mainAuthor.departmentName} onChange={(e) => handleMainAuthorChange('departmentName', e.target.value)} placeholder="e.g. Computer Science" />
+                                    </div>
+                                    <div className="pcw-field span-full">
+                                        <label className="pcw-label">Institute / University Name</label>
+                                        <input className="pcw-input" value={form.mainAuthor.instituteName} onChange={(e) => handleMainAuthorChange('instituteName', e.target.value)} placeholder="e.g. Stanford University" />
+                                    </div>
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">City</label>
+                                        <input className="pcw-input" value={form.mainAuthor.city} onChange={(e) => handleMainAuthorChange('city', e.target.value)} placeholder="e.g. Palo Alto" />
+                                    </div>
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">State</label>
+                                        <input className="pcw-input" value={form.mainAuthor.state} onChange={(e) => handleMainAuthorChange('state', e.target.value)} placeholder="e.g. California" />
+                                    </div>
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">Country</label>
+                                        <input className="pcw-input" value={form.mainAuthor.country} onChange={(e) => handleMainAuthorChange('country', e.target.value)} placeholder="e.g. USA" />
+                                    </div>
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">Email</label>
+                                        <input className="pcw-input" type="email" value={form.mainAuthor.email} onChange={(e) => handleMainAuthorChange('email', e.target.value)} placeholder="e.g. john.doe@example.com" />
+                                    </div>
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">Phone Number (Optional)</label>
+                                        <PhoneNumberInput
+                                            value={form.mainAuthor.phoneNumber || ''}
+                                            onChange={(val) => handleMainAuthorChange('phoneNumber', val)}
+                                            placeholder="Enter phone number"
+                                        />
+                                    </div>
+                                    <div className="pcw-field" style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '16px' }}>
+                                        <input type="checkbox" id="mainAuthorCorresponding" checked={!!form.mainAuthor.isCorrespondingAuthor} onChange={(e) => handleMainAuthorChange('isCorrespondingAuthor', e.target.checked)} />
+                                        <label htmlFor="mainAuthorCorresponding" className="pcw-label" style={{ marginBottom: 0, cursor: 'pointer' }}>Corresponding Author</label>
+                                    </div>
+                                </div>
+
+                                <div className="pcw-section-title">
+                                    <span>Co-Authors</span>
+                                    <button type="button" className="pcw-add-btn" onClick={addCoAuthor}>+ Add Co-Author</button>
+                                </div>
+                                {form.coAuthors.map((ca, i) => (
+                                    <div key={ca.tempId} className="pcw-toc-row" style={{ marginBottom: '16px' }}>
+                                        <div className="pcw-toc-row-header">
+                                            <h4 style={{ margin: 0, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                Co-Author {i + 1}
+                                                {ca.isCorrespondingAuthor && (
+                                                    <span style={{ fontSize: '10px', background: '#e0e7ff', color: '#4338ca', padding: '2px 6px', borderRadius: '10px', fontWeight: 500 }}>
+                                                        Corresponding
+                                                    </span>
+                                                )}
+                                            </h4>
+                                            <button type="button" className="pcw-remove-btn" onClick={() => removeCoAuthor(ca.tempId)}>✕ Remove</button>
+                                        </div>
+                                        <div className="pcw-field-grid">
+                                            <div className="pcw-field">
+                                                <label className="pcw-label">First Name</label>
+                                                <input className="pcw-input" value={ca.firstName} placeholder="e.g. Jane" onChange={(e) => handleCoAuthorChange(ca.tempId, 'firstName', e.target.value)} />
+                                            </div>
+                                            <div className="pcw-field">
+                                                <label className="pcw-label">Last Name</label>
+                                                <input className="pcw-input" value={ca.lastName} placeholder="e.g. Smith" onChange={(e) => handleCoAuthorChange(ca.tempId, 'lastName', e.target.value)} />
+                                            </div>
+                                            <div className="pcw-field">
+                                                <label className="pcw-label">Designation</label>
+                                                <select className="pcw-select" value={ca.designation} onChange={(e) => handleCoAuthorChange(ca.tempId, 'designation', e.target.value)}>
+                                                    <option value="">Select Designation</option>
+                                                    {DESIGNATIONS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+                                                </select>
+                                            </div>
+                                            {ca.designation === 'other' && (
+                                                <div className="pcw-field">
+                                                    <label className="pcw-label">Other Designation</label>
+                                                    <input className="pcw-input" value={ca.otherDesignation || ''} onChange={(e) => handleCoAuthorChange(ca.tempId, 'otherDesignation', e.target.value)} placeholder="e.g. Research Fellow" />
+                                                </div>
+                                            )}
+                                            <div className="pcw-field">
+                                                <label className="pcw-label">Department Name</label>
+                                                <input className="pcw-input" value={ca.departmentName} placeholder="e.g. Computer Science" onChange={(e) => handleCoAuthorChange(ca.tempId, 'departmentName', e.target.value)} />
+                                            </div>
+                                            <div className="pcw-field span-full">
+                                                <label className="pcw-label">Institute / University Name</label>
+                                                <input className="pcw-input" value={ca.instituteName} placeholder="e.g. Stanford University" onChange={(e) => handleCoAuthorChange(ca.tempId, 'instituteName', e.target.value)} />
+                                            </div>
+                                            <div className="pcw-field">
+                                                <label className="pcw-label">City</label>
+                                                <input className="pcw-input" value={ca.city} placeholder="e.g. Palo Alto" onChange={(e) => handleCoAuthorChange(ca.tempId, 'city', e.target.value)} />
+                                            </div>
+                                            <div className="pcw-field">
+                                                <label className="pcw-label">State</label>
+                                                <input className="pcw-input" value={ca.state} placeholder="e.g. California" onChange={(e) => handleCoAuthorChange(ca.tempId, 'state', e.target.value)} />
+                                            </div>
+                                            <div className="pcw-field">
+                                                <label className="pcw-label">Country</label>
+                                                <input className="pcw-input" value={ca.country} placeholder="e.g. USA" onChange={(e) => handleCoAuthorChange(ca.tempId, 'country', e.target.value)} />
+                                            </div>
+                                            <div className="pcw-field">
+                                                <label className="pcw-label">Email</label>
+                                                <input className="pcw-input" type="email" value={ca.email} placeholder="e.g. jane@example.com" onChange={(e) => handleCoAuthorChange(ca.tempId, 'email', e.target.value)} />
+                                            </div>
+                                            <div className="pcw-field">
+                                                <label className="pcw-label">Phone Number (Optional)</label>
+                                                <PhoneNumberInput
+                                                    value={ca.phoneNumber || ''}
+                                                    onChange={(val) => handleCoAuthorChange(ca.tempId, 'phoneNumber', val)}
+                                                    placeholder="Enter phone number"
+                                                />
+                                            </div>
+                                            <div className="pcw-field" style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '16px' }}>
+                                                <input type="checkbox" id={`coAuthorCorresponding-${i}`} checked={!!ca.isCorrespondingAuthor} onChange={(e) => handleCoAuthorChange(ca.tempId, 'isCorrespondingAuthor', e.target.checked)} />
+                                                <label htmlFor={`coAuthorCorresponding-${i}`} className="pcw-label" style={{ marginBottom: 0, cursor: 'pointer' }}>Corresponding Author</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {activeTab === 'editorBio' && (
+                            <div className="tab-pane active slide-in-bottom">
+                                <p className="pcw-step-title">Editor Biographies</p>
+                                <p className="pcw-step-desc">Add biographies for editors. These names will automatically sync with the Book Metadata tab.</p>
+                                {Array.isArray(editorBiographies) && editorBiographies.map((bio, i) => (
+                                    <div className="pcw-bio-card" key={i}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: 4 }}>
+                                            <div style={{ position: 'relative' }}>
+                                                <input className="pcw-input" value={bio.editorName} onChange={(e) => updateEditorBio(i, 'editorName', e.target.value)} onBlur={() => handleEditorSearch(i)} placeholder="Editor Name *" />
+                                            </div>
+                                            <input className="pcw-input" value={bio.affiliation || ''} onChange={(e) => updateEditorBio(i, 'affiliation', e.target.value)} placeholder="Affiliation" />
+                                            <div style={{ display: 'flex', gap: '4px' }}>
+                                                <input className="pcw-input" value={bio.email || ''} onChange={(e) => updateEditorBio(i, 'email', e.target.value)} placeholder="Email ID" style={{ fontSize: '11px' }} />
+                                                <button type="button" className="pcw-remove-btn" onClick={() => removeEditorBio(i)}>✕</button>
+                                            </div>
+                                        </div>
+                                        <textarea className="pcw-textarea" rows={3} value={bio.biography} onChange={(e) => updateEditorBio(i, 'biography', e.target.value)} placeholder="Biography text... *" />
+                                    </div>
+                                ))}
+                                <button type="button" className="pcw-add-btn" onClick={addEditorBio}>+ Add Editor Bio</button>
+                            </div>
+                        )}
+
+                        {activeTab === 'metadata' && (
+                            <div className="tab-pane active slide-in-bottom">
+                                <p className="pcw-step-title">Book Metadata</p>
+                                <div className="pcw-field-grid">
+                                    <div className="pcw-field span-full">
+                                        <label className="pcw-label">Book Title <span className="req">*</span></label>
+                                        <input className="pcw-input" name="title" value={form.title} onChange={handleFormChange} />
+                                    </div>
+                                    <div className="pcw-field span-full">
+                                        <label className="pcw-label">Editors (comma separated) <span className="req">*</span></label>
+                                        <input
+                                            className="pcw-input"
+                                            value={Array.isArray(form.editors) ? form.editors.join(', ') : ''}
+                                            onChange={(e) => setForm(p => ({ ...p, editors: e.target.value.split(',').map(s => s.trim()) }))}
+                                            placeholder="Names will sync from Editor Biographies tab"
+                                            disabled
+                                        />
+                                        <p style={{ fontSize: '10px', color: '#64748b', marginTop: '4px' }}>
+                                            Note: Edit names in the "Editor Biography" tab to update this list.
+                                        </p>
+                                    </div>
+                                    <div className="pcw-field span-full">
+                                        <label className="pcw-label">Primary Editor (Optional)</label>
+                                        <select
+                                            className="pcw-select"
+                                            name="primaryEditor"
+                                            value={form.primaryEditor || ''}
+                                            onChange={handleFormChange}
+                                        >
+                                            <option value="">Select Primary Editor</option>
+                                            {form.editors.filter(Boolean).map(name => (
+                                                <option key={name} value={name}>{name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">Category <span className="req">*</span></label>
+                                        <select className="pcw-select" name="category" value={form.category} onChange={handleFormChange}>
+                                            <option value="Engineering & Management">Engineering &amp; Management</option>
+                                            <option value="Medical & Health Sciences">Medical &amp; Health Sciences</option>
+                                            <option value="Interdisciplinary Sciences">Interdisciplinary Sciences</option>
+                                        </select>
+                                    </div>
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">UID <span className="req">*</span></label>
+                                        <input className="pcw-input" name="uid" value={form.uid || ''} onChange={handleFormChange} placeholder="e.g. A01" />
+                                    </div>
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">ISBN <span className="req">*</span></label>
+                                        <input className="pcw-input" name="isbn" value={form.isbn} onChange={handleFormChange} />
+                                    </div>
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">DOI</label>
+                                        <input className="pcw-input" name="doi" value={form.doi} onChange={handleFormChange} />
+                                    </div>
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">Pages</label>
+                                        <input className="pcw-input" name="pages" type="number" value={form.pages || ''} onChange={handleFormChange} />
+                                    </div>
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">Published Year</label>
+                                        <input className="pcw-input" name="publishedDate" value={form.publishedDate} onChange={handleFormChange} />
+                                    </div>
+                                    <div className="pcw-field span-full">
+                                        <label className="pcw-label">Keywords (comma separated)</label>
+                                        <input
+                                            className="pcw-input"
+                                            value={Array.isArray(form.keywords) ? form.keywords.join(', ') : ''}
+                                            onChange={(e) => setForm(p => ({ ...p, keywords: e.target.value.split(',').map(s => s.trim()) }))}
+                                            placeholder="e.g. AI, Machine Learning, Robotics"
+                                        />
+                                    </div>
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">Release Date</label>
+                                        <input className="pcw-input" name="releaseDate" value={form.releaseDate} onChange={handleFormChange} placeholder="e.g. 23/12/2024" />
+                                    </div>
+                                    <div className="pcw-field">
+                                        <label className="pcw-label">Indexed In</label>
+                                        <input className="pcw-input" name="indexedIn" value={form.indexedIn} onChange={handleFormChange} placeholder="e.g. Scopus, Google Scholar" />
+                                    </div>
+                                    <div className="pcw-field span-full">
+                                        <label className="pcw-label">Copyright</label>
+                                        <input className="pcw-input" name="copyright" value={form.copyright} onChange={handleFormChange} placeholder="e.g. © 2024" />
+                                    </div>
+                                    <div className="pcw-field span-full">
+                                        <label className="pcw-label">Pricing Details (Soft / Hard / Combined)</label>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <input className="pcw-input" type="number" name="priceSoftCopy" value={form.priceSoftCopy || ''} onChange={handleFormChange} placeholder="Soft Copy" />
+                                            <input className="pcw-input" type="number" name="priceHardCopy" value={form.priceHardCopy || ''} onChange={handleFormChange} placeholder="Hard Copy" />
+                                            <input className="pcw-input" type="number" name="priceCombined" value={form.priceCombined || ''} onChange={handleFormChange} placeholder="Combined" />
+                                        </div>
+                                    </div>
+                                    <div className="pcw-field span-full" style={{ marginTop: '12px' }}>
+                                        <label className="pcw-label">External Selling Links (Optional)</label>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <input className="pcw-input" name="googleLink" value={form.googleLink || ''} onChange={handleFormChange} placeholder="Google Books URL" />
+                                            <input className="pcw-input" name="flipkartLink" value={form.flipkartLink || ''} onChange={handleFormChange} placeholder="Flipkart URL" />
+                                            <input className="pcw-input" name="amazonLink" value={form.amazonLink || ''} onChange={handleFormChange} placeholder="Amazon URL" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="pcw-field" style={{ marginTop: 8 }}>
+                                    <label className="pcw-label">Abstract / Description</label>
+                                    <textarea className="pcw-textarea" name="description" rows={3} value={form.description} onChange={handleFormChange} />
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'content' && (
+                            <div className="tab-pane active slide-in-bottom">
+                                <p className="pcw-step-title">Synopsis</p>
+                                {form.synopses.map((s, i) => (
+                                    <div className="pcw-field" key={i} style={{ marginBottom: 12 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <label className="pcw-label">Paragraph {i + 1}</label>
+                                            {form.synopses.length > 1 && <button type="button" className="pcw-remove-btn" onClick={() => removeSynopsis(i)}>✕</button>}
+                                        </div>
+                                        <textarea className="pcw-textarea" rows={3} value={s} onChange={(e) => updateSynopsis(i, e.target.value)} />
+                                    </div>
+                                ))}
+                                {form.synopses.length < 4 && <button type="button" className="pcw-add-btn" onClick={addSynopsis}>+ Add Paragraph</button>}
+
+                                <div className="pcw-section">
+                                    <p className="pcw-step-title">Scope</p>
+                                    <textarea className="pcw-textarea" rows={2} value={form.scopeIntro} onChange={(e) => setForm(p => ({ ...p, scopeIntro: e.target.value }))} placeholder="Introduction..." />
+                                    {scopeItems.map((item, i) => (
+                                        <div className="pcw-list-row" key={i} style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                                            <input className="pcw-input" value={item} onChange={(e) => updateItem(setScopeItems, i, e.target.value)} />
+                                            {scopeItems.length > 1 && <button type="button" className="pcw-remove-btn" onClick={() => removeItem(setScopeItems, i)}>✕</button>}
+                                        </div>
+                                    ))}
+                                    <button type="button" className="pcw-add-btn" onClick={() => addItem(setScopeItems)}>+ Add Scope Item</button>
+                                </div>
+
+                                <div className="pcw-section" style={{ marginTop: 14 }}>
+                                    <p className="pcw-step-title">Archives</p>
+                                    <textarea className="pcw-textarea" rows={2} value={archiveIntro} onChange={(e) => setArchiveIntro(e.target.value)} placeholder="Introduction..." />
+                                    {archiveItems.map((item, i) => (
+                                        <div className="pcw-list-row" key={i} style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                                            <input className="pcw-input" value={item} onChange={(e) => updateItem(setArchiveItems, i, e.target.value)} />
+                                            {archiveItems.length > 1 && <button type="button" className="pcw-remove-btn" onClick={() => removeItem(setArchiveItems, i)}>✕</button>}
+                                        </div>
+                                    ))}
+                                    <button type="button" className="pcw-add-btn" onClick={() => addItem(setArchiveItems)}>+ Add Archive Item</button>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'toc' && (
+                            <div className="tab-pane active slide-in-bottom">
+                                <p className="pcw-step-title">Table of Contents</p>
+                                {Array.isArray(tocChapters) && tocChapters.map((ch, i) => (
+                                    <div className="pcw-toc-row" key={i}>
+                                        <div className="pcw-toc-row-header">
+                                            <div style={{ display: 'flex', gap: '8px', flex: 1, minWidth: 0, alignItems: 'center' }}>
+                                                <div className="pcw-toc-num">{ch.chapterNumber}</div>
+                                                <input className="pcw-input" style={{ flex: 1, minWidth: 0, fontWeight: 600 }} value={ch.title} onChange={(e) => updateTocField(i, 'title', e.target.value)} placeholder="Untitled Chapter" />
+                                                <input className="pcw-input" style={{ flex: 1, minWidth: 0 }} value={ch.doi || ''} onChange={(e) => updateTocField(i, 'doi', e.target.value)} placeholder="Chapter DOI" />
+                                            </div>
+                                            <button type="button" className="pcw-remove-btn" style={{ flexShrink: 0, marginLeft: '8px' }} onClick={() => removeTocChapter(i)}>✕</button>
+                                        </div>
+                                        <div className="pcw-field-grid">
+                                            <AuthorMultiSelect
+                                                authorOptions={Array.isArray(biographies) ? biographies.map(b => b.authorName) : []}
+                                                selectedNames={ch.authors || ''}
+                                                onChange={(val) => updateTocField(i, 'authors', val)}
+                                                placeholder="Author(s) *"
+                                            />
+                                            <div style={{ display: 'flex', gap: '4px' }}>
+                                                <input className="pcw-input" placeholder="From Page" value={ch.pagesFrom || ''} onChange={(e) => updateTocField(i, 'pagesFrom', e.target.value)} />
+                                                <input className="pcw-input" placeholder="To Page" value={ch.pagesTo || ''} onChange={(e) => updateTocField(i, 'pagesTo', e.target.value)} />
+                                            </div>
+                                        </div>
+                                        <textarea className="pcw-textarea" rows={2} value={ch.abstract || ''} onChange={(e) => updateTocField(i, 'abstract', e.target.value)} placeholder="Abstract" style={{ marginTop: '8px' }} />
+                                        <div className="pcw-toc-flex-row" style={{ marginTop: '8px' }}>
+                                            <input className="pcw-input" type="number" value={ch.priceSoftCopy || ''} onChange={(e) => updateTocField(i, 'priceSoftCopy', e.target.value)} placeholder="₹ Soft" />
+                                            <input className="pcw-input" type="number" value={ch.priceHardCopy || ''} onChange={(e) => updateTocField(i, 'priceHardCopy', e.target.value)} placeholder="₹ Hard" />
+                                            <input className="pcw-input" type="number" value={ch.priceCombined || ''} onChange={(e) => updateTocField(i, 'priceCombined', e.target.value)} placeholder="₹ Both" />
+                                        </div>
+                                        <div className="pcw-toc-flex-row" style={{ marginTop: '4px' }}>
+                                            <button type="button" className={`pcw-pdf-upload-btn ${(ch.pdfKey || (ch as any).publishedFileId) ? 'has-pdf' : ''}`} onClick={() => pdfInputRefs.current[i]?.click()}>
+                                                {pdfUploading[i] !== undefined ? `${pdfUploading[i]}%` :
+                                                    (ch.pdfKey || (ch as any).publishedFileId) ? '✔ PDF Stored' : '⬆ Upload PDF'}
+                                            </button>
+                                            <input type="file" accept="application/pdf" className="pcw-hidden-input" style={{ display: 'none' }} ref={(el) => { pdfInputRefs.current[i] = el; }} onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePdfUpload(i, f); }} />
+                                            {(ch.pdfKey || (ch as any).publishedFileId) && <button type="button" className="pcw-remove-btn" onClick={() => { setTocChapters(p => p.map((c, idx) => idx === i ? { ...c, pdfKey: undefined, pdfName: undefined, pdfMimeType: undefined, publishedFileId: undefined } : c)); }} title="Clear PDF">✕</button>}
+                                            {(ch.pdfKey || (ch as any).publishedFileId) && (
+                                                <a
+                                                    href={getChapterPdfUrl(book.id, i, ch.pdfKey, (ch as any).publishedFileId)}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="pcw-view-btn"
+                                                    title="View PDF"
+                                                    style={{ textDecoration: 'none', marginLeft: '4px' }}
+                                                >
+                                                    👁️
+                                                </a>
+                                            )}
+                                            {ch.pdfName && <span style={{ fontSize: '10px', marginLeft: '4px' }}>{ch.pdfName}</span>}
+                                        </div>
+                                    </div>
+                                ))}
+                                <button type="button" className="pcw-add-btn" onClick={addTocChapter}>+ Add Chapter</button>
+
+                                <div className="pcw-section" style={{ marginTop: 20 }}>
+                                    <p className="pcw-step-title">Additional Assets (Frontmatter, Preface, etc.)</p>
+                                    <div className="pcw-field-grid">
+                                        {extraPdfTypes.map(type => (
+                                            <div key={type} className="pcw-field">
+                                                <label className="pcw-label">{type}</label>
+                                                <div className="pcw-toc-flex-row">
+                                                    <button
+                                                        type="button"
+                                                        className={`pcw-pdf-upload-btn ${(form.frontmatterPdfs[type]?.pdfKey || (form.frontmatterPdfs[type] as any)?.publishedFileId) ? 'has-pdf' : ''}`}
+                                                        onClick={() => extraPdfInputRefs.current[type]?.click()}
+                                                    >
+                                                        {pdfUploading[type] !== undefined
+                                                            ? `${pdfUploading[type]}%`
+                                                            : ((form.frontmatterPdfs[type]?.pdfKey || (form.frontmatterPdfs[type] as any)?.publishedFileId) ? '✔ Stored' : '⬆ Upload')}
+                                                    </button>
+                                                    <input
+                                                        type="file"
+                                                        accept="application/pdf"
+                                                        className="pcw-hidden-input"
+                                                        style={{ display: 'none' }}
+                                                        ref={(el) => { extraPdfInputRefs.current[type] = el; }}
+                                                        onChange={(e) => {
+                                                            const f = e.target.files?.[0];
+                                                            if (f) handleExtraPdfUpload(type, f);
+                                                        }}
+                                                    />
+                                                    {(form.frontmatterPdfs[type]?.pdfKey || (form.frontmatterPdfs[type] as any)?.publishedFileId) && (
+                                                        <button
+                                                            type="button"
+                                                            className="pcw-remove-btn"
+                                                            onClick={() => setForm(p => {
+                                                                let existingPdfs = p.frontmatterPdfs;
+                                                                if (typeof existingPdfs === 'string') {
+                                                                    try {
+                                                                        existingPdfs = JSON.parse(existingPdfs) || {};
+                                                                    } catch {
+                                                                        existingPdfs = {};
+                                                                    }
+                                                                }
+                                                                const next = { ...existingPdfs };
+                                                                delete next[type];
+                                                                return { ...p, frontmatterPdfs: next };
+                                                            })}
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    )}
+                                                    {(form.frontmatterPdfs[type]?.pdfKey || (form.frontmatterPdfs[type] as any)?.publishedFileId) && (
+                                                        <a
+                                                            href={getUniversalDownloadUrl(form.frontmatterPdfs[type]?.pdfKey || (form.frontmatterPdfs[type] as any)?.publishedFileId)}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="pcw-view-btn"
+                                                            title="View PDF"
+                                                            style={{ textDecoration: 'none', marginLeft: '4px' }}
+                                                        >
+                                                            👁️
+                                                        </a>
+                                                    )}
+                                                    {form.frontmatterPdfs[type]?.name && (
+                                                        <span style={{ fontSize: '10px', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginLeft: '4px' }}>
+                                                            {form.frontmatterPdfs[type].name}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'bio' && (
+                            <div className="tab-pane active slide-in-bottom">
+                                <p className="pcw-step-title">Author Biographies</p>
+                                {Array.isArray(biographies) && biographies.map((bio, i) => (
+                                    <div className="pcw-bio-card" key={i}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: 4 }}>
+                                            <div style={{ position: 'relative' }}>
+                                                <input className="pcw-input" value={bio.authorName} onChange={(e) => updateBio(i, 'authorName', e.target.value)} placeholder="Full Name *" />
+                                            </div>
+                                            <input className="pcw-input" value={bio.affiliation || ''} onChange={(e) => updateBio(i, 'affiliation', e.target.value)} placeholder="Affiliation *" />
+                                            <div style={{ display: 'flex', gap: '4px' }}>
+                                                <input className="pcw-input" value={bio.email || ''} onChange={(e) => updateBio(i, 'email', e.target.value)} placeholder="Email ID" style={{ fontSize: '11px' }} />
+                                                <button type="button" className="pcw-remove-btn" onClick={() => removeBio(i)}>✕</button>
+                                            </div>
+                                        </div>
+                                        <textarea className="pcw-textarea" rows={3} value={bio.biography} onChange={(e) => updateBio(i, 'biography', e.target.value)} placeholder="Biography text... *" />
+                                    </div>
+                                ))}
+                                <button type="button" className="pcw-add-btn" onClick={addBio}>+ Add Bio</button>
+                            </div>
+                        )}
+
+                        {activeTab === 'review' && (
+                            <div className="tab-pane active slide-in-bottom">
+                                <p className="pcw-step-title">Cover Image & Review</p>
+                                <div className="pcw-cover-container">
+                                    <div className="pcw-cover-preview-box">
+                                        {form.coverImage ? (
+                                            <img src={form.coverImage} alt="Cover" />
+                                        ) : book?.hasCoverImage ? (
+                                            <img src={getCoverUrl(book.id, book.updatedAt ? new Date(book.updatedAt).getTime() : undefined)} alt="Cover" />
+                                        ) : (
+                                            <span>No Cover</span>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="pcw-cover-upload-label" style={{ padding: '10px', width: '200px' }}>
+                                            <span>📷 Replace Image</span>
+                                            <input type="file" accept="image/*" className="pcw-cover-upload-input" style={{ display: 'none' }} onChange={handleCoverFileChange} />
+                                        </label>
+                                        <p className="pcw-step-desc" style={{ marginTop: '8px' }}>Cropping will be available if you upload a new image.</p>
+                                    </div>
+                                </div>
+                                <hr style={{ margin: '20px 0' }} />
+                                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                    <h3 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Ready to save?</h3>
+                                    <button className="pcw-btn" style={{ background: '#22c55e', color: 'white', padding: '10px 20px', borderRadius: '6px', border: 'none', fontWeight: 700, cursor: 'pointer' }} onClick={handleSubmit} disabled={loading}>
+                                        {loading ? 'Saving...' : '💾 Save All Changes'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="pcw-footer">
+                        <div className="pcw-footer-left"><button type="button" className="pcw-btn pcw-btn-secondary" onClick={onClose}>Cancel</button></div>
+                        <div className="pcw-footer-right">
+                            {activeTab !== 'author' && <button type="button" className="pcw-btn pcw-btn-secondary" onClick={handlePrevTab}>Previous</button>}
+                            {activeTab !== 'review' && <button type="button" className="pcw-btn pcw-btn-primary" onClick={handleNextTab}>Next</button>}
+                        </div>
+                    </div>
+                </div>
+
+                {showCropper && originalImage && createPortal(
+                    <div className="pcw-cropper-overlay">
+                        <div className="pcw-cropper-box">
+                            <h3>Crop Cover Image</h3>
+                            <div style={{ position: 'relative', width: '100%', height: '300px', background: '#333' }}>
+                                <Cropper image={originalImage} crop={cropPos} zoom={zoom} aspect={COVER_ASPECT_RATIO} onCropChange={setCropPos} onZoomChange={setZoom} onCropComplete={onCropComplete} />
+                            </div>
+                            <div className="pcw-cropper-actions">
+                                <button type="button" onClick={() => setShowCropper(false)}>Cancel</button>
+                                <button
+                                    type="button"
+                                    onClick={handleSkipCrop}
+                                    style={{
+                                        background: '#f1f5f9',
+                                        color: '#475569',
+                                        border: '1px solid #e2e8f0',
+                                        padding: '5px 12px',
+                                        borderRadius: '4px',
+                                        fontWeight: 600,
+                                        fontSize: '11px',
+                                        cursor: 'pointer'
+                                    }}
+                                >Skip & Use Original</button>
+                                <button type="button" className="pcw-btn pcw-btn-primary" onClick={applyCrop}>Apply Crop</button>
+                            </div>
+                        </div>
+                    </div>,
+                    document.body
+                )}
+            </div>
+            <AlertPopup isOpen={alertConfig.isOpen} type={alertConfig.type} title={alertConfig.title} message={alertConfig.message} onClose={() => setAlertConfig(p => ({ ...p, isOpen: false }))} />
+        </div>
+    );
+};
+
+export default EditPublishedChapterModal;

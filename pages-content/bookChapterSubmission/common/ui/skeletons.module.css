@@ -1,0 +1,332 @@
+/* Skeleton Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Base Skeleton Styles */
+.cardSkeleton,
+.detailSkeleton,
+.tableSkeleton,
+.textSkeleton,
+.timelineSkeleton,
+.messageSkeleton,
+.formSkeleton {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(90deg,
+      #f0f0f0 0%,
+      #e0e0e0 50%,
+      #f0f0f0 100%);
+  background-size: 1000px 100%;
+}
+
+/* Generic Skeleton Elements */
+.skeletonTitle,
+.skeletonLine,
+.skeletonBadge,
+.skeletonAuthor,
+.skeletonSmall,
+.skeletonMedium,
+.skeletonLarge,
+.skeletonInput,
+.skeletonLabel,
+.skeletonButton,
+.skeletonCell,
+.skeletonCircle,
+.skeletonAlert,
+.skeletonTab,
+.skeletonContent,
+.skeletonSection,
+.skeletonProgressBar,
+.skeletonTimelineItem,
+.skeletonTimelineContent,
+.skeletonFormGroup,
+.skeletonButtons {
+  background: #e5e7eb;
+  border-radius: 4px;
+  animation: shimmer 2s infinite;
+  background: linear-gradient(90deg,
+      #e5e7eb 0%,
+      #f0f0f0 50%,
+      #e5e7eb 100%);
+  background-size: 1000px 100%;
+}
+
+/* Card Skeleton */
+.cardSkeleton {
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+.skeletonHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.skeletonTitle {
+  height: 20px;
+  width: 60%;
+  border-radius: 4px;
+}
+
+.skeletonBadge {
+  height: 24px;
+  width: 120px;
+  border-radius: 6px;
+}
+
+.skeletonAuthor {
+  height: 16px;
+  width: 40%;
+  border-radius: 4px;
+}
+
+.skeletonLine {
+  height: 14px;
+  width: 100%;
+  border-radius: 4px;
+}
+
+.skeletonFooter {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.skeletonSmall {
+  height: 12px;
+  width: 80px;
+  border-radius: 4px;
+}
+
+/* Detail View Skeleton */
+.detailSkeleton {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeletonLarge {
+  height: 28px;
+  width: 100%;
+  border-radius: 6px;
+}
+
+.skeletonMedium {
+  height: 12px;
+  width: 150px;
+  border-radius: 4px;
+}
+
+.skeletonAlert {
+  height: 80px;
+  border-radius: 8px;
+}
+
+.skeletonTabs {
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 12px;
+}
+
+.skeletonTab {
+  height: 20px;
+  width: 100px;
+  border-radius: 4px;
+}
+
+.skeletonContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 12px;
+}
+
+.skeletonSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Table Skeleton */
+.tableSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.skeletonCell {
+  height: 16px;
+  border-radius: 4px;
+}
+
+/* Text Skeleton */
+.textSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Timeline Skeleton */
+.timelineSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.skeletonProgressBar {
+  height: 8px;
+  width: 100%;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.skeletonTimelineItem {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.skeletonCircle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeletonTimelineContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Message Skeleton */
+.messageSkeleton {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.messageContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Form Skeleton */
+.formSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeletonFormGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeletonLabel {
+  height: 14px;
+  width: 100px;
+  border-radius: 4px;
+}
+
+.skeletonInput {
+  height: 40px;
+  border-radius: 6px;
+}
+
+.skeletonButtons {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.skeletonButton {
+  flex: 1;
+  height: 40px;
+  border-radius: 6px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tableRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .skeletonTimelineItem {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .skeletonCircle {
+    width: 36px;
+    height: 36px;
+  }
+
+  .messageSkeleton {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cardSkeleton {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .detailSkeleton {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .tableRow {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .skeletonTimelineItem {
+    flex-direction: column;
+    padding: 12px;
+  }
+
+  .messageSkeleton {
+    flex-direction: column;
+    padding: 10px;
+  }
+
+  .skeletonCircle {
+    width: 32px;
+    height: 32px;
+  }
+}

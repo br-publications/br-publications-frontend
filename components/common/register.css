@@ -1,0 +1,343 @@
+/* Password Input Wrapper */
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+/* Password Input - COMPLETELY CLEAN */
+.password-input-wrapper input[type="password"],
+.password-input-wrapper input[type="text"],
+.password-input-with-toggle {
+  width: 100%;
+  padding: 12px 45px 12px 12px; /* Extra padding on right for button */
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+  /* CRITICAL: Remove ALL background properties */
+  background: white !important;
+  background-color: white !important;
+  background-image: none !important;
+  background-repeat: no-repeat !important;
+  background-position: 0 0 !important;
+  background-size: 0 0 !important;
+}
+
+.password-input-wrapper input[type="password"]:focus,
+.password-input-wrapper input[type="text"]:focus,
+.password-input-with-toggle:focus {
+  outline: none;
+  border-color: #1e5292;
+  box-shadow: 0 0 0 2px rgba(30, 82, 146, 0.1);
+  /* Keep background clean on focus */
+  background: white !important;
+  background-image: none !important;
+}
+
+/* Password Toggle Button (MUI Icon) - ONLY ICON */
+.password-toggle-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  transition: color 0.3s;
+  z-index: 10; /* Ensure button is on top */
+}
+
+.password-toggle-btn:hover {
+  color: #1e5292;
+}
+
+.password-toggle-btn:focus {
+  outline: 2px solid #1e5292;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* MUI Icon sizing */
+.password-toggle-btn svg {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+/* Input Group */
+.input-group {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+/* Regular Input Fields - CLEAN */
+.input-group input:not(.password-input-with-toggle) {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+  /* No background images */
+  background: white !important;
+  background-image: none !important;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #1e5292;
+}
+
+/* Error Messages */
+.register-error-message {
+  display: block;
+  color: #d32f2f;
+  font-size: 12px;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* Disabled Input */
+.disabled-input {
+  background-color: #f5f5f5 !important;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* OTP Description */
+.otp-description {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Button Styles */
+.btn-next,
+.btn-verify,
+.btn-send-otp {
+  width: 100%;
+  padding: 12px;
+  background-color: #1e5292;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-next:hover:not(:disabled),
+.btn-verify:hover:not(:disabled),
+.btn-send-otp:hover:not(:disabled) {
+  background-color: #163d73;
+}
+
+.btn-next:disabled,
+.btn-verify:disabled,
+.btn-send-otp:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-resend {
+  width: 100%;
+  padding: 10px;
+  background-color: transparent;
+  color: #1e5292;
+  border: 1px solid #1e5292;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 10px;
+}
+
+.btn-resend:hover:not(:disabled) {
+  background-color: #1e5292;
+  color: white;
+}
+
+.btn-resend:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: #1e5292;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 20px;
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.3s;
+}
+
+.btn-back:hover {
+  opacity: 0.8;
+}
+
+/* Google Button */
+.btn-google {
+  width: 100%;
+  padding: 12px;
+  background-color: white;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.btn-google:hover {
+  background-color: #f8f8f8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.google-icon {
+  flex-shrink: 0;
+}
+
+/* Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  color: #999;
+  font-size: 14px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: #ddd;
+}
+
+.divider span {
+  padding: 0 15px;
+}
+
+/* Login Link */
+.login-link {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #666;
+}
+
+.login-link a {
+  color: #1e5292;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+
+.login-link a:hover {
+  color: #163d73;
+  text-decoration: underline;
+}
+
+/* Container */
+.register-page-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f7fa;
+  padding: 20px;
+}
+
+.register-form-box {
+  background: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 450px;
+}
+
+.register-form-box h2 {
+  margin-bottom: 24px;
+  color: #1e5292;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* OTP Actions */
+.otp-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Register Actions */
+.register-actions {
+  margin-top: 20px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .register-form-box {
+    padding: 30px 20px;
+  }
+
+  .register-form-box h2 {
+    font-size: 20px;
+  }
+
+  .password-toggle-btn svg {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* ========================================
+   OVERRIDE ANY GLOBAL STYLES
+   ======================================== */
+
+/* Force remove any inherited background images */
+input[type="password"],
+input[type="text"] {
+  background-image: none !important;
+}
+
+/* Ensure no pseudo-elements adding icons */
+.password-input-wrapper input::before,
+.password-input-wrapper input::after {
+  display: none !important;
+  content: none !important;
+}

@@ -1,0 +1,323 @@
+/* e:/BR Publications/Old app requiremnets/br-publications-frontend/br-publications-frontend/src/components/common/citationModal.css */
+
+/* Modal Overlay with premium glassmorphism blur */
+.citation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.45); /* Slate 900 semi-transparent */
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+  animation: citationFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Modal Content Container */
+.citation-modal {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 540px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 40px rgba(30, 82, 146, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: citationScaleUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Modal Header */
+.citation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  background-color: #fafbfc;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.citation-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b; /* Slate 800 */
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.citation-close-btn {
+  background: transparent;
+  border: none;
+  color: #64748b; /* Slate 500 */
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.citation-close-btn:hover {
+  background-color: #f1f5f9;
+  color: #0f172a; /* Slate 900 */
+  transform: rotate(90deg);
+}
+
+/* Modal Body */
+.citation-body {
+  padding: 24px;
+}
+
+/* Action Bar with dropdown & copy button */
+.citation-action-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+/* Custom styled dropdown wrapper */
+.citation-select-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-grow: 1;
+  min-width: 200px;
+}
+
+.citation-select-wrapper label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.citation-select-wrapper select {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 14.5px;
+  color: #334155;
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.citation-select-wrapper select:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.citation-select-wrapper select:focus {
+  border-color: #1e5292;
+  box-shadow: 0 0 0 3px rgba(30, 82, 146, 0.15);
+  background-color: #ffffff;
+}
+
+/* Copy Button Styling */
+.citation-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 20px;
+  background: linear-gradient(135deg, #1e5292 0%, #174278 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(30, 82, 146, 0.15), 0 2px 4px -1px rgba(30, 82, 146, 0.1);
+  font-family: 'Inter', sans-serif;
+  height: 41.5px;
+}
+
+.citation-copy-btn:hover:not(:disabled) {
+  transform: translateY(-1.5px);
+  box-shadow: 0 8px 12px -2px rgba(30, 82, 146, 0.25), 0 4px 6px -2px rgba(30, 82, 146, 0.15);
+  filter: brightness(1.05);
+}
+
+.citation-copy-btn:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
+.citation-copy-btn:disabled {
+  background: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Divider line */
+.citation-divider {
+  height: 1px;
+  background-color: #e2e8f0;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+/* Citation Display Card */
+.citation-display-container {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  min-height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.citation-display-container:hover {
+  border-color: #cbd5e1;
+  background-color: #f1f5f9;
+}
+
+.citation-formatted-content {
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #334155;
+  word-break: break-word;
+}
+
+/* Academic Hanging Indents for CSL bibliographies */
+.citation-formatted-content .csl-entry {
+  text-indent: -32px !important;
+  padding-left: 32px !important;
+  margin-bottom: 4px;
+}
+
+.citation-formatted-content .csl-bib-body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Loader Styles */
+.citation-loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #64748b;
+  font-size: 13.5px;
+}
+
+.citation-spinner {
+  width: 26px;
+  height: 26px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #1e5292;
+  border-radius: 50%;
+  animation: citationSpin 0.75s linear infinite;
+}
+
+/* Error message styles */
+.citation-error-message {
+  color: #ef4444;
+  font-size: 13.5px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Global button used in detail pages */
+.cite-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  color: #475569;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 14px;
+  margin-bottom: 10px;
+  font-family: 'Inter', sans-serif;
+}
+
+.cite-trigger-btn:hover {
+  background-color: #f8fafc;
+  color: #1e5292;
+  border-color: #1e5292;
+  box-shadow: 0 2px 4px rgba(30, 82, 146, 0.08);
+}
+
+.cite-trigger-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.cite-trigger-btn:hover svg {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.cite-trigger-btn.mr-1 {
+  margin-right: 4px;
+}
+
+/* Animations */
+@keyframes citationFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes citationScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes citationSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .citation-action-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .citation-copy-btn {
+    width: 100%;
+  }
+}
