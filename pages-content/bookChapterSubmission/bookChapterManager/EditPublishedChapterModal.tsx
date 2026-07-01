@@ -120,6 +120,9 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
         message: '',
     });
 
+    const initialPayloadRef = useRef<any>(null);
+    const [snapshotReady, setSnapshotReady] = useState(false);
+
     const createEmptyAuthor = (): Author => ({
         firstName: '', lastName: '', designation: '', departmentName: '',
         instituteName: '', city: '', state: '', country: '', email: '',
@@ -179,7 +182,11 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
 
     // Data Pre-filling Logic
     useEffect(() => {
-        if (!isOpen || !book) return;
+        if (!isOpen || !book) {
+            initialPayloadRef.current = null;
+            setSnapshotReady(false);
+            return;
+        }
 
         // Auto-sync editor names from biographies to form.editors
         const currentNames = editorBiographies.map(b => b.editorName.trim()).filter(Boolean);
@@ -365,6 +372,7 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
 
                 if (fullBookData) {
                     processData(fullBookData);
+                    setSnapshotReady(true);
                 } else {
                     console.warn("EditModal: API returned empty data for ID:", book.id);
                 }
@@ -643,6 +651,68 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
         setShowCropper(false);
     };
 
+    useEffect(() => {
+        if (snapshotReady && !initialPayloadRef.current) {
+            const formatAffiliation = (aff: string | undefined) => {
+                if (!aff?.trim()) return aff;
+                const trimmed = aff.trim();
+                return (trimmed.startsWith('(') && trimmed.endsWith(')')) ? trimmed : `(${trimmed})`;
+            };
+            
+            const scope: Record<string, string> = { paragraph_1: form.scopeIntro };
+            scopeItems.forEach((v, i) => { if (v.trim()) scope[`list_${i + 1}`] = v; });
+
+            const archives: Record<string, string> = { paragraph_1: archiveIntro };
+            archiveItems.forEach((v, i) => { if (v.trim()) archives[`list_${i + 1}`] = v; });
+
+            initialPayloadRef.current = {
+                title: form.title,
+                author: `${form.mainAuthor.firstName} ${form.mainAuthor.lastName}`.trim(),
+                mainAuthor: form.mainAuthor,
+                coAuthors: form.coAuthors.map(ca => `${ca.firstName} ${ca.lastName}`.trim()).join(', ') || undefined,
+                coAuthorsData: form.coAuthors.map(({ tempId, ...rest }) => rest),
+                coverImage: form.coverImage || undefined,
+                category: form.category,
+                description: form.description,
+                isbn: form.isbn,
+                uid: form.uid,
+                publishedDate: form.publishedDate,
+                pages: Number(form.pages),
+                indexedIn: form.indexedIn || undefined,
+                releaseDate: form.releaseDate || undefined,
+                copyright: form.copyright || undefined,
+                doi: form.doi || undefined,
+                pricing: {
+                    softCopyPrice: Number(form.priceSoftCopy) || 0,
+                    hardCopyPrice: Number(form.priceHardCopy) || 0,
+                    combinedPrice: Number(form.priceCombined) || 0,
+                },
+                googleLink: form.googleLink || undefined,
+                flipkartLink: form.flipkartLink || undefined,
+                amazonLink: form.amazonLink || undefined,
+                synopsis: form.synopses.reduce((acc, text, index) => {
+                    if (text.trim()) acc[`paragraph_${index + 1}`] = text;
+                    return acc;
+                }, {} as Record<string, string>),
+                scope,
+                tableContents: tocChapters.filter((c) => c.title.trim()),
+                authorBiographies: biographies.filter((b) => b.authorName.trim() || b.biography.trim()).map(b => ({
+                    ...b,
+                    affiliation: formatAffiliation(b.affiliation)
+                })),
+                editorBiographies: editorBiographies.filter((b) => b.editorName.trim() || b.biography.trim()).map(b => ({
+                    ...b,
+                    affiliation: formatAffiliation(b.affiliation)
+                })),
+                archives,
+                editors: form.editors,
+                primaryEditor: form.primaryEditor || undefined,
+                keywords: form.keywords,
+                frontmatterPdfs: form.frontmatterPdfs,
+            };
+        }
+    }, [snapshotReady, form, scopeItems, archiveIntro, archiveItems, tocChapters, biographies, editorBiographies]);
+
     // ── Submit ───────────────────────────────────────────────
 
     const handleSubmit = async () => {
@@ -706,7 +776,24 @@ const EditPublishedChapterModal: React.FC<EditPublishedChapterModalProps> = ({
                 frontmatterPdfs: form.frontmatterPdfs,
             };
 
-            await onSave(book.id, payload);
+            const changedPayload: any = {};
+            if (initialPayloadRef.current) {
+                Object.keys(payload).forEach((key) => {
+                    if (JSON.stringify(initialPayloadRef.current[key]) !== JSON.stringify((payload as any)[key])) {
+                        changedPayload[key] = (payload as any)[key];
+                    }
+                });
+            } else {
+                Object.assign(changedPayload, payload);
+            }
+
+            if (Object.keys(changedPayload).length === 0) {
+                onClose();
+                toast.info('No changes detected to save.');
+                return;
+            }
+
+            await onSave(book.id, changedPayload);
             onClose();
             toast.success('🎉 Changes saved successfully!');
         } catch (err: any) {
