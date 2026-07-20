@@ -126,7 +126,7 @@ const CitationModal: React.FC<CitationModalProps> = ({ isOpen, onClose, item }) 
 
       try {
         setError(null);
-        const templates = Cite.plugins.config.get('@csl').templates;
+        const templates = Cite.plugins.config.get('@csl').styles;
 
         // Dynamically fetch and register external CSL styles if not already cached
         if (style === 'mla' && !templates.has('mla')) {
