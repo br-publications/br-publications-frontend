@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import BooksDetail from '@/pages-content/textBookPublications/booksDetail';
 import ChapterDetail from '@/pages-content/resnovaComponents/chapterDetail';
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { productBooksService } from '@/services/productbooksservice';
 import { bookChapterService } from '@/services/bookChapterService';
 import { toBookNameSlug } from '@/utils/stringUtils';
@@ -41,11 +42,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     // so we can pass the raw `id` directly — no uid scan needed.
     const book = await productBooksService.getBookById(id);
     if (!book) {
-      return {
-        title: { absolute: 'Book Not Found' },
-        description: 'Academic Books & Research Publications',
-        robots: 'noindex, follow',
-      };
+      notFound();
     }
 
     const title = book.title || '';
@@ -143,23 +140,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   if (!numericId) {
-    return {
-      title: { absolute: 'Chapter Not Found' },
-      description: 'Academic Books & Research Publications',
-      robots: 'noindex, follow',
-    };
+    notFound();
   }
 
   const fetchedBook = await bookChapterService.getBookById(numericId);
   if (!fetchedBook || !fetchedBook.chapters) {
-    return {
-      title: { absolute: 'Chapter Not Found' },
-      description: 'Academic Books & Research Publications',
-      robots: 'noindex, follow',
-    };
+    notFound();
   }
-  const chapterId = slug[0];
-  const rawParam = chapterId.toLowerCase().trim();
+  let chapterIdStr = slug[0].toLowerCase().trim();
+  if (chapterIdStr === 'chapter' && slug.length > 1) {
+    chapterIdStr = `chapter-${slug[1]}`;
+  }
+  const rawParam = chapterIdStr;
   const cleanParam = rawParam.replace(/^chapter[-_ \s]*/, '');
   const parsedParamInt = parseInt(cleanParam, 10);
 
@@ -175,11 +167,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 
   if (!chapter) {
-    return {
-      title: { absolute: 'Chapter Not Found' },
-      description: 'Academic Books & Research Publications',
-      robots: 'noindex, follow',
-    };
+    notFound();
   }
 
   const authorNames = chapter.authorDetails && chapter.authorDetails.length > 0
@@ -245,11 +233,104 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function Page({ params }: PageProps) {
   const resolvedParams = await params;
-  const isChapter = resolvedParams.slug && resolvedParams.slug.length > 0 && String(resolvedParams.slug[0]).toLowerCase().startsWith('chapter');
+  const id = resolvedParams.id;
+  const slug = resolvedParams.slug;
+  const isChapter = slug && slug.length > 0 && String(slug[0]).toLowerCase().startsWith('chapter');
+  
+  // Permanent Redirect to enforce Canonical URL
+  const currentSlugStr = slug ? slug.join('/') : '';
+  const { permanentRedirect } = await import('next/navigation');
+  
+  let bookData = null;
+  let chapterData = null;
+
+  if (!isChapter) {
+    try {
+      const book = await productBooksService.getBookById(id);
+      bookData = book;
+      if (book) {
+        const expectedIdentifier = book.uid ? book.uid.toLowerCase() : String(book.id);
+        const expectedSlug = book.title ? toBookNameSlug(book.title) : '';
+        
+        if (id.toLowerCase() !== expectedIdentifier || currentSlugStr !== expectedSlug) {
+          const canonicalUrl = expectedSlug ? `/book/${expectedIdentifier}/${expectedSlug}` : `/book/${expectedIdentifier}`;
+          permanentRedirect(canonicalUrl);
+        }
+      } else {
+        notFound();
+      }
+    } catch (e) {
+      if ((e as any).digest === 'NEXT_REDIRECT' || (e as any).digest === 'NEXT_NOT_FOUND') {
+        throw e;
+      }
+      notFound();
+    }
+  } else {
+    let chapterIdStr = String(slug[0]).toLowerCase().trim();
+    if (chapterIdStr === 'chapter' && slug.length > 1) {
+      chapterIdStr = `chapter-${slug[1]}`;
+    }
+    const cleanParam = chapterIdStr.replace(/^chapter[-_ \s]*/, '');
+    let numericId: number | null = null;
+    if (/^\d+$/.test(id)) {
+      numericId = parseInt(id, 10);
+    } else {
+      try {
+        const allBooks = await bookChapterService.getAllBooks();
+        const matchedBook = allBooks.find(b => b.uid && b.uid.toLowerCase() === id.toLowerCase());
+        if (matchedBook) numericId = matchedBook.id;
+      } catch (e) {}
+    }
+    
+    if (numericId) {
+      try {
+        const fetchedBook = await bookChapterService.getBookById(numericId);
+        if (fetchedBook && fetchedBook.chapters) {
+          const parsedParamInt = parseInt(cleanParam, 10);
+          const chapter = fetchedBook.chapters.find(c => {
+            const rawChapNum = String(c.chapterNumber).toLowerCase().trim();
+            const cleanChapNum = rawChapNum.replace(/^chapter[-_ \s]*/, '').replace(/\s+/g, '');
+            const parsedChapInt = parseInt(cleanChapNum, 10);
+            return (
+              rawChapNum === chapterIdStr ||
+              cleanChapNum === cleanParam ||
+              (!isNaN(parsedParamInt) && !isNaN(parsedChapInt) && parsedParamInt === parsedChapInt)
+            );
+          });
+
+          if (chapter) {
+            bookData = fetchedBook;
+            chapterData = chapter;
+            const bookIdentifier = fetchedBook.uid ? fetchedBook.uid.toLowerCase() : String(fetchedBook.id);
+            const expectedChapterNum = String(chapter.chapterNumber).toLowerCase().trim().replace(/^chapter[-_ \s]*/, '');
+            const expectedSlug0 = `chapter-${expectedChapterNum}`;
+            const chapterTitleSlug = chapter.title ? toBookNameSlug(chapter.title) : '';
+            const expectedSlugStr = chapterTitleSlug ? `${expectedSlug0}/${chapterTitleSlug}` : expectedSlug0;
+            
+            if (id.toLowerCase() !== bookIdentifier || currentSlugStr !== expectedSlugStr) {
+              const canonicalUrl = `/book/${bookIdentifier}/${expectedSlugStr}`;
+              permanentRedirect(canonicalUrl);
+            }
+          } else {
+            notFound();
+          }
+        } else {
+          notFound();
+        }
+      } catch (e) {
+        if ((e as any).digest === 'NEXT_REDIRECT' || (e as any).digest === 'NEXT_NOT_FOUND') {
+          throw e;
+        }
+        notFound();
+      }
+    } else {
+      notFound();
+    }
+  }
 
   return (
     <Suspense fallback={<div className="suspense-loading">Loading...</div>}>
-      {isChapter ? <ChapterDetail /> : <BooksDetail />}
+      {isChapter ? <ChapterDetail initialBook={bookData} initialChapter={chapterData} /> : <BooksDetail initialData={bookData} />}
     </Suspense>
   );
 }

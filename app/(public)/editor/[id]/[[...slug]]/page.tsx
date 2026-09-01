@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import Component from '@/pages-content/dashboard/editor/EditorDetail';
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { API_BASE_URL } from '@/services/api.config';
 import { toBookNameSlug } from '@/utils/stringUtils';
 
@@ -13,10 +14,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const id = resolvedParams.id;
 
   if (!id) {
-    return {
-      title: { absolute: 'Editor Not Found' },
-      robots: 'noindex, follow',
-    };
+    notFound();
   }
 
   const cleanId = /^0+\d+$/.test(id) ? parseInt(id, 10).toString() : id;
@@ -24,18 +22,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   try {
     const res = await fetch(`${API_BASE_URL}/api/book-chapter-publishing/editors/${cleanId}`);
     if (!res.ok) {
-      return {
-        title: { absolute: 'Editor Not Found' },
-        robots: 'noindex, follow',
-      };
+      notFound();
     }
     const body = await res.json();
     const editor = body.data || body;
     if (!editor || !editor.name) {
-      return {
-        title: { absolute: 'Editor Not Found' },
-        robots: 'noindex, follow',
-      };
+      notFound();
     }
 
     const description = editor.biography
@@ -101,12 +93,45 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default function Page({ params }: { params: Promise<{ id: string; slug?: string[] }> }) {
-  // JSON-LD Person schema — injected server-side for Google Scholar & Knowledge Graph
-  // We fetch inline here so it's available in SSR without duplicating the API call pattern
+export default async function Page({ params }: PageProps) {
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
+  const slug = resolvedParams.slug;
+  const currentSlugStr = slug ? slug.join('/') : '';
+
+  let editorData = null;
+
+  if (id) {
+    const cleanId = /^0+\d+$/.test(id) ? parseInt(id, 10).toString() : id;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/book-chapter-publishing/editors/${cleanId}`);
+      if (!res.ok) {
+        notFound();
+      }
+      const body = await res.json();
+      editorData = body.data || body;
+      
+      if (!editorData || !editorData.name) {
+        notFound();
+      }
+      
+      const nameSlug = editorData.name ? toBookNameSlug(editorData.name) : '';
+      if (id !== String(editorData.id) || currentSlugStr !== nameSlug) {
+        const { permanentRedirect } = await import('next/navigation');
+        const canonicalUrl = nameSlug ? `/editor/${editorData.id}/${nameSlug}` : `/editor/${editorData.id}`;
+        permanentRedirect(canonicalUrl);
+      }
+    } catch (e) {
+      if ((e as any).digest === 'NEXT_REDIRECT' || (e as any).digest === 'NEXT_NOT_FOUND') {
+        throw e;
+      }
+      notFound();
+    }
+  }
+
   return (
     <Suspense fallback={<div className="suspense-loading">Loading...</div>}>
-      <Component />
+      <Component initialData={editorData} />
     </Suspense>
   );
 }

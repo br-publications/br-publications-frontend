@@ -36,11 +36,15 @@ interface Author {
     }>;
 }
 
-const AuthorDetail: React.FC = () => {
+interface AuthorDetailProps {
+    initialData?: Author;
+}
+
+const AuthorDetail: React.FC<AuthorDetailProps> = ({ initialData }) => {
     const { id } = useParams<{ id: string }>();
     const router = useRouter();
-    const [author, setAuthor] = useState<Author | null>(null);
-    const [loading, setLoading] = useState<boolean>(!!id);
+    const [author, setAuthor] = useState<Author | null>(initialData || null);
+    const [loading, setLoading] = useState<boolean>(!initialData && !!id);
     const [error, setError] = useState<string | null>(null);
     const [showScrollTop, setShowScrollTop] = useState(false);
 

@@ -27,17 +27,22 @@ const truncateWords = (text: string, count: number) => {
     return words.slice(0, count).join(' ') + '...';
 };
 
-const ChapterDetail: React.FC = () => {
+interface ChapterDetailProps {
+    initialBook?: Book;
+    initialChapter?: Chapter;
+}
+
+const ChapterDetail: React.FC<ChapterDetailProps> = ({ initialBook, initialChapter }) => {
 
     const params = useParams<{ id: string; slug?: string[] }>();
     const id = params.id;
     const chapterId = params.slug?.[0];
     const param1 = params.slug?.[1];
     const router = useRouter();
-    const [book, setBook] = useState<Book | null>(null);
-    const [chapter, setChapter] = useState<Chapter | null>(null);
+    const [book, setBook] = useState<Book | null>(initialBook || null);
+    const [chapter, setChapter] = useState<Chapter | null>(initialChapter || null);
     const [chapterSearchQuery, setChapterSearchQuery] = useState<string>('');
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!initialBook || !initialChapter);
     const [error, setError] = useState<string | null>(null);
     const [isCitationOpen, setIsCitationOpen] = useState<boolean>(false);
 
