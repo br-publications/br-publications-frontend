@@ -13,11 +13,15 @@ import { getEditorById, type PublishedEditor } from '../../../services/bookChapt
 import { toBookNameSlug } from '../../../utils/stringUtils';
 import './editorDetail.css';
 
-const EditorDetail: React.FC = () => {
+interface EditorDetailProps {
+    initialData?: PublishedEditor;
+}
+
+const EditorDetail: React.FC<EditorDetailProps> = ({ initialData }) => {
     const { id } = useParams<{ id: string }>();
     const router = useRouter();
-    const [editor, setEditor] = useState<PublishedEditor | null>(null);
-    const [loading, setLoading] = useState<boolean>(!!id);
+    const [editor, setEditor] = useState<PublishedEditor | null>(initialData || null);
+    const [loading, setLoading] = useState<boolean>(!initialData && !!id);
     const [error, setError] = useState<string | null>(null);
     const [showScrollTop, setShowScrollTop] = useState(false);
 

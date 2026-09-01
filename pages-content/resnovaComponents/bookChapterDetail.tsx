@@ -17,12 +17,16 @@ import Link from 'next/link';
 
 type TabType = 'synopsis' | 'scope' | 'toc' | 'biographies' | 'archives';
 
-const BookChapterDetail: React.FC = () => {
+interface BookChapterDetailProps {
+    initialData?: Book;
+}
+
+const BookChapterDetail: React.FC<BookChapterDetailProps> = ({ initialData }) => {
   const { id } = useParams<{ id: string }>();
   const pathname = usePathname();
   const location = React.useMemo(() => ({ pathname, state: {}, search: "" }), [pathname]);
   const router = useRouter();
-  const [book, setBook] = useState<Book | null>(null);
+  const [book, setBook] = useState<Book | null>(initialData || null);
 
   /**
    * Helper to normalize names for reliable matching
@@ -36,7 +40,7 @@ const BookChapterDetail: React.FC = () => {
       .trim()
       .toLowerCase();
   };
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(!initialData);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('synopsis');
   const [isCitationOpen, setIsCitationOpen] = useState<boolean>(false);

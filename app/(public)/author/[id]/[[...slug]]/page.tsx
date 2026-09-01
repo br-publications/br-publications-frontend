@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import Component from '@/pages-content/dashboard/author/AuthorDetail';
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { API_BASE_URL } from '@/services/api.config';
 import { toBookNameSlug } from '@/utils/stringUtils';
 
@@ -13,10 +14,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const id = resolvedParams.id;
 
   if (!id) {
-    return {
-      title: { absolute: 'Author Not Found' },
-      robots: 'noindex, follow',
-    };
+    notFound();
   }
 
   const cleanId = /^0+\d+$/.test(id) ? parseInt(id, 10).toString() : id;
@@ -24,18 +22,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   try {
     const res = await fetch(`${API_BASE_URL}/api/book-chapter-publishing/authors/${cleanId}`);
     if (!res.ok) {
-      return {
-        title: { absolute: 'Author Not Found' },
-        robots: 'noindex, follow',
-      };
+      notFound();
     }
     const body = await res.json();
     const author = body.data;
     if (!author) {
-      return {
-        title: { absolute: 'Author Not Found' },
-        robots: 'noindex, follow',
-      };
+      notFound();
     }
 
     const description = author.biography
@@ -101,10 +93,45 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default function Page() {
+export default async function Page({ params }: PageProps) {
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
+  const slug = resolvedParams.slug;
+  const currentSlugStr = slug ? slug.join('/') : '';
+  
+  let authorData = null;
+
+  if (id) {
+    const cleanId = /^0+\d+$/.test(id) ? parseInt(id, 10).toString() : id;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/book-chapter-publishing/authors/${cleanId}`);
+      if (!res.ok) {
+        notFound();
+      }
+      const body = await res.json();
+      authorData = body.data;
+      
+      if (!authorData) {
+        notFound();
+      }
+      
+      const nameSlug = authorData.name ? toBookNameSlug(authorData.name) : '';
+      if (id !== String(authorData.id) || currentSlugStr !== nameSlug) {
+        const { permanentRedirect } = await import('next/navigation');
+        const canonicalUrl = nameSlug ? `/author/${authorData.id}/${nameSlug}` : `/author/${authorData.id}`;
+        permanentRedirect(canonicalUrl);
+      }
+    } catch (e) {
+      if ((e as any).digest === 'NEXT_REDIRECT' || (e as any).digest === 'NEXT_NOT_FOUND') {
+        throw e;
+      }
+      notFound();
+    }
+  }
+
   return (
     <Suspense fallback={<div className="suspense-loading">Loading...</div>}>
-      <Component />
+      <Component initialData={authorData} />
     </Suspense>
   );
 }

@@ -4,6 +4,8 @@ import type { Metadata } from 'next';
 import { bookChapterService } from '@/services/bookChapterService';
 import { toBookNameSlug } from '@/utils/stringUtils';
 
+import { notFound } from 'next/navigation';
+
 interface PageProps {
   params: Promise<{ id: string; slug?: string[] }>;
 }
@@ -29,18 +31,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   if (!numericId) {
-    return {
-      title: { absolute: 'Book Not Found' },
-      robots: 'noindex, follow',
-    };
+    notFound();
   }
 
   const book = await bookChapterService.getBookById(numericId);
   if (!book) {
-    return {
-      title: { absolute: 'Book Not Found' },
-      robots: 'noindex, follow',
-    };
+    notFound();
   }
 
   const displayTitle = `${book.title}${book.editors && book.editors.length > 0 ? ` by ${book.editors.join(', ')}` : book.author ? ` by ${book.author}` : ''}`;
@@ -127,10 +123,57 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default function Page() {
+export default async function Page({ params }: PageProps) {
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
+  const slug = resolvedParams.slug;
+  const currentSlugStr = slug ? slug.join('/') : '';
+  
+  let numericId: number | null = null;
+  const isNumeric = /^\d+$/.test(id);
+  if (isNumeric) {
+    numericId = parseInt(id, 10);
+  } else {
+    try {
+      const allBooks = await bookChapterService.getAllBooks();
+      const matchedBook = allBooks.find(b => b.uid && b.uid.toLowerCase() === id.toLowerCase());
+      if (matchedBook) {
+        numericId = matchedBook.id;
+      }
+    } catch (e) {}
+  }
+
+  let bookData = null;
+
+  if (numericId) {
+    try {
+      const book = await bookChapterService.getBookById(numericId);
+      bookData = book;
+      if (book) {
+        const identifier = book.uid ? book.uid.toLowerCase() : String(book.id);
+        const bookSlug = book.title ? toBookNameSlug(book.title) : '';
+        
+        if (id.toLowerCase() !== identifier || currentSlugStr !== bookSlug) {
+          const { permanentRedirect } = await import('next/navigation');
+          const canonicalUrl = bookSlug ? `/bookchapter/${identifier}/${bookSlug}` : `/bookchapter/${identifier}`;
+          permanentRedirect(canonicalUrl);
+        }
+      } else {
+        notFound();
+      }
+    } catch (e) {
+      if ((e as any).digest === 'NEXT_REDIRECT' || (e as any).digest === 'NEXT_NOT_FOUND') {
+        throw e;
+      }
+      notFound();
+    }
+  } else {
+    notFound();
+  }
+
   return (
     <Suspense fallback={<div className="suspense-loading">Loading...</div>}>
-      <Component />
+      <Component initialData={bookData} />
     </Suspense>
   );
 }
