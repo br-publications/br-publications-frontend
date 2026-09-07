@@ -181,7 +181,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     : `${chapter.title} — a chapter from "${fetchedBook.title}" published by BR Publications.`;
 
   const bookIdentifier = fetchedBook.uid ? fetchedBook.uid.toLowerCase() : fetchedBook.id;
-  const cleanChapterNum = String(chapter.chapterNumber).toLowerCase().trim().replace(/^chapter[-_ \s]*/, '');
+  const cleanChapterNum = String(chapter.chapterNumber).toLowerCase().trim().replace(/^chapter[-_ \s]*/, '').replace(/^0+(?=\d)/, '');
   const chapterSlugSegment = `chapter-${cleanChapterNum}`;
   const chapterTitleSlug = chapter.title ? toBookNameSlug(chapter.title) : '';
   const canonical = chapterTitleSlug
@@ -260,7 +260,8 @@ export default async function Page({ params }: PageProps) {
         notFound();
       }
     } catch (e) {
-      if ((e as any).digest === 'NEXT_REDIRECT' || (e as any).digest === 'NEXT_NOT_FOUND') {
+      const digest = (e as any).digest;
+      if (typeof digest === 'string' && (digest.startsWith('NEXT_REDIRECT') || digest === 'NEXT_NOT_FOUND')) {
         throw e;
       }
       notFound();
@@ -302,7 +303,7 @@ export default async function Page({ params }: PageProps) {
             bookData = fetchedBook;
             chapterData = chapter;
             const bookIdentifier = fetchedBook.uid ? fetchedBook.uid.toLowerCase() : String(fetchedBook.id);
-            const expectedChapterNum = String(chapter.chapterNumber).toLowerCase().trim().replace(/^chapter[-_ \s]*/, '');
+            const expectedChapterNum = String(chapter.chapterNumber).toLowerCase().trim().replace(/^chapter[-_ \s]*/, '').replace(/^0+(?=\d)/, '');
             const expectedSlug0 = `chapter-${expectedChapterNum}`;
             const chapterTitleSlug = chapter.title ? toBookNameSlug(chapter.title) : '';
             const expectedSlugStr = chapterTitleSlug ? `${expectedSlug0}/${chapterTitleSlug}` : expectedSlug0;
@@ -318,7 +319,8 @@ export default async function Page({ params }: PageProps) {
           notFound();
         }
       } catch (e) {
-        if ((e as any).digest === 'NEXT_REDIRECT' || (e as any).digest === 'NEXT_NOT_FOUND') {
+        const digest = (e as any).digest;
+        if (typeof digest === 'string' && (digest.startsWith('NEXT_REDIRECT') || digest === 'NEXT_NOT_FOUND')) {
           throw e;
         }
         notFound();
