@@ -122,7 +122,8 @@ export default async function Page({ params }: PageProps) {
         permanentRedirect(canonicalUrl);
       }
     } catch (e) {
-      if ((e as any).digest === 'NEXT_REDIRECT' || (e as any).digest === 'NEXT_NOT_FOUND') {
+      const digest = (e as any).digest;
+      if (typeof digest === 'string' && (digest.startsWith('NEXT_REDIRECT') || digest === 'NEXT_NOT_FOUND')) {
         throw e;
       }
       notFound();
