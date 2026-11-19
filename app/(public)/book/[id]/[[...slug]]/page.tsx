@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { productBooksService } from '@/services/productbooksservice';
 import { bookChapterService } from '@/services/bookChapterService';
 import { toBookNameSlug } from '@/utils/stringUtils';
+import ScholarAuthorMeta from '@/components/seo/ScholarAuthorMeta';
 
 interface PageProps {
   params: Promise<{ id: string; slug?: string[] }>;
@@ -71,7 +72,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       ? `${book.title}, ${book.author ?? ''}, ${book.isbn}, academic book, BR Publications, peer-reviewed`
       : rawKeywords;
 
-    const publishYear = (book.publishedDate || '').split('-')[0] || '';
+    const publishYear = (book.releaseDate || book.publishedDate || '').split('T')[0].replace(/-/g, '/');
 
     return {
       title: {
@@ -106,9 +107,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         'citation_abstract_html_url': canonical,
         'citation_fulltext_html_url': canonical,
         ...(book.id && book.pdfUniqueId ? {
-          'citation_pdf_url': `https://api-dev.brpublications.com/api/books/${book.id}/pdf/${book.pdfUniqueId}`,
+          'citation_pdf_url': `https://www.brpublications.com/files/book/${book.id}/pdf/${book.pdfUniqueId}`,
         } : {}),
-        ...(book.doi ? { 'citation_doi': book.doi } : {}),
+        ...(book.doi ? { 'citation_doi': book.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '') } : {}),
         // Dublin Core — picked up by DOAJ, EBSCO, BASE, and other academic indexers
         'dc.title': book.title || '',
         ...(authorsList.length > 0 ? { 'dc.creator': authorsList } : {}),
@@ -188,6 +189,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? `https://www.brpublications.com/book/${bookIdentifier}/${chapterSlugSegment}/${chapterTitleSlug}`
     : `https://www.brpublications.com/book/${bookIdentifier}/${chapterSlugSegment}`;
 
+  // Chapters have no keywords of their own: reuse the book's, skipping placeholder/test values
+  const bookKeywords = (fetchedBook.keywords || []).map(k => String(k).trim()).filter(Boolean);
+  const keywordsLookLikeTestData = bookKeywords.length > 0 && bookKeywords.every(k => k.length < 8 || /^[a-z]{3,8}$/i.test(k));
+  const chapterKeywords = keywordsLookLikeTestData ? [] : bookKeywords;
+
   return {
     title: {
       absolute: title
@@ -206,11 +212,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     other: {
       'keywords': `${chapter.title}, ${authorNames}, ${fetchedBook.title}, ${fetchedBook.isbn}, book chapter, academic research, BR Publications`,
       'citation_title': chapter.title || '',
-      ...(chapter.authorDetails && chapter.authorDetails.length > 0 ? {
-        'citation_author': chapter.authorDetails.map(a => a.name),
-      } : (chapter.authors ? { 'citation_author': [chapter.authors] } : {})),
-      ...((fetchedBook.publishedDate || fetchedBook.releaseDate) ? {
-        'citation_publication_date': fetchedBook.publishedDate || fetchedBook.releaseDate,
+      // citation_author / citation_author_institution are rendered in <ScholarAuthorMeta/> (must be interleaved)
+      ...(chapterKeywords.length > 0 ? { 'citation_keywords': chapterKeywords } : {}),
+      ...((fetchedBook.releaseDate || fetchedBook.publishedDate) ? {
+        'citation_publication_date': (fetchedBook.releaseDate || fetchedBook.publishedDate || '').split('T')[0].replace(/-/g, '/'),
       } : {}),
       'citation_inbook_title': fetchedBook.title || '',
       ...(fetchedBook.editors && fetchedBook.editors.length > 0 ? {
@@ -225,8 +230,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         'citation_firstpage': String(chapter.pages).split('-')[0].trim(),
         'citation_lastpage': String(chapter.pages).split('-')[1].trim(),
       } : (chapter.pages ? { 'citation_firstpage': chapter.pages } : {})),
-      'citation_pdf_url': `https://api-dev.brpublications.com/api/book-chapter-publishing/${numericId}/toc/${Math.max(0, parseInt(cleanChapterNum, 10) - 1)}/pdf`,
-      ...(chapter.doi ? { 'citation_doi': chapter.doi } : {}),
+      'citation_pdf_url': `https://www.brpublications.com/files/bookchapter/${numericId}/chapter/${Math.max(0, parseInt(cleanChapterNum, 10) - 1)}/pdf`,
+      ...(chapter.doi ? { 'citation_doi': chapter.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '') } : {}),
     }
   };
 }
@@ -330,9 +335,20 @@ export default async function Page({ params }: PageProps) {
     }
   }
 
+  const scholarAuthors = chapterData
+    ? (chapterData.authorDetails && chapterData.authorDetails.length > 0
+        ? chapterData.authorDetails.map(a => ({ name: a.name, affiliation: a.affiliation }))
+        : chapterData.authors
+          ? chapterData.authors.split(/, and | and |,/).map(n => ({ name: n.trim() })).filter(a => a.name)
+          : [])
+    : [];
+
   return (
+    <>
+    {isChapter && <ScholarAuthorMeta authors={scholarAuthors} />}
     <Suspense fallback={<div className="suspense-loading">Loading...</div>}>
       {isChapter ? <ChapterDetail initialBook={bookData} initialChapter={chapterData} /> : <BooksDetail initialData={bookData} />}
     </Suspense>
+    </>
   );
 }
