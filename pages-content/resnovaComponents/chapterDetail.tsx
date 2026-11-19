@@ -13,7 +13,7 @@ import './chapterDetail.css';
 import Link from 'next/link';
 
 const formatChapterNumberSlug = (chapterNum: string | number): string => {
-    const clean = String(chapterNum).toLowerCase().trim().replace(/^chapter[-_ \s]*/, '');
+    const clean = String(chapterNum).toLowerCase().trim().replace(/^chapter[-_ \s]*/, '').replace(/^0+(?=\d)/, '');
     return `chapter-${clean}`;
 };
 
@@ -494,3 +494,4 @@ const ChapterDetail: React.FC<ChapterDetailProps> = ({ initialBook, initialChapt
 };
 
 export default ChapterDetail;
+

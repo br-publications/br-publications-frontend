@@ -62,6 +62,9 @@ const parseAuthors = (authors: string | string[]): any[] => {
  * Resolves the Cite constructor from window.Cite or window.require('citation-js')
  */
 const getCite = () => {
+  // This runs during server rendering (useState initializer) where `window` does not exist.
+  // Throwing here made React abandon SSR for the whole page ("Loading..." in crawler HTML).
+  if (typeof window === 'undefined') return null;
   const w = window as any;
   if (w.Cite) return w.Cite;
   if (typeof w.require === 'function') {

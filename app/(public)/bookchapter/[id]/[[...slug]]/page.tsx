@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const editorsList = Array.isArray(book.editors) && book.editors.length > 0 ? book.editors : [];
   const authorEntry = !editorsList.length && book.author ? [book.author] : [];
-  const publishYear = (book.publishedDate || book.releaseDate || '').split('-')[0] || '';
+  const publishYear = (book.releaseDate || book.publishedDate || '').split('T')[0].replace(/-/g, '/');
 
   return {
     title: {
@@ -95,6 +95,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     other: {
       'keywords': cleanKeywords,
+      ...(rawKeywords && !looksLikeTestData ? { 'citation_keywords': book.keywords } : {}),
       // Google Scholar citation tags
       'citation_title': book.title || '',
       // citation_editor for edited volumes, citation_author for single-author books
@@ -102,18 +103,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       ...(authorEntry.length > 0 ? { 'citation_author': authorEntry } : {}),
       ...(publishYear ? { 'citation_publication_date': publishYear } : {}),
       'citation_isbn': book.isbn || '',
-      'citation_publisher': 'BR ResNova Academic Press',
+      'citation_publisher': 'BR Publications',
       'citation_language': 'en',
       'citation_abstract_html_url': canonicalUrlFull,
       'citation_fulltext_html_url': canonicalUrlFull,
-      // TOC PDF — uses numeric book ID only (not uid)
-      'citation_pdf_url': `https://api-dev.brpublications.com/api/book-chapter-publishing/${numericId}/extra-pdf/Detailed%20Table%20of%20Contents`,
-      ...(book.doi ? { 'citation_doi': book.doi } : {}),
+      // No citation_pdf_url: the only book-level PDF is a generated table of contents, not the book's full text.
+      // Scholar reads the PDF and compares it with these tags; a mismatch can get the record rejected.
+      ...(book.doi ? { 'citation_doi': book.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '') } : {}),
       // Dublin Core — picked up by DOAJ, EBSCO, and other academic indexers
       'dc.title': book.title || '',
       ...(editorsList.length > 0 ? { 'dc.contributor': editorsList } : {}),
       ...(authorEntry.length > 0 ? { 'dc.creator': authorEntry } : {}),
-      'dc.publisher': 'BR ResNova Academic Press',
+      'dc.publisher': 'BR Publications',
       ...(publishYear ? { 'dc.date': publishYear } : {}),
       'dc.identifier': book.doi ? [book.isbn, book.doi] : (book.isbn || ''),
       'dc.type': 'Book',

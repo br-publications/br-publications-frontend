@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-dev.brpublications.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api2.brpublications.com';
 
 export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   const url = `${API_URL}${endpoint}`;
