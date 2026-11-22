@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import Component from '@/pages-content/resnovaComponents/bookChapterDetail';
 import type { Metadata } from 'next';
 import { bookChapterService } from '@/services/bookChapterService';
-import { toBookNameSlug } from '@/utils/stringUtils';
+import { toBookNameSlug, truncateAtWord, cleanKeywordList } from '@/utils/stringUtils';
 
 import { notFound } from 'next/navigation';
 
@@ -48,9 +48,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   let metaDescription = 'Detailed information about academic book chapters and research publications from BR Publications.';
   if (book.description) {
-    metaDescription = book.description.replace(/<[^>]+>/g, '').trim().slice(0, 160);
+    metaDescription = truncateAtWord(book.description.replace(/<[^>]+>/g, ''), 160);
   } else if (book.synopsis) {
-    metaDescription = Object.values(book.synopsis).join(' ').replace(/<[^>]+>/g, '').trim().slice(0, 160);
+    metaDescription = truncateAtWord(Object.values(book.synopsis).join(' ').replace(/<[^>]+>/g, ''), 160);
   } else {
     metaDescription = `${book.title}. ${editorsStr} Published by BR ResNova Academic Press.`;
   }
@@ -95,7 +95,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     other: {
       'keywords': cleanKeywords,
-      ...(rawKeywords && !looksLikeTestData ? { 'citation_keywords': book.keywords } : {}),
+      ...(rawKeywords && !looksLikeTestData ? { 'citation_keywords': cleanKeywordList(book.keywords) } : {}),
       // Google Scholar citation tags
       'citation_title': book.title || '',
       // citation_editor for edited volumes, citation_author for single-author books
