@@ -5,7 +5,7 @@ import { ChevronRight, Quote } from 'lucide-react';
 import { bookChapterService } from '../../services/bookChapterService';
 import { getExtraPdfUrl, incrementChapterViews } from '../../services/bookChapterPublishing.service';
 import type { Book, Chapter, PublishedAuthor } from '../../types/bookTypes';
-import { toBookNameSlug } from '../../utils/stringUtils';
+import { toBookNameSlug, toMetaDescription, cleanAffiliation } from '../../utils/stringUtils';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { sanitizeUrl } from '../../utils/urlValidation';
 import CitationModal from '../../components/common/CitationModal';
@@ -228,7 +228,7 @@ const ChapterDetail: React.FC<ChapterDetailProps> = ({ initialBook, initialChapt
 
     const displayTitle = (chapter && book) ? `${chapter.title} by ${authorNames} | ${book.title} — BR Publications` : (id && (chapterId || param1) ? `Chapter ${chapterId || param1} Details | BR Publications` : 'Chapter Details');
     const metaDescription = chapter?.abstract
-        ? chapter.abstract.slice(0, 155)
+        ? toMetaDescription(chapter.abstract, 155)
         : (chapter && book) ? `${chapter.title} — a chapter from "${book.title}" published by BR Publications.` : 'Detailed information about academic research chapters from BR Publications.';
 
     const bookIdentifier = book?.uid ? book.uid.toLowerCase() : (book?.id ?? id!);
@@ -249,7 +249,7 @@ const ChapterDetail: React.FC<ChapterDetailProps> = ({ initialBook, initialChapt
                 '@type': 'Person',
                 'name': a.name,
                 'url': `https://www.brpublications.com/author/${String(a.id)}/${toBookNameSlug(a.name)}`,
-                ...(a.affiliation ? { 'affiliation': { '@type': 'Organization', 'name': a.affiliation } } : {})
+                ...(a.affiliation ? { 'affiliation': { '@type': 'Organization', 'name': cleanAffiliation(a.affiliation) } } : {})
             }))
             : [{ '@type': 'Person', 'name': chapter.authors }],
         'isPartOf': {
@@ -264,16 +264,34 @@ const ChapterDetail: React.FC<ChapterDetailProps> = ({ initialBook, initialChapt
             'image': book.coverImage,
             'url': `https://www.brpublications.com/bookchapter/${book.uid ? book.uid.toLowerCase() : book.id}/${book.title ? toBookNameSlug(book.title) : ''}`
         },
+        'publisher': { '@type': 'Organization', 'name': 'BR Publications', 'url': 'https://www.brpublications.com' },
+        'isAccessibleForFree': false,
+        ...((book.releaseDate || book.publishedDate) ? { 'datePublished': String(book.releaseDate || book.publishedDate).split('T')[0] } : {}),
+        ...(book.editors && book.editors.length > 0 ? { 'editor': book.editors.map(e => ({ '@type': 'Person', 'name': e })) } : {}),
+        ...(book.keywords && book.keywords.length > 0 ? { 'keywords': book.keywords.map(k => String(k).trim().replace(/[\s.,;:]+$/, '')).filter(Boolean).join(', ') } : {}),
         'url': canonicalUrlFull,
         'inLanguage': 'en',
         ...(chapter.doi ? { 'identifier': { '@type': 'PropertyValue', 'propertyID': 'DOI', 'value': chapter.doi } } : {}),
         ...(chapter.pages ? { 'pagination': chapter.pages } : {}),
     } : null;
 
+    const breadcrumbSchema = (book && chapter) ? {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        'itemListElement': [
+            { '@type': 'ListItem', 'position': 1, 'name': 'Books', 'item': 'https://www.brpublications.com/bookchapters' },
+            { '@type': 'ListItem', 'position': 2, 'name': book.title, 'item': `https://www.brpublications.com/bookchapter/${book.uid ? book.uid.toLowerCase() : book.id}/${book.title ? toBookNameSlug(book.title) : ''}` },
+            { '@type': 'ListItem', 'position': 3, 'name': chapter.title, 'item': canonicalUrlFull },
+        ],
+    } : null;
+
     return (
         <>
             {chapter && book && schemaData && (
                 <script type="application/ld+json">{JSON.stringify(schemaData)}</script>
+            )}
+            {breadcrumbSchema && (
+                <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
             )}
 
             {loading && (!book || !chapter) ? (
@@ -349,14 +367,14 @@ const ChapterDetail: React.FC<ChapterDetailProps> = ({ initialBook, initialChapt
                                     </div>
 
                                     <div className="abstract-content">
-                                        <h3>Abstract</h3>
+                                        <h2>Abstract</h2>
                                         <p>{chapter.abstract}</p>
                                     </div>
                                 </div>
 
                                 {/* Complete Chapter List */}
                                 <div className="complete-chapter-list">
-                                    <h3>Complete Chapter List</h3>
+                                    <h2>Complete Chapter List</h2>
                                     <div className="toc-search-bar">
                                         <input
                                             type="text"
@@ -407,7 +425,11 @@ const ChapterDetail: React.FC<ChapterDetailProps> = ({ initialBook, initialChapt
                                                             <div className="chapter-card-left">
                                                                 <span className="chapter-badge">{ch.chapterNumber}</span>
                                                                 <h4 className="chapter-title">
-                                                                    <span className="chapter-link-span" onClick={() => handleViewChapter(ch)}>{ch.title}</span>
+                                                                    <Link
+                                                                        className="chapter-link-span"
+                                                                        href={`/book/${bookIdentifier}/${formatChapterNumberSlug(ch.chapterNumber)}/${ch.title ? toBookNameSlug(ch.title) : ''}`}
+                                                                        onClick={() => { if (typeof ch.id === 'number') incrementChapterViews(ch.id).catch(() => {}); }}
+                                                                    >{ch.title}</Link>
                                                                     {ch.pages && <span className="chapter-pages"> (pages {ch.pages})</span>}
                                                                 </h4>
                                                                 <p className="chapter-authors">{renderAuthors(ch.authors)}</p>

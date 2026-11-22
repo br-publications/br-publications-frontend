@@ -199,7 +199,7 @@ class BookChapterService {
      * @param id - Book ID
      * @returns Promise with book details
      */
-    async getBookById(id: number): Promise<Book | null> {
+    async getBookById(id: number, strict = false): Promise<Book | null> {
         try {
             const response = await getPublishedChapterById(id);
             if (!response) {
@@ -207,6 +207,10 @@ class BookChapterService {
             }
             return this.mapBookData(response);
         } catch (error) {
+            // strict (server ISR pages): only a real 404 means "not found". Transient failures must throw so a
+            // 404 is never cached for a valid page.
+            const status = (error as any)?.response?.status ?? (error as any)?.status;
+            if (strict && status !== 404) throw error;
             console.error(`Error fetching book with ID ${id}:`, error);
             return null;
         }

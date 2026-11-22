@@ -5,8 +5,12 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { productBooksService } from '@/services/productbooksservice';
 import { bookChapterService } from '@/services/bookChapterService';
-import { toBookNameSlug, truncateAtWord, cleanKeywordList } from '@/utils/stringUtils';
+import { toBookNameSlug, truncateAtWord, toMetaDescription, cleanKeywordList } from '@/utils/stringUtils';
+import { getRemoteImageSize } from '@/utils/imageSize';
 import ScholarAuthorMeta from '@/components/seo/ScholarAuthorMeta';
+
+// ISR: serve the rendered page from cache (s-maxage) and refresh in the background hourly
+export const revalidate = 3600;
 
 interface PageProps {
   params: Promise<{ id: string; slug?: string[] }>;
@@ -41,7 +45,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!isChapter) {
     // productBooksService.getBookById accepts both numeric IDs and uid strings
     // so we can pass the raw `id` directly — no uid scan needed.
-    const book = await productBooksService.getBookById(id);
+    const book = await productBooksService.getBookById(id, true);
     if (!book) {
       notFound();
     }
@@ -73,6 +77,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       : rawKeywords;
 
     const publishYear = (book.releaseDate || book.publishedDate || '').split('T')[0].replace(/-/g, '/');
+    const coverSize = book.coverImage ? await getRemoteImageSize(book.coverImage) : null;
 
     return {
       title: {
@@ -87,7 +92,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         description,
         type: 'book',
         url: canonical,
-        images: book.coverImage ? [{ url: book.coverImage }] : [],
+        images: book.coverImage ? [{ url: book.coverImage, alt: book.title || undefined, ...(coverSize ?? {}) }] : [],
       },
       twitter: {
         card: 'summary_large_image',
@@ -144,7 +149,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     notFound();
   }
 
-  const fetchedBook = await bookChapterService.getBookById(numericId);
+  const fetchedBook = await bookChapterService.getBookById(numericId, true);
   if (!fetchedBook || !fetchedBook.chapters) {
     notFound();
   }
@@ -175,10 +180,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? chapter.authorDetails.map(a => a.name).join(', ')
     : chapter.authors || '';
 
-  // Include brand suffix — prevents duplicate <title> from root layout default
-  const title = `${chapter.title} | ${fetchedBook.title} | BR Publications`;
+  // Chapter title + brand only (book title is in breadcrumbs/schema) — keeps <title> under ~70 chars
+  const title = `${chapter.title} | BR Publications`;
   const description = chapter.abstract
-    ? truncateAtWord(chapter.abstract, 160)
+    ? toMetaDescription(chapter.abstract, 155)
     : `${chapter.title} — a chapter from "${fetchedBook.title}" published by BR Publications.`;
 
   const bookIdentifier = fetchedBook.uid ? fetchedBook.uid.toLowerCase() : fetchedBook.id;
@@ -194,6 +199,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const keywordsLookLikeTestData = bookKeywords.length > 0 && bookKeywords.every(k => k.length < 8 || /^[a-z]{3,8}$/i.test(k));
   const chapterKeywords = keywordsLookLikeTestData ? [] : bookKeywords;
 
+  const coverSize = fetchedBook.coverImage ? await getRemoteImageSize(fetchedBook.coverImage) : null;
+
   return {
     title: {
       absolute: title
@@ -207,7 +214,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       type: 'article',
       url: canonical,
-      images: fetchedBook.coverImage ? [{ url: fetchedBook.coverImage }] : [],
+      images: fetchedBook.coverImage ? [{ url: fetchedBook.coverImage, alt: fetchedBook.title || undefined, ...(coverSize ?? {}) }] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: chapter.title || undefined,
+      description,
+      images: fetchedBook.coverImage ? [fetchedBook.coverImage] : [],
     },
     other: {
       'keywords': `${chapter.title}, ${authorNames}, ${fetchedBook.title}, ${fetchedBook.isbn}, book chapter, academic research, BR Publications`,
@@ -251,7 +264,7 @@ export default async function Page({ params }: PageProps) {
 
   if (!isChapter) {
     try {
-      const book = await productBooksService.getBookById(id);
+      const book = await productBooksService.getBookById(id, true);
       bookData = book;
       if (book) {
         const expectedIdentifier = book.uid ? book.uid.toLowerCase() : String(book.id);
@@ -269,7 +282,7 @@ export default async function Page({ params }: PageProps) {
       if (typeof digest === 'string' && (digest.startsWith('NEXT_REDIRECT') || digest === 'NEXT_NOT_FOUND')) {
         throw e;
       }
-      notFound();
+      throw e; // transient API failure: surface as error so ISR never caches a false 404
     }
   } else {
     let chapterIdStr = String(slug[0]).toLowerCase().trim();
@@ -290,7 +303,7 @@ export default async function Page({ params }: PageProps) {
     
     if (numericId) {
       try {
-        const fetchedBook = await bookChapterService.getBookById(numericId);
+        const fetchedBook = await bookChapterService.getBookById(numericId, true);
         if (fetchedBook && fetchedBook.chapters) {
           const parsedParamInt = parseInt(cleanParam, 10);
           const chapter = fetchedBook.chapters.find(c => {
@@ -328,7 +341,7 @@ export default async function Page({ params }: PageProps) {
         if (typeof digest === 'string' && (digest.startsWith('NEXT_REDIRECT') || digest === 'NEXT_NOT_FOUND')) {
           throw e;
         }
-        notFound();
+        throw e; // transient API failure: surface as error so ISR never caches a false 404
       }
     } else {
       notFound();

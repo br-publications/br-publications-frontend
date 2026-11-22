@@ -83,3 +83,24 @@ export const cleanKeywordList = (keywords: unknown[] | undefined | null): string
   }
   return out;
 };
+
+/**
+ * Builds a meta/OG/JSON-LD description: strips HTML, prefers whole sentences up to `max`
+ * characters, and otherwise cuts at a word boundary (no ellipsis, never mid-word).
+ */
+export const toMetaDescription = (text: string, max = 155): string => {
+  const clean = (text || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  if (clean.length <= max) return clean;
+  const window = clean.slice(0, max + 1);
+  // Longest run of whole sentences that fits (sentence end followed by space)
+  const sentenceEnds = [...window.matchAll(/[.!?](?=\s)/g)].map(m => (m.index ?? 0) + 1);
+  const lastEnd = sentenceEnds.filter(i => i <= max).pop();
+  if (lastEnd && lastEnd >= max * 0.5) return window.slice(0, lastEnd).trim();
+  const lastSpace = window.lastIndexOf(' ');
+  const base = lastSpace > max * 0.5 ? window.slice(0, lastSpace) : clean.slice(0, max);
+  return base.replace(/[\s,;:\-–—]+$/, '') + '.';
+};
+
+/** Strips wrapping parentheses and a trailing period from an affiliation string. */
+export const cleanAffiliation = (aff?: string | null): string =>
+  (aff || '').trim().replace(/^\((.*)\)$/, '$1').trim().replace(/\.+$/, '').trim();
