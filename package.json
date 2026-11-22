@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seo:indexnow": "node scripts/indexnow.mjs",
+    "seo:inspect": "node scripts/gsc-inspect.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

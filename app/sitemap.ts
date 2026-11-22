@@ -37,6 +37,39 @@ const toBookNameSlug = (text: string): string => {
   return truncated.replace(/-+$/, '');
 };
 
+/**
+ * Returns the most reliable "last changed" date of a record, or undefined.
+ * We deliberately never fall back to `new Date()`: a lastmod that changes on
+ * every build makes Google ignore lastmod for the entire sitemap.
+ */
+const pickDate = (item: any): Date | undefined => {
+  if (!item) return undefined;
+  for (const key of ['updatedAt', 'publishedAt', 'publishDate', 'createdAt']) {
+    if (item[key]) {
+      const d = new Date(item[key]);
+      if (!isNaN(d.getTime())) return d;
+    }
+  }
+  return undefined;
+};
+
+/**
+ * Static pages: bump the matching date ONLY when that page's content really
+ * changes (YYYY-MM-DD). Listing pages use the newest record date at runtime.
+ */
+const STATIC_LASTMOD = {
+  contact: new Date('2026-01-01'),
+  about: new Date('2026-01-01'),
+  ipr: new Date('2026-01-01'),
+  resnova: new Date('2026-01-01'),
+};
+
+const latest = (dates: (Date | undefined)[], fallback?: Date): Date | undefined => {
+  const valid = dates.filter((d): d is Date => !!d);
+  if (!valid.length) return fallback;
+  return new Date(Math.max(...valid.map((d) => d.getTime())));
+};
+
 export const revalidate = 43200; // 12 hours in seconds
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -46,47 +79,50 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const urls: MetadataRoute.Sitemap = [
     {
       url: BASE_URL,
-      lastModified: new Date(),
+      lastModified: undefined, // set below from newest record
       changeFrequency: 'weekly',
       priority: 1.0,
     },
     {
       url: `${BASE_URL}/books`,
-      lastModified: new Date(),
+      lastModified: undefined, // set below from newest book
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/bookchapters`,
-      lastModified: new Date(),
+      lastModified: undefined, // set below from newest book chapter
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
       url: `${BASE_URL}/contact`,
-      lastModified: new Date(),
+      lastModified: STATIC_LASTMOD.contact,
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/about`,
-      lastModified: new Date(),
+      lastModified: STATIC_LASTMOD.about,
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/ipr`,
-      lastModified: new Date(),
+      lastModified: STATIC_LASTMOD.ipr,
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
       url: `${BASE_URL}/resnova`,
-      lastModified: new Date(),
+      lastModified: STATIC_LASTMOD.resnova,
       changeFrequency: 'monthly',
       priority: 0.8,
     }
   ];
+
+  const bookDates: (Date | undefined)[] = [];
+  const bcDates: (Date | undefined)[] = [];
 
   try {
     // 1. Fetch Books
@@ -101,9 +137,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }
         
         const slug = book.title ? toBookNameSlug(book.title) : '';
+        bookDates.push(pickDate(book));
         urls.push({
           url: `${BASE_URL}/book/${identifierStr}/${slug}`,
-          lastModified: book.updatedAt ? new Date(book.updatedAt) : new Date(),
+          lastModified: pickDate(book),
           changeFrequency: 'monthly',
           priority: 0.8,
         });
@@ -133,10 +170,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }
         
         const slug = bc.title ? toBookNameSlug(bc.title) : '';
+        bcDates.push(pickDate(bc));
         
         urls.push({
           url: `${BASE_URL}/bookchapter/${identifierStr}/${slug}`,
-          lastModified: bc.updatedAt ? new Date(bc.updatedAt) : new Date(),
+          lastModified: pickDate(bc),
           changeFrequency: 'monthly',
           priority: 0.8,
         });
@@ -182,7 +220,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
              
              urls.push({
                url: `${BASE_URL}/book/${identifierStr}/chapter-${chapterNumStr}/${chapterSlug}`,
-               lastModified: chapter.updatedAt ? new Date(chapter.updatedAt) : (bc.updatedAt ? new Date(bc.updatedAt) : new Date()),
+               lastModified: pickDate(chapter) ?? pickDate(bc),
                changeFrequency: 'monthly',
                priority: 0.7,
              });
@@ -205,7 +243,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const slug = author.name ? toBookNameSlug(author.name) : '';
         urls.push({
           url: `${BASE_URL}/author/${author.id}/${slug}`,
-          lastModified: author.updatedAt ? new Date(author.updatedAt) : new Date(),
+          lastModified: pickDate(author),
           changeFrequency: 'monthly',
           priority: 0.6,
         });
@@ -226,7 +264,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const slug = editor.name ? toBookNameSlug(editor.name) : '';
         urls.push({
           url: `${BASE_URL}/editor/${editor.id}/${slug}`,
-          lastModified: editor.updatedAt ? new Date(editor.updatedAt) : new Date(),
+          lastModified: pickDate(editor),
           changeFrequency: 'monthly',
           priority: 0.6,
         });
@@ -235,6 +273,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   } catch (error) {
     console.error('Error generating sitemap:', error);
   }
+
+  // Listing pages change when their newest item changes.
+  const newestBook = latest(bookDates);
+  const newestBc = latest(bcDates);
+  urls[0].lastModified = latest([newestBook, newestBc]);
+  urls[1].lastModified = newestBook;
+  urls[2].lastModified = newestBc;
 
   return urls;
 }

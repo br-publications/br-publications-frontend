@@ -85,6 +85,28 @@ export const cleanKeywordList = (keywords: unknown[] | undefined | null): string
 };
 
 /**
+ * Chapters have no keywords of their own, so keep only the book-level keywords the chapter
+ * actually discusses (phrase or "(ACRONYM)" found in its title/abstract). Returns [] when
+ * nothing matches, so callers omit the tag rather than emit unrelated topics.
+ */
+export const filterKeywordsForChapter = (
+  keywords: string[],
+  title: string | undefined | null,
+  abstract: string | undefined | null,
+): string[] => {
+  const norm = (s: string) => ` ${s.toLowerCase().replace(/<[^>]+>/g, ' ').replace(/[-–—_/]/g, ' ').replace(/[^a-z0-9()\s]/g, ' ').replace(/\s+/g, ' ')} `;
+  const rawText = `${title || ''} ${abstract || ''}`.replace(/<[^>]+>/g, ' ');
+  const text = norm(rawText);
+  return keywords.filter(k => {
+    const acronym = k.match(/\(([A-Za-z0-9]{2,10})\)/)?.[1];
+    const phrase = norm(k.replace(/\([^)]*\)/g, ' ')).trim();
+    if (phrase && text.includes(` ${phrase} `)) return true;
+    if (phrase && phrase.length > 3 && text.includes(` ${phrase}s `)) return true;
+    return !!acronym && new RegExp(`(^|[^A-Za-z0-9])${acronym}([^A-Za-z0-9]|$)`).test(rawText);
+  });
+};
+
+/**
  * Builds a meta/OG/JSON-LD description: strips HTML, prefers whole sentences up to `max`
  * characters, and otherwise cuts at a word boundary (no ellipsis, never mid-word).
  */

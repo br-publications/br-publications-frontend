@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { productBooksService } from '@/services/productbooksservice';
 import { bookChapterService } from '@/services/bookChapterService';
-import { toBookNameSlug, truncateAtWord, toMetaDescription, cleanKeywordList } from '@/utils/stringUtils';
+import { toBookNameSlug, truncateAtWord, toMetaDescription, cleanKeywordList, filterKeywordsForChapter } from '@/utils/stringUtils';
 import { getRemoteImageSize } from '@/utils/imageSize';
 import ScholarAuthorMeta from '@/components/seo/ScholarAuthorMeta';
 
@@ -194,10 +194,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? `https://www.brpublications.com/book/${bookIdentifier}/${chapterSlugSegment}/${chapterTitleSlug}`
     : `https://www.brpublications.com/book/${bookIdentifier}/${chapterSlugSegment}`;
 
-  // Chapters have no keywords of their own: reuse the book's, skipping placeholder/test values
+  // Chapters have no keywords of their own: keep only the book's keywords this chapter actually
+  // covers (title/abstract match), skipping placeholder/test values
   const bookKeywords = cleanKeywordList(fetchedBook.keywords);
   const keywordsLookLikeTestData = bookKeywords.length > 0 && bookKeywords.every(k => k.length < 8 || /^[a-z]{3,8}$/i.test(k));
-  const chapterKeywords = keywordsLookLikeTestData ? [] : bookKeywords;
+  const chapterKeywords = keywordsLookLikeTestData ? [] : filterKeywordsForChapter(bookKeywords, chapter.title, chapter.abstract);
 
   const coverSize = fetchedBook.coverImage ? await getRemoteImageSize(fetchedBook.coverImage) : null;
 
@@ -238,12 +239,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       'citation_isbn': fetchedBook.isbn || '',
       'citation_language': 'en',
       'citation_abstract_html_url': canonical,
-      'citation_fulltext_html_url': canonical,
+      // No citation_fulltext_html_url / citation_pdf_url: the page and PDF are abstract/sample only, not the full chapter text.
       ...(chapter.pages && String(chapter.pages).includes('-') ? {
         'citation_firstpage': String(chapter.pages).split('-')[0].trim(),
         'citation_lastpage': String(chapter.pages).split('-')[1].trim(),
       } : (chapter.pages ? { 'citation_firstpage': chapter.pages } : {})),
-      'citation_pdf_url': `https://www.brpublications.com/files/bookchapter/${numericId}/chapter/${Math.max(0, parseInt(cleanChapterNum, 10) - 1)}/pdf`,
       ...(chapter.doi ? { 'citation_doi': chapter.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '') } : {}),
     }
   };

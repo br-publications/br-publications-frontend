@@ -5,7 +5,7 @@ import { ChevronRight, Quote } from 'lucide-react';
 import { bookChapterService } from '../../services/bookChapterService';
 import { getExtraPdfUrl, incrementChapterViews } from '../../services/bookChapterPublishing.service';
 import type { Book, Chapter, PublishedAuthor } from '../../types/bookTypes';
-import { toBookNameSlug, toMetaDescription, cleanAffiliation } from '../../utils/stringUtils';
+import { toBookNameSlug, toMetaDescription, cleanAffiliation, cleanKeywordList, filterKeywordsForChapter } from '../../utils/stringUtils';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { sanitizeUrl } from '../../utils/urlValidation';
 import CitationModal from '../../components/common/CitationModal';
@@ -238,6 +238,11 @@ const ChapterDetail: React.FC<ChapterDetailProps> = ({ initialBook, initialChapt
         ? `https://www.brpublications.com/book/${bookIdentifier}/${chapterSlugSegment}/${chapterTitleSlug}`
         : `https://www.brpublications.com/book/${bookIdentifier}/${chapterSlugSegment}`;
 
+    // Same rule as the citation_keywords meta: only book keywords this chapter actually covers
+    const chapterKeywords = (book && chapter)
+        ? filterKeywordsForChapter(cleanKeywordList(book.keywords), chapter.title, chapter.abstract)
+        : [];
+
     const schemaData = (book && chapter) ? {
         '@context': 'https://schema.org',
         '@type': 'ScholarlyArticle',
@@ -268,7 +273,7 @@ const ChapterDetail: React.FC<ChapterDetailProps> = ({ initialBook, initialChapt
         'isAccessibleForFree': false,
         ...((book.releaseDate || book.publishedDate) ? { 'datePublished': String(book.releaseDate || book.publishedDate).split('T')[0] } : {}),
         ...(book.editors && book.editors.length > 0 ? { 'editor': book.editors.map(e => ({ '@type': 'Person', 'name': e })) } : {}),
-        ...(book.keywords && book.keywords.length > 0 ? { 'keywords': book.keywords.map(k => String(k).trim().replace(/[\s.,;:]+$/, '')).filter(Boolean).join(', ') } : {}),
+        ...(chapterKeywords.length > 0 ? { 'keywords': chapterKeywords.join(', ') } : {}),
         'url': canonicalUrlFull,
         'inLanguage': 'en',
         ...(chapter.doi ? { 'identifier': { '@type': 'PropertyValue', 'propertyID': 'DOI', 'value': chapter.doi } } : {}),
