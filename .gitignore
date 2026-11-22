@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# seo script artifacts
+scripts/.indexnow-state.json
+gsc-index-report.csv
+*service-account*.json
