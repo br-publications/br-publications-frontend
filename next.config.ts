@@ -14,6 +14,17 @@ const nextConfig: NextConfig = {
   },
   // Serve PDFs under the www host so Google Scholar sees them on the same host as the
   // abstract page (citation_pdf_url). Proxies to the backend; response is streamed as-is.
+  // Consolidate the bare domain onto www with a 301 (canonical host for SEO / link equity).
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'brpublications.com' }],
+        destination: 'https://www.brpublications.com/:path*',
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     const api = process.env.NEXT_PUBLIC_API_URL || 'https://api2.brpublications.com';
     return [
