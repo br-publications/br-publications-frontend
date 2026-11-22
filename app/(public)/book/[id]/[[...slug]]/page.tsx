@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { productBooksService } from '@/services/productbooksservice';
 import { bookChapterService } from '@/services/bookChapterService';
-import { toBookNameSlug } from '@/utils/stringUtils';
+import { toBookNameSlug, truncateAtWord, cleanKeywordList } from '@/utils/stringUtils';
 import ScholarAuthorMeta from '@/components/seo/ScholarAuthorMeta';
 
 interface PageProps {
@@ -51,9 +51,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const pageTitle = title ? `${title} | BR Publications` : 'BR Publications';
     let description = 'Detailed information about academic books and research publications from BR Publications.';
     if (book.description) {
-      description = book.description.replace(/<[^>]+>/g, '').trim().slice(0, 160);
+      description = truncateAtWord(book.description.replace(/<[^>]+>/g, ''), 160);
     } else if (book.synopsis) {
-      description = Object.values(book.synopsis).join(' ').replace(/<[^>]+>/g, '').trim().slice(0, 160);
+      description = truncateAtWord(Object.values(book.synopsis).join(' ').replace(/<[^>]+>/g, ''), 160);
     } else {
       description = `${book.title} by ${book.author} — published by BR Publications.`;
     }
@@ -178,7 +178,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // Include brand suffix — prevents duplicate <title> from root layout default
   const title = `${chapter.title} | ${fetchedBook.title} | BR Publications`;
   const description = chapter.abstract
-    ? chapter.abstract.slice(0, 155)
+    ? truncateAtWord(chapter.abstract, 160)
     : `${chapter.title} — a chapter from "${fetchedBook.title}" published by BR Publications.`;
 
   const bookIdentifier = fetchedBook.uid ? fetchedBook.uid.toLowerCase() : fetchedBook.id;
@@ -190,7 +190,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     : `https://www.brpublications.com/book/${bookIdentifier}/${chapterSlugSegment}`;
 
   // Chapters have no keywords of their own: reuse the book's, skipping placeholder/test values
-  const bookKeywords = (fetchedBook.keywords || []).map(k => String(k).trim()).filter(Boolean);
+  const bookKeywords = cleanKeywordList(fetchedBook.keywords);
   const keywordsLookLikeTestData = bookKeywords.length > 0 && bookKeywords.every(k => k.length < 8 || /^[a-z]{3,8}$/i.test(k));
   const chapterKeywords = keywordsLookLikeTestData ? [] : bookKeywords;
 

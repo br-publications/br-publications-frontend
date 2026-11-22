@@ -52,3 +52,34 @@ export const toBookNameSlug = (text: string): string => {
   return truncated.replace(/-+$/, '');
 };
 
+
+
+/**
+ * Shortens text for meta descriptions without cutting a word in half.
+ * Cuts at the last space before `max` and appends an ellipsis when truncated.
+ */
+export const truncateAtWord = (text: string, max = 160): string => {
+  const clean = (text || '').replace(/\s+/g, ' ').trim();
+  if (clean.length <= max) return clean;
+  const cut = clean.slice(0, max - 1);
+  const lastSpace = cut.lastIndexOf(' ');
+  const base = (lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).replace(/[\s,;:.\-–—]+$/, '');
+  return `${base}…`;
+};
+
+/**
+ * Cleans a keyword list for citation_keywords: trims whitespace, removes trailing
+ * periods/commas/semicolons, and drops empty or duplicate entries.
+ */
+export const cleanKeywordList = (keywords: unknown[] | undefined | null): string[] => {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const k of keywords || []) {
+    const v = String(k ?? '').trim().replace(/[\s.,;:]+$/, '');
+    if (v && !seen.has(v.toLowerCase())) {
+      seen.add(v.toLowerCase());
+      out.push(v);
+    }
+  }
+  return out;
+};
