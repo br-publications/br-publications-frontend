@@ -2,9 +2,13 @@ import { Suspense } from 'react';
 import Component from '@/pages-content/resnovaComponents/bookChapterDetail';
 import type { Metadata } from 'next';
 import { bookChapterService } from '@/services/bookChapterService';
+import { getRemoteImageSize } from '@/utils/imageSize';
 import { toBookNameSlug, truncateAtWord, cleanKeywordList } from '@/utils/stringUtils';
 
 import { notFound } from 'next/navigation';
+
+// ISR: serve the rendered page from cache (s-maxage) and refresh in the background hourly
+export const revalidate = 3600;
 
 interface PageProps {
   params: Promise<{ id: string; slug?: string[] }>;
@@ -34,7 +38,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     notFound();
   }
 
-  const book = await bookChapterService.getBookById(numericId);
+  const book = await bookChapterService.getBookById(numericId, true);
   if (!book) {
     notFound();
   }
@@ -72,6 +76,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const authorEntry = !editorsList.length && book.author ? [book.author] : [];
   const publishYear = (book.releaseDate || book.publishedDate || '').split('T')[0].replace(/-/g, '/');
 
+  const coverSize = book.coverImage ? await getRemoteImageSize(book.coverImage) : null;
+
   return {
     title: {
       absolute: pageTitle
@@ -85,7 +91,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: metaDescription,
       type: 'book',
       url: canonicalUrlFull,
-      images: book.coverImage ? [{ url: book.coverImage }] : [],
+      images: book.coverImage ? [{ url: book.coverImage, alt: book.title || undefined, ...(coverSize ?? {}) }] : [],
     },
     twitter: {
       card: 'summary_large_image',
@@ -148,7 +154,7 @@ export default async function Page({ params }: PageProps) {
 
   if (numericId) {
     try {
-      const book = await bookChapterService.getBookById(numericId);
+      const book = await bookChapterService.getBookById(numericId, true);
       bookData = book;
       if (book) {
         const identifier = book.uid ? book.uid.toLowerCase() : String(book.id);
@@ -167,7 +173,7 @@ export default async function Page({ params }: PageProps) {
       if (typeof digest === 'string' && (digest.startsWith('NEXT_REDIRECT') || digest === 'NEXT_NOT_FOUND')) {
         throw e;
       }
-      notFound();
+      throw e; // transient API failure: surface as error so ISR never caches a false 404
     }
   } else {
     notFound();

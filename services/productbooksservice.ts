@@ -99,7 +99,7 @@ class ProductBooksService {
    * @param id - Book ID
    * @returns Promise with book details
    */
-  async getBookById(id: number | string): Promise<Book | null> {
+  async getBookById(id: number | string, strict = false): Promise<Book | null> {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/books/${id}`);
       const bookData = response.data.data || response.data;
@@ -110,6 +110,10 @@ class ProductBooksService {
 
       return this.mapBookData(bookData);
     } catch (error) {
+      // strict (server ISR pages): only a real 404 means "not found". Transient failures must throw so a
+      // 404 is never cached for a valid page.
+      const status = (error as any)?.response?.status ?? (error as any)?.status;
+      if (strict && status !== 404) throw error;
       console.error(`Error fetching book with ID/UID ${id}:`, error);
       // Return null or throw? returning null for consistency with previous implementation
       return null;
