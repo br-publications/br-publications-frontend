@@ -1,0 +1,19 @@
+# BR Publications
+
+> BR Publications is an academic publisher (registered under the Ministry of MSME, Government of India) of scholarly books and peer-reviewed book chapters. Each chapter page carries its abstract, authors with affiliations, DOI, ISBN and a PDF.
+
+## Catalogue
+- [Books](https://www.brpublications.com/books): authored books and monographs
+- [Book chapters](https://www.brpublications.com/bookchapters): edited volumes; each chapter has its own page at /book/{id}/chapter-{n}/{title}
+- [ResNova](https://www.brpublications.com/resnova): book chapter publishing programme
+
+## About
+- [About us](https://www.brpublications.com/about)
+- [Intellectual property rights](https://www.brpublications.com/ipr)
+- [Contact](https://www.brpublications.com/contact)
+
+## Machine-readable
+- [Sitemap](https://www.brpublications.com/sitemap.xml)
+
+## Citation
+Cite chapters using the DOI shown on each chapter page (doi.org/10.65470/...). Chapter pages expose Google Scholar citation_* meta tags and schema.org ScholarlyArticle JSON-LD.

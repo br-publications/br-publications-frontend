@@ -158,7 +158,7 @@
     cursor: pointer;
 }
 
-.abstract-content h3 {
+.abstract-content h2 {
     font-size: 14px;
     color: var(--dark-blue);
     margin-bottom: 10px;
@@ -220,7 +220,7 @@
     border: 1px solid #e0e0e0;
 }
 
-.complete-chapter-list h3 {
+.complete-chapter-list h2 {
     font-size: 16px;
     color: var(--dark-blue);
     margin-bottom: 15px;

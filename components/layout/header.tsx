@@ -196,9 +196,9 @@ export default function Header({
               className="w-[clamp(30px,4.7vw+5px,61px)] h-[clamp(30px,4.7vw+5px,61px)] rounded-full shrink-0 object-cover"
             />
             <div className="flex flex-col">
-              <h1 className="text-[clamp(14px,2vw+5px,30px)] font-bold whitespace-nowrap m-0">
+              <div className="text-[clamp(14px,2vw+5px,30px)] font-bold whitespace-nowrap m-0">
                 BR Publications
-              </h1>
+              </div>
               <p className="text-[clamp(6.5px,0.65vw+3.7px,11.2px)] text-[rgba(255,255,255,0.9)] bg-[rgba(255,255,255,0.15)] px-[6px] py-[2px] rounded-[3px] inline-block uppercase w-fit">
                 Registered under Ministry of MSME, Government of India
               </p>

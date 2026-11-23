@@ -62,6 +62,9 @@ const parseAuthors = (authors: string | string[]): any[] => {
  * Resolves the Cite constructor from window.Cite or window.require('citation-js')
  */
 const getCite = () => {
+  // This runs during server rendering (useState initializer) where `window` does not exist.
+  // Throwing here made React abandon SSR for the whole page ("Loading..." in crawler HTML).
+  if (typeof window === 'undefined') return null;
   const w = window as any;
   if (w.Cite) return w.Cite;
   if (typeof w.require === 'function') {
@@ -126,7 +129,7 @@ const CitationModal: React.FC<CitationModalProps> = ({ isOpen, onClose, item }) 
 
       try {
         setError(null);
-        const templates = Cite.plugins.config.get('@csl').templates;
+        const templates = Cite.plugins.config.get('@csl').styles;
 
         // Dynamically fetch and register external CSL styles if not already cached
         if (style === 'mla' && !templates.has('mla')) {

@@ -307,7 +307,7 @@ export const updatePublishedChapter = async (
     payload: Partial<PublishBookChapterPayload>,
 ): Promise<any> => {
     const response = await fetch(`${API_BASE}/${id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: getJsonHeaders(),
         body: JSON.stringify(payload),
     });

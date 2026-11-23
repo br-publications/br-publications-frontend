@@ -52,7 +52,7 @@ const Subjects = () => {
         </div>
 
         <div className="action-buttons">
-          <a href="https://brpublications.com/index.php/James/about/submissions" target="_blank" rel="noopener noreferrer" className="action-card">
+          <a href="https://james.brpublications.com/index.php/James/about/submissions" target="_blank" rel="noopener noreferrer" className="action-card">
             <BookOpen className="icon" size={20} />
             <span>Submit a Journal Manuscript</span>
           </a>

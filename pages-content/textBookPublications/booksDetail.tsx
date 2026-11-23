@@ -13,15 +13,19 @@ import { sanitizeUrl } from '../../utils/urlValidation';
 import { toBookNameSlug } from '../../utils/stringUtils';
 import Link from 'next/link';
 
-const BooksDetail: React.FC = () => {
+interface BooksDetailProps {
+    initialData?: Book;
+}
+
+const BooksDetail: React.FC<BooksDetailProps> = ({ initialData }) => {
   const { id } = useParams<{ id: string }>();
   const pathname = usePathname();
   const location = React.useMemo(() => ({ pathname, state: {}, search: "" }), [pathname]);
   const router = useRouter();
 
-  const [book, setBook] = useState<Book | null>(null);
+  const [book, setBook] = useState<Book | null>(initialData || null);
   const [contactDetails, setContactDetails] = useState<ContactDetails | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(!initialData);
   const [error, setError] = useState<string | null>(null);
   const [isCitationOpen, setIsCitationOpen] = useState<boolean>(false);
 
